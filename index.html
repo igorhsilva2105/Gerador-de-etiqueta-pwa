@@ -3,9 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Automatizador de Etiquetas — Impressão Otimizada</title>
+  <title>Automatizador de Etiquetas — Protótipo v0.1 (Merged)</title>
+  <!-- Tailwind via CDN (apenas para protótipo) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Área de impressão: etiquetas 6x4 cm em grade */
+    @page { 
+      size: A4; 
+      margin: 0;
+    }
+
     /* Estilos para visualização em tela */
     .labels-grid {
       display: grid;
@@ -34,51 +41,88 @@
     .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
 
-    /* Estilos para impressão - COMPLETAMENTE REVISADOS */
+    /* small helper for parse status */
+    #file-name { font-size: 12px; }
+
+    /* simple modal for configs (keeps styling of main.html) */
+    .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
+
+    /* Estilos para impressão - REVISADOS */
     @media print {
-      /* Reset completo - esconder tudo exceto as etiquetas */
-      body * {
-        visibility: hidden;
+      /* Reset completo para impressão */
+      * {
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
       }
       
-      /* Mostrar apenas o container das etiquetas */
-      #labels-container, #labels-container * {
-        visibility: visible;
-      }
-      
-      /* Configurações da página */
-      @page {
-        size: A4;
-        margin: 0;
-      }
-      
-      /* Body com dimensões exatas da página A4 */
       body {
-        width: 21cm !important;
-        height: 29.7cm !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      
+      /* Ocultar todos os elementos exceto as etiquetas */
+      body > *:not(main) {
+        display: none !important;
+      }
+      
+      main {
+        width: 100% !important;
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         display: flex;
         justify-content: center;
-        align-items: center;
       }
       
-      /* Container principal para impressão */
-      #labels-container {
-        display: grid;
-        grid-template-columns: repeat(3, 6cm);
-        grid-template-rows: repeat(auto-fit, 4cm);
-        gap: 0.5cm;
+      main > *:not(section) {
+        display: none !important;
+      }
+      
+      section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+      }
+      
+      section > *:not(.md\:col-span-2) {
+        display: none !important;
+      }
+      
+      .md\:col-span-2 {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+      }
+      
+      .md\:col-span-2 > *:first-child {
+        display: none !important;
+      }
+      
+      /* Container das etiquetas para impressão */
+      #labels {
+        display: grid !important;
+        grid-template-columns: repeat(3, 6cm) !important;
+        gap: 0.35cm !important;
         justify-content: center;
-        align-content: start;
         width: 100%;
-        max-width: 19.5cm;
-        height: auto;
-        min-height: 27.7cm;
-        margin: 1cm auto;
-        padding: 0;
+        max-width: 19.5cm; /* Largura máxima para caber 3 colunas com gap */
+        margin: 1cm auto !important;
+        padding: 0 !important;
         page-break-before: avoid;
         page-break-after: avoid;
       }
@@ -97,6 +141,11 @@
         print-color-adjust: exact;
         overflow: hidden !important;
       }
+      
+      /* Garantir que não haja quebras indesejadas */
+      .labels-grid {
+        page-break-inside: auto;
+      }
     }
 
     /* Visualização de impressão (modal) */
@@ -107,7 +156,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.8);
       z-index: 100;
       overflow: auto;
     }
@@ -118,7 +167,7 @@
       margin: 20px auto;
       padding: 1cm;
       background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
       border-radius: 5px;
     }
     
@@ -138,15 +187,6 @@
     .print-preview-controls {
       display: flex;
       gap: 10px;
-    }
-    
-    #previewLabels {
-      display: grid;
-      grid-template-columns: repeat(3, 6cm);
-      gap: 0.5cm;
-      justify-content: center;
-      width: 100%;
-      margin: 0 auto;
     }
   </style>
 </head>
@@ -169,6 +209,7 @@
         <div>
           <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
           <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
+          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e (tags principais: <code>ide</code>, <code>emit</code>, <code>det/prod</code>, <code>xProd</code>, <code>qCom</code>, <code>cProd</code>, <code>cEAN</code>).</p>
         </div>
         <div class="ml-auto flex items-center gap-2">
           <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
@@ -202,9 +243,6 @@
     </section>
   </main>
 
-  <!-- Container especial para impressão -->
-  <div id="labels-container" style="display: none;"></div>
-
   <!-- Modal de visualização de impressão -->
   <div id="printPreviewModal">
     <div class="print-preview-header">
@@ -215,7 +253,7 @@
       </div>
     </div>
     <div id="printPreviewContent">
-      <div id="previewLabels"></div>
+      <div id="previewLabels" class="labels-grid"></div>
     </div>
   </div>
 
@@ -261,7 +299,7 @@
   </div>
 
   <script>
-// --------- Estado e configurações ---------
+// --------- Estado e utilitários (adaptado do modelo) ---------
 const state = {
   labels: [],
   cfg: {
@@ -276,37 +314,30 @@ const state = {
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-
-// --------- Funções auxiliares ---------
 function num(v, fallback = 0) { 
   const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',','.')); 
   return Number.isFinite(n) ? n : fallback; 
 }
-
 function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
-
 function formatCNPJ(s){
   const d = onlyDigits(s);
   if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
-  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
+  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4'); // CPF fallback
   return s || '-';
 }
 
-// --------- Processamento de XML ---------
 function findFirstByLocalName(root, localName) {
   if (!root) return null;
   const all = root.getElementsByTagName('*');
   for (let i=0;i<all.length;i++) if (all[i].localName === localName) return all[i];
   return null;
 }
-
 function findAllByLocalName(root, localName) {
   const out=[]; if (!root) return out;
   const all = root.getElementsByTagName('*');
   for (let i=0;i<all.length;i++) if (all[i].localName===localName) out.push(all[i]);
   return out;
 }
-
 function findTextInsensitive(root, tagName){
   if (!root) return '';
   const all = root.getElementsByTagName('*');
@@ -317,7 +348,6 @@ function findTextInsensitive(root, tagName){
   }
   return '';
 }
-
 function text(el){ return el ? (el.textContent||'').trim() : ''; }
 
 function parseXml(textXml) {
@@ -333,7 +363,7 @@ function extractFromDoc(doc) {
   const dest = findFirstByLocalName(doc, 'dest');
   const ide = findFirstByLocalName(doc, 'ide') || doc;
   const emitName = text(findFirstByLocalName(emit||doc,'xNome'));
-  
+  // Tenta várias formas de achar CNPJ/CPF (case-insensitive). Se falhar, usa regex no XML serializado.
   let emitCnpj = findTextInsensitive(emit||doc, 'CNPJ') || findTextInsensitive(emit||doc, 'cnpj') || findTextInsensitive(emit||doc, 'CPF') || '';
   if (!emitCnpj) {
     try {
@@ -341,13 +371,13 @@ function extractFromDoc(doc) {
       const re = /<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i;
       const m = serialized.match(re);
       if (m && m[1]) emitCnpj = (m[1]||'').replace(/\D/g,'');
-    } catch(e){}
+    } catch(e){
+      // ignore
+    }
   }
-  
   const destName = text(findFirstByLocalName(dest||doc,'xNome'));
   const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
   const dets = findAllByLocalName(doc, 'det');
-  
   const items = dets.map((det)=>{
     const prod = findFirstByLocalName(det,'prod')||det;
     const xProd = text(findFirstByLocalName(prod,'xProd'));
@@ -357,11 +387,10 @@ function extractFromDoc(doc) {
     const uCom = text(findFirstByLocalName(prod,'uCom'));
     const vUnCom = text(findFirstByLocalName(prod,'vUnCom'));
     const qCom = num(qComStr, NaN);
-    
     return { xProd,cEAN,cProd,qCom,qComStr,uCom,vUnCom,
-             emit:emitName, emitCnpj, dest:destName,nNF };
+             emit:emitName, emitCnpj, // passa CNPJ aqui
+             dest:destName,nNF };
   });
-  
   return { emitName, emitCnpj, destName, nNF, items };
 }
 
@@ -387,23 +416,21 @@ function validateLabel(data) {
   return errs;
 }
 
-// --------- Renderização ---------
+// --------- Renderização adaptada ao main.html ---------
 function render() {
   const mount = $('#labels');
   mount.innerHTML = '';
   const issues = [];
-  
+  let valid = 0, invalid = 0;
   for (const data of state.labels) {
     const errs = validateLabel(data);
     const isErr = errs.length>0;
+    if (isErr) invalid++; else valid++;
     if (isErr && !state.cfg.showErrors) continue;
-    
     const card = document.createElement('div');
     card.className = 'label' + (isErr? ' problem':'');
-    
     // Header (logo acima da etiqueta)
-    const headerDiv = document.createElement('div'); 
-    headerDiv.className = 'label-header';
+    const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
     if (state.cfg.logo) {
       const himg = document.createElement('img');
       himg.src = state.cfg.logo;
@@ -415,25 +442,20 @@ function render() {
       headerDiv.appendChild(himg);
     }
     card.appendChild(headerDiv);
-    
     // Title
     if (state.cfg.fields.includes('xProd')) {
       const h3 = document.createElement('h3');
       h3.textContent = data.xProd || '(Sem nome)';
       card.appendChild(h3);
     }
-    
     // meta
-    const meta = document.createElement('div'); 
-    meta.className = 'meta';
-    
+    const meta = document.createElement('div'); meta.className = 'meta';
     function addLine(field,label,value){ 
       if (!state.cfg.fields.includes(field)) return; 
       const d=document.createElement('div'); 
       d.textContent=label+': '+(value??'-'); 
       meta.appendChild(d); 
     }
-    
     addLine('cEAN','EAN', data.cEAN || '-');
     addLine('cProd','Código', data.cProd || '-');
     addLine('nNF','NF', data.nNF || '-');
@@ -442,49 +464,26 @@ function render() {
     addLine('vUnCom','Preço', data.vUnCom?('R$ '+data.vUnCom):'-');
     addLine('emit','Emitente', data.emit||'-');
     addLine('dest','Dest', data.dest||'-');
-    
     card.appendChild(meta);
-    
     // footer
-    const footer = document.createElement('div'); 
-    footer.className='footer';
+    const footer = document.createElement('div'); footer.className='footer';
     if (isErr) {
       footer.textContent = 'ERRO: '+ errs.join('; ');
     } else {
+      // mostra a frase pedida — usa formatCNPJ para ficar mais legível
       const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
       footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
     }
     card.appendChild(footer);
     mount.appendChild(card);
-    
     if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
   }
-  
   // update count and issues
   $('#countLabels').textContent = state.labels.length;
-  const issuesEl = $('#issues'); 
-  issuesEl.innerHTML='';
-  
+  const issuesEl = $('#issues'); issuesEl.innerHTML='';
   for (const it of issues) {
-    const li = document.createElement('li'); 
-    li.textContent = `${it.title} — ${it.errs.join('; ')}`; 
-    issuesEl.appendChild(li);
+    const li = document.createElement('li'); li.textContent = `${it.title} — ${it.errs.join('; ')}`; issuesEl.appendChild(li);
   }
-  
-  // Preparar também o container de impressão
-  preparePrintContainer();
-}
-
-function preparePrintContainer() {
-  const printContainer = $('#labels-container');
-  printContainer.innerHTML = '';
-  
-  // Clonar todas as etiquetas para o container de impressão
-  const labels = $('#labels').querySelectorAll('.label');
-  labels.forEach(label => {
-    const clone = label.cloneNode(true);
-    printContainer.appendChild(clone);
-  });
 }
 
 // --------- Visualização de impressão ---------
@@ -492,150 +491,137 @@ function renderPrintPreview() {
   const previewMount = $('#previewLabels');
   previewMount.innerHTML = '';
   
-  // Clonar as etiquetas para a visualização
-  const labels = $('#labels').querySelectorAll('.label');
+  // Clona as etiquetas atuais para a visualização
+  const labelsContainer = $('#labels');
+  const labels = labelsContainer.querySelectorAll('.label');
+  
+  // Aplica estilos específicos para a visualização
+  previewMount.style.display = 'grid';
+  previewMount.style.gridTemplateColumns = 'repeat(3, 6cm)';
+  previewMount.style.gap = '0.35cm';
+  previewMount.style.justifyContent = 'center';
+  previewMount.style.width = '100%';
+  previewMount.style.margin = '0 auto';
   
   labels.forEach(label => {
     const clone = label.cloneNode(true);
     previewMount.appendChild(clone);
   });
   
-  // Exibir o modal de visualização
+  // Exibe o modal de visualização
   $('#printPreviewModal').style.display = 'block';
 }
 
-// --------- Processamento de arquivos ---------
+// --------- Arquivo -> leitura -> parsing ---------
 async function readFilesAsText(files) {
   const arr = Array.from(files);
   return Promise.all(arr.map(file=>new Promise((resolve,reject)=>{
-    const fr = new FileReader(); 
-    fr.onload = ()=> resolve({name:file.name,text:String(fr.result||'')}); 
-    fr.onerror = ()=> reject(fr.error); 
-    fr.readAsText(file);
+    const fr = new FileReader(); fr.onload = ()=> resolve({name:file.name,text:String(fr.result||'')}); fr.onerror = ()=> reject(fr.error); fr.readAsText(file);
   })));
 }
 
 async function handleFiles(files) {
   if (!files || files.length===0) return;
   $('#file-name').textContent = `${files.length} arquivo(s) pronto(s) para processar`;
-  
   try {
     const texts = await readFilesAsText(files);
     const all = [];
-    
     for (const {name,text} of texts) {
       try {
         const doc = parseXml(text);
         const data = extractFromDoc(doc);
+        // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
         console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
-        
-        for (const item of data.items) {
-          all.push(...expandByFracionamento(item));
-        }
+        for (const item of data.items) all.push(...expandByFracionamento(item));
       } catch (e) {
-        all.push({ 
-          xProd: `(Erro no arquivo ${name})`, 
-          qComStr:'-', uCom:'-', vUnCom:'-', 
-          cEAN:'', cProd:'', emit:'', emitCnpj:'', 
-          dest:'', nNF:'', _fatalError: String(e.message||e) 
-        });
+        all.push({ xProd: `(Erro no arquivo ${name})`, qComStr:'-', uCom:'-', vUnCom:'-', cEAN:'', cProd:'', emit:'', emitCnpj:'', dest:'', nNF:'', _fatalError: String(e.message||e) });
       }
     }
-    
     state.labels = all;
     render();
   } catch (e) {
-    console.error(e); 
-    alert('Falha ao ler arquivos.');
+    console.error(e); alert('Falha ao ler arquivos.');
   }
 }
 
-// --------- Eventos da UI ---------
+// --------- Bind UI events ---------
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Carregar configurações salvas
-  const saved = localStorage.getItem('mag_labels_cfg'); 
-  if (saved) Object.assign(state.cfg, JSON.parse(saved));
+  // load cfg from localStorage
+  const saved = localStorage.getItem('mag_labels_cfg'); if (saved) Object.assign(state.cfg, JSON.parse(saved));
 
-  // Selecionar arquivos
+  // Select button
   $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
-  $('#xmlInput').addEventListener('change',(e)=>{ 
-    const files = e.target.files; 
-    if (files && files.length) handleFiles(files); 
-  });
+  $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
 
-  // Drag & drop
+  // drag & drop
   const drop = document.getElementById('drop');
-  ['dragenter','dragover'].forEach(evt => {
-    drop.addEventListener(evt, e=>{ 
-      e.preventDefault(); 
-      drop.classList.add('ring','ring-2','ring-slate-300'); 
-    });
-  });
-  
-  ['dragleave','drop'].forEach(evt => {
-    drop.addEventListener(evt, e=>{ 
-      e.preventDefault(); 
-      drop.classList.remove('ring','ring-2','ring-slate-300'); 
-    });
-  });
-  
-  drop.addEventListener('drop', e=>{ 
-    e.preventDefault(); 
-    const dt = e.dataTransfer; 
-    if (dt && dt.files && dt.files.length) handleFiles(dt.files); 
-  });
+  ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
+  ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
+  drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
 
-  // Limpar
-  $('#btnClear').addEventListener('click', ()=>{ 
-    state.labels=[]; 
-    render(); 
-    $('#file-name').textContent='Nenhum arquivo selecionado'; 
-  });
+  // clear
+  $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; });
 
-  // Imprimir
+  // print
   $('#btnPrint').addEventListener('click', ()=>window.print());
   
-  // Visualizar impressão
+  // print preview
   $('#btnPreview').addEventListener('click', renderPrintPreview);
-  $('#closePreview').addEventListener('click', ()=>{ 
-    $('#printPreviewModal').style.display = 'none'; 
-  });
-  
-  $('#printFromPreview').addEventListener('click', ()=>{ 
-    window.print(); 
-  });
+  $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
+  $('#printFromPreview').addEventListener('click', ()=>{ window.print(); });
 
-  // Configurações
+  // config modal
   function openCfg(){
     $('#cfgLogo').value = state.cfg.logo || '';
     $('#cfgFracRule').value = state.cfg.fracRule || 'none';
     $('#cfgFracN').value = state.cfg.fracN || 1;
-    $$('.cfgField').forEach(el=> {
-      el.checked = state.cfg.fields.includes(el.value);
-    });
+    $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
     $('#cfgModal').classList.remove('hidden');
   }
-  
-  function closeCfg(){ 
-    $('#cfgModal').classList.add('hidden'); 
-  }
-  
+  function closeCfg(){ $('#cfgModal').classList.add('hidden'); }
   $('#cnfPrint').addEventListener('click', openCfg);
   $('#cfgCancel').addEventListener('click', closeCfg);
-  
   $('#cfgSave').addEventListener('click', ()=>{
     state.cfg.logo = $('#cfgLogo').value.trim();
     state.cfg.fracRule = $('#cfgFracRule').value;
     state.cfg.fracN = num($('#cfgFracN').value,1);
     state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
-    closeCfg(); 
-    render();
+    closeCfg(); render();
   });
 
-  // Renderização inicial
+  // render inicial
   render();
 });
   </script>
+<script>
+        // Manifest file for PWA
+        const manifest = {
+            "name": "Etiquetadora",
+            "short_name": "Etiquetadora",
+            "description": "Automatizador de etiquetas",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#2563eb",
+            "icons": [
+                {
+                    "src": "https://placehold.co/192x192/000000/FFFFFF?text=🖨️",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "https://placehold.co/512x512/000000/FFFFFF?text=🖨️",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        manifestLink.setAttribute('href', manifestUrl);
+    </script>
 </body>
 </html>
