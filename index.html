@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Automatizador de Etiquetas — Protótipo v0.1</title>
+  <title>Automatizador de Etiquetas — Protótipo v0.1 (Merged)</title>
   <!-- Tailwind via CDN (apenas para protótipo) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -13,62 +13,98 @@
       margin: 0;
     }
 
+    /* Estilos para visualização em tela */
+    .labels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(6cm, 1fr));
+      gap: 4mm;
+    }
+    
+    .label {
+      width: 6cm; 
+      height: 4cm;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 6px;
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between;
+      box-sizing: border-box;
+      background: white;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .label.problem { border-color: #ef4444; box-shadow: 0 0 0 2px #fecaca inset; }
+    .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
+    .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
+    .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
+
+    /* small helper for parse status */
+    #file-name { font-size: 12px; }
+
+    /* simple modal for configs (keeps styling of main.html) */
+    .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
+
+    /* Estilos para impressão */
     @media print {
       /* Ocultar todos os elementos exceto as etiquetas */
       body * {
         visibility: hidden;
+        margin: 0;
+        padding: 0;
       }
       
       #labels, #labels * {
         visibility: visible;
       }
       
-      .labels-grid, .label {
-        visibility: visible;
-      }
-      
-      /* Posicionamento absoluto para remover qualquer espaço em branco */
+      /* Container principal para impressão */
       body {
+        display: block;
+        width: 100%;
         margin: 0;
         padding: 0;
-        width: 100%;
         background: white;
+      }
+      
+      /* Ajustar o grid para impressão em A4 */
+      .labels-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 6cm) !important;
+        gap: 0.35cm !important;
+        justify-content: center;
+        align-content: start;
+        width: 100%;
+        height: 100%;
+        margin: 0 auto;
+        padding: 1.2cm 0.8cm;
+        page-break-before: avoid;
+        page-break-after: avoid;
+      }
+      
+      /* Manter a estética das etiquetas na impressão */
+      .label {
+        width: 6cm !important;
+        height: 4cm !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 6px !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
       
       /* Ocultar elementos da interface */
       #toolbar, 
       main > section:first-child,
       .md\:col-span-2 > div:first-child,
-      aside#erroPanel {
+      aside#erroPanel,
+      #cfgModal {
         display: none !important;
-      }
-      
-      /* Ajustar o grid para impressão */
-      .labels-grid {
-        display: grid !important;
-        grid-template-columns: repeat(3, 6cm) !important;
-        gap: 0mm !important;
-        justify-content: center;
-        align-content: start;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        page-break-before: avoid;
-        page-break-after: avoid;
-        page-break-inside: avoid;
-      }
-      
-      .label {
-        width: 6cm !important;
-        height: 4cm !important;
-        border: 1px solid #000 !important;
-        border-radius: 0 !important;
-        margin: 0;
-        padding: 3mm !important;
-        box-shadow: none !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
       }
       
       /* Ajustar a seção principal para ocupar toda a página */
@@ -83,40 +119,41 @@
       }
     }
 
-    /* Estilos normais para a visualização em tela */
-    @media screen {
-      .labels-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(6cm, 1fr));
-        gap: 4mm;
-      }
-      
-      .label {
-        width: 6cm; 
-        height: 4cm;
-        border: 1px solid #cbd5e1; /* slate-300 */
-        border-radius: 10px;
-        padding: 6px;
-        display: flex; 
-        flex-direction: column; 
-        justify-content: space-between;
-        box-sizing: border-box;
-        background: white;
-        overflow: hidden;
-      }
+    /* Visualização de impressão (modal) */
+    #printPreviewModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 100;
+      overflow: auto;
     }
-
-    .label.problem { border-color: #ef4444; box-shadow: 0 0 0 2px #fecaca inset; }
-    .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
-    .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
-    .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
-
-    /* small helper for parse status */
-    #file-name { font-size: 12px; }
-
-    /* simple modal for configs (keeps styling of main.html) */
-    .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
+    
+    #printPreviewContent {
+      width: 21cm;
+      min-height: 29.7cm;
+      margin: 1cm auto;
+      padding: 1.2cm 0.8cm;
+      background: white;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .print-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .print-preview-controls {
+      display: flex;
+      gap: 10px;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -126,6 +163,7 @@
       <span class="badge">6×4 cm</span>
       <div class="ml-auto flex items-center gap-2">
         <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
+        <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
         <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
       </div>
     </div>
@@ -170,6 +208,20 @@
       </aside>
     </section>
   </main>
+
+  <!-- Modal de visualização de impressão -->
+  <div id="printPreviewModal">
+    <div class="print-preview-header">
+      <h2 class="text-xl font-bold">Visualização de Impressão</h2>
+      <div class="print-preview-controls">
+        <button id="closePreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
+        <button id="printFromPreview" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
+      </div>
+    </div>
+    <div id="printPreviewContent">
+      <div id="previewLabels" class="labels-grid"></div>
+    </div>
+  </div>
 
   <!-- Config modal (tailwind) -->
   <div id="cfgModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
@@ -400,6 +452,24 @@ function render() {
   }
 }
 
+// --------- Visualização de impressão ---------
+function renderPrintPreview() {
+  const previewMount = $('#previewLabels');
+  previewMount.innerHTML = '';
+  
+  // Clona as etiquetas atuais para a visualização
+  const labelsContainer = $('#labels');
+  const labels = labelsContainer.querySelectorAll('.label');
+  
+  labels.forEach(label => {
+    const clone = label.cloneNode(true);
+    previewMount.appendChild(clone);
+  });
+  
+  // Exibe o modal de visualização
+  $('#printPreviewModal').style.display = 'block';
+}
+
 // --------- Arquivo -> leitura -> parsing ---------
 async function readFilesAsText(files) {
   const arr = Array.from(files);
@@ -452,6 +522,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // print
   $('#btnPrint').addEventListener('click', ()=>window.print());
+  
+  // print preview
+  $('#btnPreview').addEventListener('click', renderPrintPreview);
+  $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
+  $('#printFromPreview').addEventListener('click', ()=>{ window.print(); });
 
   // config modal
   function openCfg(){
