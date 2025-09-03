@@ -47,47 +47,87 @@
     /* simple modal for configs (keeps styling of main.html) */
     .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
 
-    /* Estilos para impressão */
+    /* Estilos para impressão - REVISADOS */
     @media print {
-      /* Ocultar todos os elementos exceto as etiquetas */
-      body * {
-        visibility: hidden;
+      /* Reset completo para impressão */
+      * {
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
       }
       
-      #labels, #labels * {
-        visibility: visible;
-      }
-      
-      /* Container principal para impressão */
       body {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
         display: flex;
         justify-content: center;
         align-items: flex-start;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        background: white;
       }
       
-      /* Ajustar o grid para impressão em A4 */
-      .labels-grid {
+      /* Ocultar todos os elementos exceto as etiquetas */
+      body > *:not(main) {
+        display: none !important;
+      }
+      
+      main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex;
+        justify-content: center;
+      }
+      
+      main > *:not(section) {
+        display: none !important;
+      }
+      
+      section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+      }
+      
+      section > *:not(.md\:col-span-2) {
+        display: none !important;
+      }
+      
+      .md\:col-span-2 {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+      }
+      
+      .md\:col-span-2 > *:first-child {
+        display: none !important;
+      }
+      
+      /* Container das etiquetas para impressão */
+      #labels {
         display: grid !important;
         grid-template-columns: repeat(3, 6cm) !important;
         gap: 0.35cm !important;
         justify-content: center;
-        align-content: start;
-        width: auto;
-        height: auto;
-        margin: 0 auto;
-        padding: 1cm;
+        width: 100%;
+        max-width: 19.5cm; /* Largura máxima para caber 3 colunas com gap */
+        margin: 1cm auto !important;
+        padding: 0 !important;
         page-break-before: avoid;
         page-break-after: avoid;
       }
       
-      /* Manter a estética das etiquetas na impressão */
+      /* Estilo das etiquetas na impressão */
       .label {
         width: 6cm !important;
         height: 4cm !important;
@@ -99,34 +139,10 @@
         page-break-inside: avoid;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-      }
-      
-      /* Ocultar elementos da interface */
-      #toolbar, 
-      main > section:first-child,
-      .md\:col-span-2 > div:first-child,
-      aside#erroPanel,
-      #cfgModal {
-        display: none !important;
-      }
-      
-      /* Ajustar a seção principal para ocupar toda a página */
-      .md\:col-span-2 {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-      }
-      
-      /* Garantir que o conteúdo não seja cortado */
-      .label {
         overflow: hidden !important;
       }
       
-      /* Forçar quebra de página após cada página completa */
+      /* Garantir que não haja quebras indesejadas */
       .labels-grid {
         page-break-inside: auto;
       }
@@ -140,7 +156,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: white;
+      background: rgba(0, 0, 0, 0.8);
       z-index: 100;
       overflow: auto;
     }
@@ -148,12 +164,11 @@
     #printPreviewContent {
       width: 21cm;
       min-height: 29.7cm;
-      margin: 0 auto;
+      margin: 20px auto;
       padding: 1cm;
       background: white;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-      display: flex;
-      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
     }
     
     .print-preview-header {
@@ -161,24 +176,17 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: white;
       padding: 15px;
-      z-index: 101;
+      border-bottom: 1px solid #e2e8f0;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     
     .print-preview-controls {
       display: flex;
       gap: 10px;
-    }
-    
-    #previewLabels {
-      margin-top: 70px;
     }
   </style>
 </head>
@@ -486,6 +494,14 @@ function renderPrintPreview() {
   // Clona as etiquetas atuais para a visualização
   const labelsContainer = $('#labels');
   const labels = labelsContainer.querySelectorAll('.label');
+  
+  // Aplica estilos específicos para a visualização
+  previewMount.style.display = 'grid';
+  previewMount.style.gridTemplateColumns = 'repeat(3, 6cm)';
+  previewMount.style.gap = '0.35cm';
+  previewMount.style.justifyContent = 'center';
+  previewMount.style.width = '100%';
+  previewMount.style.margin = '0 auto';
   
   labels.forEach(label => {
     const clone = label.cloneNode(true);
