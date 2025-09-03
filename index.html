@@ -62,8 +62,11 @@
       
       /* Container principal para impressão */
       body {
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
         width: 100%;
+        height: 100%;
         margin: 0;
         padding: 0;
         background: white;
@@ -76,10 +79,10 @@
         gap: 0.35cm !important;
         justify-content: center;
         align-content: start;
-        width: 100%;
-        height: 100%;
+        width: auto;
+        height: auto;
         margin: 0 auto;
-        padding: 1.2cm 0.8cm;
+        padding: 1cm;
         page-break-before: avoid;
         page-break-after: avoid;
       }
@@ -117,6 +120,16 @@
         box-shadow: none !important;
         background: white !important;
       }
+      
+      /* Garantir que o conteúdo não seja cortado */
+      .label {
+        overflow: hidden !important;
+      }
+      
+      /* Forçar quebra de página após cada página completa */
+      .labels-grid {
+        page-break-inside: auto;
+      }
     }
 
     /* Visualização de impressão (modal) */
@@ -135,10 +148,12 @@
     #printPreviewContent {
       width: 21cm;
       min-height: 29.7cm;
-      margin: 1cm auto;
-      padding: 1.2cm 0.8cm;
+      margin: 0 auto;
+      padding: 1cm;
       background: white;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: center;
     }
     
     .print-preview-header {
@@ -148,11 +163,22 @@
       margin-bottom: 20px;
       padding-bottom: 10px;
       border-bottom: 1px solid #e2e8f0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 15px;
+      z-index: 101;
     }
     
     .print-preview-controls {
       display: flex;
       gap: 10px;
+    }
+    
+    #previewLabels {
+      margin-top: 70px;
     }
   </style>
 </head>
