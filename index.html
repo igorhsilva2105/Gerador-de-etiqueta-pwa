@@ -35,7 +35,11 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    .label.problem {border: 2px dashed #f87171 !important;background-color: #fef2f2 !important;}
+    .label.problem {
+      border: 2px dashed #f87171 !important;
+      background-color: #fef2f2 !important;
+    }
+    
     .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
     .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
     .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -147,6 +151,16 @@
       .labels-grid {
         page-break-inside: auto;
       }
+      
+      /* Ocultar etiquetas com erro se a configuração estiver desativada */
+      .label.problem {
+        display: none !important;
+      }
+      
+      /* Mostrar etiquetas com erro apenas se a configuração permitir */
+      body.print-errors .label.problem {
+        display: flex !important;
+      }
     }
 
     /* Visualização de impressão (modal) */
@@ -188,6 +202,12 @@
     .print-preview-controls {
       display: flex;
       gap: 10px;
+    }
+    
+    /* Estilo para mensagem "Sem erros" */
+    .no-issues {
+      color: #059669;
+      font-style: italic;
     }
   </style>
 </head>
@@ -239,7 +259,9 @@
       </div>
       <aside class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" id="erroPanel">
         <h2 class="font-semibold mb-2">Avisos / Itens com pendências</h2>
-        <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1"></ul>
+        <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1">
+          <li class="no-issues">Sem erros</li>
+        </ul>
       </aside>
     </section>
   </main>
@@ -291,6 +313,11 @@
           <label class="text-sm"><input type="checkbox" class="cfgField" value="emit"> Emitente</label>
           <label class="text-sm"><input type="checkbox" class="cfgField" value="dest"> Destinatário</label>
         </fieldset>
+        <fieldset class="flex gap-2 flex-wrap">
+          <legend class="w-full">Configurações de erros</legend>
+          <label class="text-sm"><input type="checkbox" id="cfgShowErrors" checked> Exibir itens com erro</label>
+          <label class="text-sm"><input type="checkbox" id="cfgPrintErrors"> Imprimir itens com erro</label>
+        </fieldset>
         <div class="flex justify-end gap-2 pt-2">
           <button id="cfgCancel" class="px-4 py-2 rounded-xl border">Cancelar</button>
           <button id="cfgSave" class="px-4 py-2 rounded-xl bg-slate-900 text-white">Salvar</button>
@@ -308,6 +335,7 @@ const state = {
     density: 60,
     fields: ["xProd","qCom","uCom","nNF"],
     showErrors: true,
+    printErrors: false,
     fracRule: "none",
     fracN: 1
   }
@@ -410,7 +438,13 @@ function expandByFracionamento(item) {
 
 function validateLabel(data) {
   const errs=[];
-  if (!data.xProd) errs.push('Produto sem nome');
+  // Verifica se é um erro de parsing de arquivo
+  if (data._fatalError) {
+    errs.push('Erro no processamento do arquivo');
+    return errs;
+  }
+  
+  if (!data.xProd || data.xProd.includes('(Erro no arquivo')) errs.push('Produto sem nome');
   if (!Number.isFinite(data.qCom) && !data.qComStr) errs.push('Quantidade ausente');
   if (Number.isFinite(data.qCom) && data.qCom<=0) errs.push('Quantidade inválida');
   if (data.cEAN && ![8,12,13,14].includes(String(data.cEAN).replace(/\D/g,'').length)) errs.push('EAN com tamanho incomum');
@@ -423,13 +457,16 @@ function render() {
   mount.innerHTML = '';
   const issues = [];
   let valid = 0, invalid = 0;
+  
   for (const data of state.labels) {
     const errs = validateLabel(data);
     const isErr = errs.length>0;
     if (isErr) invalid++; else valid++;
     if (isErr && !state.cfg.showErrors) continue;
+    
     const card = document.createElement('div');
     card.className = 'label' + (isErr? ' problem':'');
+    
     // Header (logo acima da etiqueta)
     const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
     if (state.cfg.logo) {
@@ -443,12 +480,14 @@ function render() {
       headerDiv.appendChild(himg);
     }
     card.appendChild(headerDiv);
+    
     // Title
     if (state.cfg.fields.includes('xProd')) {
       const h3 = document.createElement('h3');
       h3.textContent = data.xProd || '(Sem nome)';
       card.appendChild(h3);
     }
+    
     // meta
     const meta = document.createElement('div'); meta.className = 'meta';
     function addLine(field,label,value){ 
@@ -466,6 +505,7 @@ function render() {
     addLine('emit','Emitente', data.emit||'-');
     addLine('dest','Dest', data.dest||'-');
     card.appendChild(meta);
+    
     // footer
     const footer = document.createElement('div'); footer.className='footer';
     if (isErr) {
@@ -476,14 +516,37 @@ function render() {
       footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
     }
     card.appendChild(footer);
+    
     mount.appendChild(card);
     if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
   }
+  
   // update count and issues
   $('#countLabels').textContent = state.labels.length;
-  const issuesEl = $('#issues'); issuesEl.innerHTML='';
-  for (const it of issues) {
-    const li = document.createElement('li'); li.textContent = `${it.title} — ${it.errs.join('; ')}`; issuesEl.appendChild(li);
+  const issuesEl = $('#issues'); 
+  issuesEl.innerHTML='';
+  
+  if (issues.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = 'Sem erros';
+    li.className = 'no-issues';
+    issuesEl.appendChild(li);
+  } else {
+    for (const it of issues) {
+      const li = document.createElement('li'); 
+      li.textContent = `${it.title} — ${it.errs.join('; ')}`; 
+      issuesEl.appendChild(li);
+    }
+  }
+  
+  // Atualiza o painel de avisos conforme existem erros ou não
+  const erroPanel = $('#erroPanel');
+  if (issues.length === 0) {
+    erroPanel.classList.add('bg-green-50', 'border-green-200');
+    erroPanel.classList.remove('bg-yellow-50', 'border-yellow-200');
+  } else {
+    erroPanel.classList.add('bg-yellow-50', 'border-yellow-200');
+    erroPanel.classList.remove('bg-green-50', 'border-green-200');
   }
 }
 
@@ -529,26 +592,69 @@ async function handleFiles(files) {
     const all = [];
     for (const {name,text} of texts) {
       try {
+        // Verifica se o arquivo contém conteúdo XML válido
+        if (!text || !text.trim().startsWith('<?xml') && !text.trim().startsWith('<nfe')) {
+          throw new Error('Arquivo não é um XML válido');
+        }
+        
         const doc = parseXml(text);
         const data = extractFromDoc(doc);
         // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
         console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
         for (const item of data.items) all.push(...expandByFracionamento(item));
       } catch (e) {
-        all.push({ xProd: `(Erro no arquivo ${name})`, qComStr:'-', uCom:'-', vUnCom:'-', cEAN:'', cProd:'', emit:'', emitCnpj:'', dest:'', nNF:'', _fatalError: String(e.message||e) });
+        // Cria um item de erro que será detectado pela validação
+        all.push({ 
+          xProd: `(Erro no arquivo ${name})`, 
+          qComStr:'-', 
+          uCom:'-', 
+          vUnCom:'-', 
+          cEAN:'', 
+          cProd:'', 
+          emit:'', 
+          emitCnpj:'', 
+          dest:'', 
+          nNF:'', 
+          _fatalError: String(e.message||e)
+        });
       }
     }
     state.labels = all;
     render();
   } catch (e) {
-    console.error(e); alert('Falha ao ler arquivos.');
+    console.error(e); 
+    alert('Falha ao ler arquivos.');
   }
+}
+
+// --------- Função para imprimir ---------
+function handlePrint() {
+  // Adiciona/remove classe para controlar impressão de erros
+  if (state.cfg.printErrors) {
+    document.body.classList.add('print-errors');
+  } else {
+    document.body.classList.remove('print-errors');
+  }
+  
+  window.print();
 }
 
 // --------- Bind UI events ---------
 document.addEventListener('DOMContentLoaded', ()=>{
   // load cfg from localStorage
-  const saved = localStorage.getItem('mag_labels_cfg'); if (saved) Object.assign(state.cfg, JSON.parse(saved));
+  const saved = localStorage.getItem('mag_labels_cfg'); 
+  if (saved) {
+    const savedCfg = JSON.parse(saved);
+    Object.assign(state.cfg, savedCfg);
+    
+    // Para compatibilidade com versões anteriores
+    if (typeof savedCfg.printErrors === 'undefined') {
+      state.cfg.printErrors = false;
+    }
+    if (typeof savedCfg.showErrors === 'undefined') {
+      state.cfg.showErrors = true;
+    }
+  }
 
   // Select button
   $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
@@ -564,12 +670,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; });
 
   // print
-  $('#btnPrint').addEventListener('click', ()=>window.print());
+  $('#btnPrint').addEventListener('click', handlePrint);
   
   // print preview
   $('#btnPreview').addEventListener('click', renderPrintPreview);
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
-  $('#printFromPreview').addEventListener('click', ()=>{ window.print(); });
+  $('#printFromPreview').addEventListener('click', handlePrint);
 
   // config modal
   function openCfg(){
@@ -577,9 +683,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $('#cfgFracRule').value = state.cfg.fracRule || 'none';
     $('#cfgFracN').value = state.cfg.fracN || 1;
     $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
+    $('#cfgShowErrors').checked = state.cfg.showErrors;
+    $('#cfgPrintErrors').checked = state.cfg.printErrors;
     $('#cfgModal').classList.remove('hidden');
   }
+  
   function closeCfg(){ $('#cfgModal').classList.add('hidden'); }
+  
   $('#cnfPrint').addEventListener('click', openCfg);
   $('#cfgCancel').addEventListener('click', closeCfg);
   $('#cfgSave').addEventListener('click', ()=>{
@@ -587,8 +697,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.fracRule = $('#cfgFracRule').value;
     state.cfg.fracN = num($('#cfgFracN').value,1);
     state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
+    state.cfg.showErrors = $('#cfgShowErrors').checked;
+    state.cfg.printErrors = $('#cfgPrintErrors').checked;
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
-    closeCfg(); render();
+    closeCfg(); 
+    render();
   });
 
   // render inicial
