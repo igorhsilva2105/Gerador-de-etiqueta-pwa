@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automatizador de Etiquetas — Protótipo v0.1 (Merged)</title>
+  <!-- Tailwind via CDN (apenas para protótipo) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Área de impressão: etiquetas 6x4 cm em grade */
+    @page { size: A4; margin: 10mm; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #toolbar { display: none !important; }
+      #erroPanel { break-before: page; }
+    }
+
+    /* Grade das etiquetas */
+    .labels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(6cm, 1fr));
+      gap: 4mm;
+    }
+    .label {
+      width: 6cm; height: 4cm;
+      border: 1px solid #cbd5e1; /* slate-300 */
+      border-radius: 10px;
+      padding: 6px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      box-sizing: border-box;
+      background: white;
+      overflow: hidden;
+    }
+    .label.problem { border-color: #ef4444; box-shadow: 0 0 0 2px #fecaca inset; }
+    .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
+    .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
+    .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
+
+    /* small helper for parse status */
+    #file-name { font-size: 12px; }
+
+    /* simple modal for configs (keeps styling of main.html) */
+    .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <header id="toolbar" class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto p-4 flex items-center gap-3">
+      <div class="text-xl font-bold">🖨 Automatizador de Etiquetas</div>
+      <span class="badge">6×4 cm</span>
+      <div class="ml-auto flex items-center gap-2">
+        <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
+        <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 space-y-6">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+        <div>
+          <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
+          <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
+          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e (tags principais: <code>ide</code>, <code>emit</code>, <code>det/prod</code>, <code>xProd</code>, <code>qCom</code>, <code>cProd</code>, <code>cEAN</code>).</p>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
+          <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar XMLs…</button>
+          <button id="btnClear" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Limpar</button>
+        </div>
+      </div>
+      <div id="drop" class="mt-2 flex items-center justify-center w-full">
+        <label for="xmlInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+          <div class="flex flex-col items-center justify-center pt-5 pb-6">
+            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"></path></svg>
+            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p>
+            <p id="file-name" class="text-xs text-gray-500">Nenhum arquivo selecionado</p>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <section class="grid md:grid-cols-3 gap-4">
+      <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold">Etiquetas geradas</h2>
+          <div class="text-sm text-slate-500"><span id="countLabels">0</span> etiquetas</div>
+        </div>
+        <div id="labels" class="labels-grid"></div>
+      </div>
+      <aside class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" id="erroPanel">
+        <h2 class="font-semibold mb-2">Avisos / Itens com pendências</h2>
+        <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1"></ul>
+      </aside>
+    </section>
+  </main>
+
+  <!-- Config modal (tailwind) -->
+  <div id="cfgModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="bg-white rounded-2xl shadow-lg p-6 z-10 w-11/12 max-w-xl">
+      <h3 class="text-lg font-semibold mb-3">Configurações de geração</h3>
+      <div class="grid gap-3">
+        <label class="text-sm">Logo (URL ou data URI)
+          <input id="cfgLogo" type="text" class="mt-1 block w-full rounded-md border border-slate-300 p-2" placeholder="https://... ou data:image/png;base64,...">
+        </label>
+        <div class="flex gap-2">
+          <label class="flex-1">Regra de fracionamento
+            <select id="cfgFracRule" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
+              <option value="none">Sem fracionamento</option>
+              <option value="fixed">Fracionar em N etiquetas por item</option>
+              <option value="perQty">1 etiqueta por unidade</option>
+            </select>
+          </label>
+          <label style="width:100px">N
+            <input id="cfgFracN" type="number" min="1" value="1" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
+          </label>
+        </div>
+        <fieldset class="flex gap-2 flex-wrap">
+          <legend class="w-full">Campos exibidos</legend>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="xProd" checked> Nome do produto</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="cEAN"> EAN</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="cProd"> Código</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="nNF" checked> Nº da nota</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="qCom" checked> Quantidade</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="uCom" checked> Unidade</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="vUnCom"> Preço</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="emit"> Emitente</label>
+          <label class="text-sm"><input type="checkbox" class="cfgField" value="dest"> Destinatário</label>
+        </fieldset>
+        <div class="flex justify-end gap-2 pt-2">
+          <button id="cfgCancel" class="px-4 py-2 rounded-xl border">Cancelar</button>
+          <button id="cfgSave" class="px-4 py-2 rounded-xl bg-slate-900 text-white">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+// --------- Estado e utilitários (adaptado do modelo) ---------
+const state = {
+  labels: [],
+  cfg: {
+    logo: "",
+    density: 60,
+    fields: ["xProd","qCom","uCom","nNF"],
+    showErrors: true,
+    fracRule: "none",
+    fracN: 1
+  }
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+function num(v, fallback = 0) { 
+  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',','.')); 
+  return Number.isFinite(n) ? n : fallback; 
+}
+function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
+function formatCNPJ(s){
+  const d = onlyDigits(s);
+  if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
+  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4'); // CPF fallback
+  return s || '-';
+}
+
+function findFirstByLocalName(root, localName) {
+  if (!root) return null;
+  const all = root.getElementsByTagName('*');
+  for (let i=0;i<all.length;i++) if (all[i].localName === localName) return all[i];
+  return null;
+}
+function findAllByLocalName(root, localName) {
+  const out=[]; if (!root) return out;
+  const all = root.getElementsByTagName('*');
+  for (let i=0;i<all.length;i++) if (all[i].localName===localName) out.push(all[i]);
+  return out;
+}
+function findTextInsensitive(root, tagName){
+  if (!root) return '';
+  const all = root.getElementsByTagName('*');
+  const low = tagName.toLowerCase();
+  for (let i=0;i<all.length;i++){
+    const ln = (all[i].localName || '').toLowerCase();
+    if (ln === low) return (all[i].textContent||'').trim();
+  }
+  return '';
+}
+function text(el){ return el ? (el.textContent||'').trim() : ''; }
+
+function parseXml(textXml) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(textXml, 'application/xml');
+  const parserError = doc.getElementsByTagName('parsererror')[0];
+  if (parserError) throw new Error('XML inválido');
+  return doc;
+}
+
+function extractFromDoc(doc) {
+  const emit = findFirstByLocalName(doc, 'emit');
+  const dest = findFirstByLocalName(doc, 'dest');
+  const ide = findFirstByLocalName(doc, 'ide') || doc;
+  const emitName = text(findFirstByLocalName(emit||doc,'xNome'));
+  // Tenta várias formas de achar CNPJ/CPF (case-insensitive). Se falhar, usa regex no XML serializado.
+  let emitCnpj = findTextInsensitive(emit||doc, 'CNPJ') || findTextInsensitive(emit||doc, 'cnpj') || findTextInsensitive(emit||doc, 'CPF') || '';
+  if (!emitCnpj) {
+    try {
+      const serialized = (new XMLSerializer()).serializeToString(doc);
+      const re = /<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i;
+      const m = serialized.match(re);
+      if (m && m[1]) emitCnpj = (m[1]||'').replace(/\D/g,'');
+    } catch(e){
+      // ignore
+    }
+  }
+  const destName = text(findFirstByLocalName(dest||doc,'xNome'));
+  const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
+  const dets = findAllByLocalName(doc, 'det');
+  const items = dets.map((det)=>{
+    const prod = findFirstByLocalName(det,'prod')||det;
+    const xProd = text(findFirstByLocalName(prod,'xProd'));
+    const cEAN = text(findFirstByLocalName(prod,'cEAN'));
+    const cProd = text(findFirstByLocalName(prod,'cProd'));
+    const qComStr = text(findFirstByLocalName(prod,'qCom'));
+    const uCom = text(findFirstByLocalName(prod,'uCom'));
+    const vUnCom = text(findFirstByLocalName(prod,'vUnCom'));
+    const qCom = num(qComStr, NaN);
+    return { xProd,cEAN,cProd,qCom,qComStr,uCom,vUnCom,
+             emit:emitName, emitCnpj, // passa CNPJ aqui
+             dest:destName,nNF };
+  });
+  return { emitName, emitCnpj, destName, nNF, items };
+}
+
+function expandByFracionamento(item) {
+  const rule = state.cfg.fracRule;
+  if (rule === 'fixed') {
+    const n = Math.max(1, Math.floor(state.cfg.fracN||1));
+    return Array.from({length:n},()=>({...item}));
+  }
+  if (rule === 'perQty') {
+    const qty = Number.isFinite(item.qCom) ? Math.max(1, Math.round(item.qCom)) : 1;
+    return Array.from({length:qty},(_,i)=>({...item, fracIndex:i+1, fracTotal:qty}));
+  }
+  return [{...item}];
+}
+
+function validateLabel(data) {
+  const errs=[];
+  if (!data.xProd) errs.push('Produto sem nome');
+  if (!Number.isFinite(data.qCom) && !data.qComStr) errs.push('Quantidade ausente');
+  if (Number.isFinite(data.qCom) && data.qCom<=0) errs.push('Quantidade inválida');
+  if (data.cEAN && ![8,12,13,14].includes(String(data.cEAN).replace(/\D/g,'').length)) errs.push('EAN com tamanho incomum');
+  return errs;
+}
+
+// --------- Renderização adaptada ao main.html ---------
+function render() {
+  const mount = $('#labels');
+  mount.innerHTML = '';
+  const issues = [];
+  let valid = 0, invalid = 0;
+  for (const data of state.labels) {
+    const errs = validateLabel(data);
+    const isErr = errs.length>0;
+    if (isErr) invalid++; else valid++;
+    if (isErr && !state.cfg.showErrors) continue;
+    const card = document.createElement('div');
+    card.className = 'label' + (isErr? ' problem':'');
+    // Header (logo acima da etiqueta)
+    const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
+    if (state.cfg.logo) {
+      const himg = document.createElement('img');
+      himg.src = state.cfg.logo;
+      himg.alt = '';
+      himg.style.maxHeight = '34px';
+      himg.style.width = '100%';
+      himg.style.objectFit = 'contain';
+      himg.onerror = function(){ this.style.display='none'; };
+      headerDiv.appendChild(himg);
+    }
+    card.appendChild(headerDiv);
+    // Title
+    if (state.cfg.fields.includes('xProd')) {
+      const h3 = document.createElement('h3');
+      h3.textContent = data.xProd || '(Sem nome)';
+      card.appendChild(h3);
+    }
+    // meta
+    const meta = document.createElement('div'); meta.className = 'meta';
+    function addLine(field,label,value){ 
+      if (!state.cfg.fields.includes(field)) return; 
+      const d=document.createElement('div'); 
+      d.textContent=label+': '+(value??'-'); 
+      meta.appendChild(d); 
+    }
+    addLine('cEAN','EAN', data.cEAN || '-');
+    addLine('cProd','Código', data.cProd || '-');
+    addLine('nNF','NF', data.nNF || '-');
+    addLine('qCom','Qtd', Number.isFinite(data.qCom)?data.qCom:data.qComStr||'-');
+    addLine('uCom','Un', data.uCom||'-');
+    addLine('vUnCom','Preço', data.vUnCom?('R$ '+data.vUnCom):'-');
+    addLine('emit','Emitente', data.emit||'-');
+    addLine('dest','Dest', data.dest||'-');
+    card.appendChild(meta);
+    // footer
+    const footer = document.createElement('div'); footer.className='footer';
+    if (isErr) {
+      footer.textContent = 'ERRO: '+ errs.join('; ');
+    } else {
+      // mostra a frase pedida — usa formatCNPJ para ficar mais legível
+      const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
+      footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
+    }
+    card.appendChild(footer);
+    mount.appendChild(card);
+    if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
+  }
+  // update count and issues
+  $('#countLabels').textContent = state.labels.length;
+  const issuesEl = $('#issues'); issuesEl.innerHTML='';
+  for (const it of issues) {
+    const li = document.createElement('li'); li.textContent = `${it.title} — ${it.errs.join('; ')}`; issuesEl.appendChild(li);
+  }
+}
+
+// --------- Arquivo -> leitura -> parsing ---------
+async function readFilesAsText(files) {
+  const arr = Array.from(files);
+  return Promise.all(arr.map(file=>new Promise((resolve,reject)=>{
+    const fr = new FileReader(); fr.onload = ()=> resolve({name:file.name,text:String(fr.result||'')}); fr.onerror = ()=> reject(fr.error); fr.readAsText(file);
+  })));
+}
+
+async function handleFiles(files) {
+  if (!files || files.length===0) return;
+  $('#file-name').textContent = `${files.length} arquivo(s) pronto(s) para processar`;
+  try {
+    const texts = await readFilesAsText(files);
+    const all = [];
+    for (const {name,text} of texts) {
+      try {
+        const doc = parseXml(text);
+        const data = extractFromDoc(doc);
+        // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
+        console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
+        for (const item of data.items) all.push(...expandByFracionamento(item));
+      } catch (e) {
+        all.push({ xProd: `(Erro no arquivo ${name})`, qComStr:'-', uCom:'-', vUnCom:'-', cEAN:'', cProd:'', emit:'', emitCnpj:'', dest:'', nNF:'', _fatalError: String(e.message||e) });
+      }
+    }
+    state.labels = all;
+    render();
+  } catch (e) {
+    console.error(e); alert('Falha ao ler arquivos.');
+  }
+}
+
+// --------- Bind UI events ---------
+document.addEventListener('DOMContentLoaded', ()=>{
+  // load cfg from localStorage
+  const saved = localStorage.getItem('mag_labels_cfg'); if (saved) Object.assign(state.cfg, JSON.parse(saved));
+
+  // Select button
+  $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
+  $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
+
+  // drag & drop
+  const drop = document.getElementById('drop');
+  ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
+  ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
+  drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
+
+  // clear
+  $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; });
+
+  // print
+  $('#btnPrint').addEventListener('click', ()=>window.print());
+
+  // config modal
+  function openCfg(){
+    $('#cfgLogo').value = state.cfg.logo || '';
+    $('#cfgFracRule').value = state.cfg.fracRule || 'none';
+    $('#cfgFracN').value = state.cfg.fracN || 1;
+    $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
+    $('#cfgModal').classList.remove('hidden');
+  }
+  function closeCfg(){ $('#cfgModal').classList.add('hidden'); }
+  $('#cnfPrint').addEventListener('click', openCfg);
+  $('#cfgCancel').addEventListener('click', closeCfg);
+  $('#cfgSave').addEventListener('click', ()=>{
+    state.cfg.logo = $('#cfgLogo').value.trim();
+    state.cfg.fracRule = $('#cfgFracRule').value;
+    state.cfg.fracN = num($('#cfgFracN').value,1);
+    state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
+    localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
+    closeCfg(); render();
+  });
+
+  // render inicial
+  render();
+});
+  </script>
+<script>
+        // Manifest file for PWA
+        const manifest = {
+            "name": "Etiquetadora",
+            "short_name": "Etiquetadora",
+            "description": "Automatizador de etiquetas",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#2563eb",
+            "icons": [
+                {
+                    "src": "https://placehold.co/192x192/000000/FFFFFF?text=🖨️",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "https://placehold.co/512x512/000000/FFFFFF?text=🖨️",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        manifestLink.setAttribute('href', manifestUrl);
+    </script>
+</body>
+</html>
