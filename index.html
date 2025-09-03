@@ -35,7 +35,7 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    .label.problem { border-color: #ef4444; box-shadow: 0 0 0 2px #fecaca inset; }
+    .label.problem {border: 2px dashed #f87171 !important;background-color: #fef2f2 !important;}
     .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
     .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
     .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -145,8 +145,6 @@
       
       /* Garantir que não haja quebras indesejadas */
       .labels-grid {
-        grid-template-columns: 6cm 6cm 6cm !important;
-        justify-content: center;
         page-break-inside: auto;
       }
     }
