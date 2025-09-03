@@ -7,6 +7,7 @@
   <!-- Tailwind via CDN (apenas para protótipo) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Estilos anteriores mantidos */
     /* Área de impressão: etiquetas 6x4 cm em grade */
     @page { 
       size: A4; 
@@ -204,6 +205,51 @@
       gap: 10px;
     }
     
+    /* Modal para exemplo de XML */
+    #xmlExampleModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      overflow: auto;
+    }
+    
+    #xmlExampleContent {
+      width: 80%;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .xml-example-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    pre {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    
     /* Estilo para mensagem "Sem erros" */
     .no-issues {
       color: #059669;
@@ -230,7 +276,7 @@
         <div>
           <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
           <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
-          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e (tags principais: <code>ide</code>, <code>emit</code>, <code>det/prod</code>, <code>xProd</code>, <code>qCom</code>, <code>cProd</code>, <code>cEAN</code>).</p>
+          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
         </div>
         <div class="ml-auto flex items-center gap-2">
           <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
@@ -277,6 +323,168 @@
     </div>
     <div id="printPreviewContent">
       <div id="previewLabels" class="labels-grid"></div>
+    </div>
+  </div>
+
+  <!-- Modal de exemplo de XML -->
+  <div id="xmlExampleModal">
+    <div id="xmlExampleContent">
+      <div class="xml-example-header">
+        <h2 class="text-xl font-bold">Exemplo de XML Válido</h2>
+        <button id="closeXmlExample" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
+      </div>
+      <p class="mb-4 text-sm text-slate-600">Abaixo está um exemplo de XML no formato NF-e que é compatível com esta ferramenta:</p>
+      <pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"&gt;
+  &lt;NFe xmlns="http://www.portalfiscal.inf.br/nfe"&gt;
+    &lt;infNFe Id="NFe35210600000000000125550010000000011234567890" versao="4.00"&gt;
+      &lt;ide&gt;
+        &lt;cUF&gt;35&lt;/cUF&gt;
+        &lt;cNF&gt;12345678&lt;/cNF&gt;
+        &lt;natOp&gt;Venda de mercadoria&lt;/natOp&gt;
+        &lt;mod&gt;55&lt;/mod&gt;
+        &lt;serie&gt;1&lt;/serie&gt;
+        &lt;nNF&gt;123456&lt;/nNF&gt;
+        &lt;dhEmi&gt;2021-06-01T10:00:00-03:00&lt;/dhEmi&gt;
+        &lt;tpNF&gt;1&lt;/tpNF&gt;
+        &lt;idDest&gt;1&lt;/idDest&gt;
+        &lt;cMunFG&gt;3550308&lt;/cMunFG&gt;
+        &lt;tpImp&gt;1&lt;/tpImp&gt;
+        &lt;tpEmis&gt;1&lt;/tpEmis&gt;
+        &lt;cDV&gt;0&lt;/cDV&gt;
+        &lt;tpAmb&gt;2&lt;/tpAmb&gt;
+        &lt;finNFe&gt;1&lt;/finNFe&gt;
+        &lt;indFinal&gt;1&lt;/indFinal&gt;
+        &lt;indPres&gt;1&lt;/indPres&gt;
+        &lt;procEmi&gt;0&lt;/procEmi&gt;
+        &lt;verProc&gt;1.0.0&lt;/verProc&gt;
+      &lt;/ide&gt;
+      &lt;emit&gt;
+        &lt;CNPJ&gt;00000000000100&lt;/CNPJ&gt;
+        &lt;xNome&gt;Empresa Exemplo Ltda&lt;/xNome&gt;
+        &lt;xFant&gt;Exemplo Comercio&lt;/xFant&gt;
+        &lt;enderEmit&gt;
+          &lt;xLgr&gt;Rua Exemplo&lt;/xLgr&gt;
+          &lt;nro&gt;123&lt;/nro&gt;
+          &lt;xBairro&gt;Centro&lt;/xBairro&gt;
+          &lt;cMun&gt;3550308&lt;/cMun&gt;
+          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
+          &lt;UF&gt;SP&lt;/UF&gt;
+          &lt;CEP&gt;01001000&lt;/CEP&gt;
+          &lt;cPais&gt;1058&lt;/cPais&gt;
+          &lt;xPais&gt;Brasil&lt;/xPais&gt;
+          &lt;fone&gt;1133334444&lt;/fone&gt;
+        &lt;/enderEmit&gt;
+        &lt;IE&gt;111222333444&lt;/IE&gt;
+        &lt;CRT&gt;1&lt;/CRT&gt;
+      &lt;/emit&gt;
+      &lt;dest&gt;
+        &lt;CNPJ&gt;99999999000199&lt;/CNPJ&gt;
+        &lt;xNome&gt;Cliente Exemplo SA&lt;/xNome&gt;
+        &lt;enderDest&gt;
+          &lt;xLgr&gt;Avenida Teste&lt;/xLgr&gt;
+          &lt;nro&gt;456&lt;/nro&gt;
+          &lt;xBairro&gt;Jardim Exemplo&lt;/xBairro&gt;
+          &lt;cMun&gt;3550308&lt;/cMun&gt;
+          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
+          &lt;UF&gt;SP&lt;/UF&gt;
+          &lt;CEP&gt;01002000&lt;/CEP&gt;
+          &lt;cPais&gt;1058&lt;/cPais&gt;
+          &lt;xPais&gt;Brasil&lt;/xPais&gt;
+        &lt;/enderDest&gt;
+        &lt;indIEDest&gt;9&lt;/indIEDest&gt;
+      &lt;/dest&gt;
+      &lt;det nItem="1"&gt;
+        &lt;prod&gt;
+          &lt;cProd&gt;PROD001&lt;/cProd&gt;
+          &lt;cEAN&gt;7891234567890&lt;/cEAN&gt;
+          &lt;xProd&gt;Produto Exemplo A&lt;/xProd&gt;
+          &lt;NCM&gt;84716052&lt;/NCM&gt;
+          &lt;CFOP&gt;5102&lt;/CFOP&gt;
+          &lt;uCom&gt;UN&lt;/uCom&gt;
+          &lt;qCom&gt;10.0000&lt;/qCom&gt;
+          &lt;vUnCom&gt;100.00&lt;/vUnCom&gt;
+          &lt;vProd&gt;1000.00&lt;/vProd&gt;
+          &lt;cEANTrib&gt;7891234567890&lt;/cEANTrib&gt;
+          &lt;uTrib&gt;UN&lt;/uTrib&gt;
+          &lt;qTrib&gt;10.0000&lt;/qTrib&gt;
+          &lt;vUnTrib&gt;100.00&lt;/vUnTrib&gt;
+          &lt;indTot&gt;1&lt;/indTot&gt;
+        &lt;/prod&gt;
+        &lt;imposto&gt;
+          &lt;ICMS&gt;
+            &lt;ICMS00&gt;
+              &lt;orig&gt;0&lt;/orig&gt;
+              &lt;CST&gt;00&lt;/CST&gt;
+              &lt;modBC&gt;3&lt;/modBC&gt;
+              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
+              &lt;vBC&gt;1000.00&lt;/vBC&gt;
+              &lt;vICMS&gt;180.00&lt;/vICMS&gt;
+            &lt;/ICMS00&gt;
+          &lt;/ICMS&gt;
+        &lt;/imposto&gt;
+      &lt;/det&gt;
+      &lt;det nItem="2"&gt;
+        &lt;prod&gt;
+          &lt;cProd&gt;PROD002&lt;/cProd&gt;
+          &lt;cEAN&gt;7899876543210&lt;/cEAN&gt;
+          &lt;xProd&gt;Produto Exemplo B&lt;/xProd&gt;
+          &lt;NCM&gt;85171210&lt;/NCM&gt;
+          &lt;CFOP&gt;5102&lt;/CFOP&gt;
+          &lt;uCom&gt;UN&lt;/uCom&gt;
+          &lt;qCom&gt;5.0000&lt;/qCom&gt;
+          &lt;vUnCom&gt;250.00&lt;/vUnCom&gt;
+          &lt;vProd&gt;1250.00&lt;/vProd&gt;
+          &lt;cEANTrib&gt;7899876543210&lt;/cEANTrib&gt;
+          &lt;uTrib&gt;UN&lt;/uTrib&gt;
+          &lt;qTrib&gt;5.0000&lt;/qTrib&gt;
+          &lt;vUnTrib&gt;250.00&lt;/vUnTrib&gt;
+          &lt;indTot&gt;1&lt;/indTot&gt;
+        &lt;/prod&gt;
+        &lt;imposto&gt;
+          &lt;ICMS&gt;
+            &lt;ICMS00&gt;
+              &lt;orig&gt;0&lt;/orig&gt;
+              &lt;CST&gt;00&lt;/CST&gt;
+              &lt;modBC&gt;3&lt;/modBC&gt;
+              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
+              &lt;vBC&gt;1250.00&lt;/vBC&gt;
+              &lt;vICMS&gt;225.00&lt;/vICMS&gt;
+            &lt;/ICMS00&gt;
+          &lt;/ICMS&gt;
+        &lt;/imposto&gt;
+      &lt;/det&gt;
+      &lt;total&gt;
+        &lt;ICMSTot&gt;
+          &lt;vBC&gt;2250.00&lt;/vBC&gt;
+          &lt;vICMS&gt;405.00&lt;/vICMS&gt;
+          &lt;vProd&gt;2250.00&lt;/vProd&gt;
+          &lt;vNF&gt;2250.00&lt;/vNF&gt;
+        &lt;/ICMSTot&gt;
+      &lt;/total&gt;
+      &lt;transp&gt;
+        &lt;modFrete&gt;0&lt;/modFrete&gt;
+      &lt;/transp&gt;
+      &lt;cobr&gt;
+        &lt;fat&gt;
+          &lt;nFat&gt;123456&lt;/nFat&gt;
+          &lt;vOrig&gt;2250.00&lt;/vOrig&gt;
+          &lt;vLiq&gt;2250.00&lt;/vLiq&gt;
+        &lt;/fat&gt;
+        &lt;dup&gt;
+          &lt;nDup&gt;001&lt;/nDup&gt;
+          &lt;dVenc&gt;2021-06-30&lt;/dVenc&gt;
+          &lt;vDup&gt;2250.00&lt;/vDup&gt;
+        &lt;/dup&gt;
+      &lt;/cobr&gt;
+      &lt;infAdic&gt;
+        &lt;infCpl&gt;Pagamento a vista.&lt;/infCpl&gt;
+      &lt;/infAdic&gt;
+    &lt;/infNFe&gt;
+  &lt;/NFe&gt;
+&lt;/nfeProc&gt;
+      </pre>
     </div>
   </div>
 
@@ -702,6 +910,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
+  });
+
+  // Mostrar exemplo de XML
+  $('#showXmlExample').addEventListener('click', function(e) {
+    e.preventDefault();
+    $('#xmlExampleModal').style.display = 'block';
+  });
+
+  $('#closeXmlExample').addEventListener('click', function() {
+    $('#xmlExampleModal').style.display = 'none';
+  });
+
+  // Fechar modal de exemplo de XML ao clicar fora
+  window.addEventListener('click', function(e) {
+    if (e.target === $('#xmlExampleModal')) {
+      $('#xmlExampleModal').style.display = 'none';
+    }
   });
 
   // render inicial
