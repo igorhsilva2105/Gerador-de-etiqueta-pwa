@@ -491,24 +491,26 @@ function render() {
     mount.appendChild(card);
     if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
   }
-// update count and issues
-$('#countLabels').textContent = state.labels.length;
-const issuesEl = $('#issues'); 
-issuesEl.innerHTML = '';
+  
+  // update count and issues
+  $('#countLabels').textContent = state.labels.length;
+  const issuesEl = $('#issues'); 
+  issuesEl.innerHTML = '';
 
-if (issues.length === 0) {
-  issuesEl.innerHTML = '<li class="text-green-600">Nenhum problema encontrado</li>';
-} else {
-  for (const it of issues) {
-    const li = document.createElement('li');
-    li.className = 'text-rose-600';
-    li.textContent = `${it.title} — ${it.errs.join('; ')}`;
-    issuesEl.appendChild(li);
+  if (issues.length === 0) {
+    issuesEl.innerHTML = '<li class="text-green-600">Nenhum problema encontrado</li>';
+  } else {
+    for (const it of issues) {
+      const li = document.createElement('li');
+      li.className = 'text-rose-600';
+      li.textContent = `${it.title} — ${it.errs.join('; ')}`;
+      issuesEl.appendChild(li);
+    }
   }
-}
 
-// Mostrar/ocultar o painel de avisos conforme necessário
-$('#erroPanel').style.display = issues.length > 0 ? 'block' : 'none';
+  // Mostrar/ocultar o painel de avisos conforme necessário
+  $('#erroPanel').style.display = issues.length > 0 ? 'block' : 'none';
+} // Fechamento correto da função render
 
 // --------- Visualização de impressão ---------
 function renderPrintPreview() {
@@ -617,35 +619,36 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // render inicial
   render();
 });
-  </script>
-<script>
-        // Manifest file for PWA
-        const manifest = {
-            "name": "Etiquetadora",
-            "short_name": "Etiquetadora",
-            "description": "Automatizador de etiquetas",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#ffffff",
-            "theme_color": "#2563eb",
-            "icons": [
-                {
-                    "src": "https://placehold.co/192x192/000000/FFFFFF?text=🖨️",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                },
-                {
-                    "src": "https://placehold.co/512x512/000000/FFFFFF?text=🖨️",
-                    "sizes": "512x512",
-                    "type": "image/png"
-                }
-            ]
-        };
 
-        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-        const manifestUrl = URL.createObjectURL(manifestBlob);
-        const manifestLink = document.querySelector('link[rel="manifest"]');
-        manifestLink.setAttribute('href', manifestUrl);
-    </script>
+// Manifest file for PWA
+const manifest = {
+  "name": "Etiquetadora",
+  "short_name": "Etiquetadora",
+  "description": "Automatizador de etiquetas",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192/000000/FFFFFF?text=🖨️",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://placehold.co/512x512/000000/FFFFFF?text=🖨️",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+const manifestUrl = URL.createObjectURL(manifestBlob);
+const manifestLink = document.querySelector('link[rel="manifest"]');
+if (manifestLink) {
+  manifestLink.setAttribute('href', manifestUrl);
+}
+  </script>
 </body>
 </html>
