@@ -189,6 +189,18 @@
       display: flex;
       gap: 10px;
     }
+    #erroPanel {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#issues {
+  max-height: 300px;
+  overflow-y: auto;
+}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -479,13 +491,24 @@ function render() {
     mount.appendChild(card);
     if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
   }
-  // update count and issues
-  $('#countLabels').textContent = state.labels.length;
-  const issuesEl = $('#issues'); issuesEl.innerHTML='';
+// update count and issues
+$('#countLabels').textContent = state.labels.length;
+const issuesEl = $('#issues'); 
+issuesEl.innerHTML = '';
+
+if (issues.length === 0) {
+  issuesEl.innerHTML = '<li class="text-green-600">Nenhum problema encontrado</li>';
+} else {
   for (const it of issues) {
-    const li = document.createElement('li'); li.textContent = `${it.title} — ${it.errs.join('; ')}`; issuesEl.appendChild(li);
+    const li = document.createElement('li');
+    li.className = 'text-rose-600';
+    li.textContent = `${it.title} — ${it.errs.join('; ')}`;
+    issuesEl.appendChild(li);
   }
 }
+
+// Mostrar/ocultar o painel de avisos conforme necessário
+$('#erroPanel').style.display = issues.length > 0 ? 'block' : 'none';
 
 // --------- Visualização de impressão ---------
 function renderPrintPreview() {
