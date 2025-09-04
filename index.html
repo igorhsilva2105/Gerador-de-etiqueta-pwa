@@ -272,6 +272,16 @@
     .logo-input-container input[type="text"] {
       flex: 1;
     }
+
+    /* Estilo para o botão de remover */
+    .btn-remove {
+      background-color: #ef4444 !important;
+      color: white !important;
+    }
+
+    .btn-remove:hover {
+      background-color: #dc2626 !important;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -885,8 +895,36 @@ function handleLogoUpload(event) {
     $('#cfgLogo').value = base64;
     $('#logoPreview').src = base64;
     $('#logoPreview').style.display = 'block';
+    
+    // Atualiza o botão para modo "Remover"
+    updateLogoButtonState(true);
   };
   reader.readAsDataURL(file);
+}
+
+// --------- Função para atualizar o estado do botão de logo ---------
+function updateLogoButtonState(hasImage) {
+  const uploadButton = $('#logoUploadButton');
+  
+  if (hasImage) {
+    uploadButton.textContent = 'Remover';
+    uploadButton.classList.remove('bg-slate-100', 'hover:bg-slate-200');
+    uploadButton.classList.add('btn-remove');
+    uploadButton.setAttribute('data-state', 'remove');
+  } else {
+    uploadButton.textContent = 'Upload';
+    uploadButton.classList.remove('btn-remove');
+    uploadButton.classList.add('bg-slate-100', 'hover:bg-slate-200');
+    uploadButton.setAttribute('data-state', 'upload');
+  }
+}
+
+// --------- Função para remover a logo ---------
+function removeLogo() {
+  $('#cfgLogo').value = '';
+  $('#logoPreview').style.display = 'none';
+  $('#logoPreview').src = '';
+  updateLogoButtonState(false);
 }
 
 // --------- Bind UI events ---------
@@ -940,8 +978,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
       $('#logoPreview').src = state.cfg.logo;
       $('#logoPreview').style.display = 'block';
+      updateLogoButtonState(true);
     } else {
       $('#logoPreview').style.display = 'none';
+      updateLogoButtonState(false);
     }
     
     $('#cfgModal').classList.remove('hidden');
@@ -963,9 +1003,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     render();
   });
 
-  // Upload de logo
-  $('#logoUploadButton').addEventListener('click', () => {
-    $('#logoUpload').click();
+  // Upload/Remover logo
+  $('#logoUploadButton').addEventListener('click', function() {
+    const state = this.getAttribute('data-state');
+    
+    if (state === 'upload') {
+      $('#logoUpload').click();
+    } else {
+      removeLogo();
+    }
   });
   
   $('#logoUpload').addEventListener('change', handleLogoUpload);
@@ -984,6 +1030,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.addEventListener('click', function(e) {
     if (e.target === $('#xmlExampleModal')) {
       $('#xmlExampleModal').style.display = 'none';
+    }
+    if (e.target === $('#cfgModal')) {
+      closeCfg();
     }
   });
 
