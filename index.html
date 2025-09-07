@@ -282,6 +282,55 @@
     .btn-remove:hover {
       background-color: #dc2626 !important;
     }
+
+    /* Novos estilos para filtros de data */
+    .date-filters {
+      background-color: #f8fafc;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .date-filter-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: end;
+      margin-bottom: 0.5rem;
+    }
+
+    .date-filter-row label {
+      flex: 1;
+    }
+
+    .date-summary {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
+
+    .date-range-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .date-tag {
+      background-color: #e2e8f0;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .date-tag:hover {
+      background-color: #cbd5e1;
+    }
+
+    .date-tag.active {
+      background-color: #3b82f6;
+      color: white;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -319,6 +368,25 @@
             <p id="file-name" class="text-xs text-gray-500">Nenhum arquivo selecionado</p>
           </div>
         </label>
+      </div>
+
+      <!-- Filtros de data (inicialmente oculto) -->
+      <div id="dateFilters" class="date-filters hidden">
+        <h3 class="font-medium mb-2">Filtrar por data de emissão</h3>
+        <div class="date-filter-row">
+          <label>
+            <span class="block text-sm text-slate-600 mb-1">Data inicial</span>
+            <input type="date" id="filterStartDate" class="block w-full rounded-md border border-slate-300 p-2">
+          </label>
+          <label>
+            <span class="block text-sm text-slate-600 mb-1">Data final</span>
+            <input type="date" id="filterEndDate" class="block w-full rounded-md border border-slate-300 p-2">
+          </label>
+          <button id="applyDateFilter" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm h-[42px]">Aplicar</button>
+          <button id="clearDateFilter" class="px-4 py-2 rounded-md border border-slate-300 text-sm h-[42px]">Limpar</button>
+        </div>
+        <div class="date-summary" id="dateRangeSummary">Nenhum filtro aplicado</div>
+        <div class="date-range-tags" id="dateRangeTags"></div>
       </div>
     </section>
 
@@ -570,6 +638,11 @@
 // --------- Estado e utilitários (adaptado do modelo) ---------
 const state = {
   labels: [],
+  availableDates: [],
+  dateFilter: {
+    startDate: null,
+    endDate: null
+  },
   cfg: {
     logo: "",
     density: 60,
@@ -646,6 +719,16 @@ function extractFromDoc(doc) {
   }
   const destName = text(findFirstByLocalName(dest||doc,'xNome'));
   const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
+  
+  // Extrair data de emissão
+  let dataEmissao = '';
+  const dhEmi = text(findFirstByLocalName(ide, 'dhEmi'));
+  if (dhEmi) {
+    // Formato: 2021-06-01T10:00:00-03:00 -> queremos a parte da data
+    const datePart = dhEmi.split('T')[0];
+    if (datePart) dataEmissao = datePart;
+  }
+  
   const dets = findAllByLocalName(doc, 'det');
   const items = dets.map((det)=>{
     const prod = findFirstByLocalName(det,'prod')||det;
@@ -658,9 +741,9 @@ function extractFromDoc(doc) {
     const qCom = num(qComStr, NaN);
     return { xProd,cEAN,cProd,qCom,qComStr,uCom,vUnCom,
              emit:emitName, emitCnpj, // passa CNPJ aqui
-             dest:destName,nNF };
+             dest:destName,nNF,dataEmissao };
   });
-  return { emitName, emitCnpj, destName, nNF, items };
+  return { emitName, emitCnpj, destName, nNF, dataEmissao, items };
 }
 
 function expandByFracionamento(item) {
@@ -691,6 +774,90 @@ function validateLabel(data) {
   return errs;
 }
 
+// --------- Filtro por data ---------
+function updateDateFilters() {
+  const dateFilters = $('#dateFilters');
+  if (state.availableDates.length > 0) {
+    dateFilters.classList.remove('hidden');
+    updateDateRangeTags();
+  } else {
+    dateFilters.classList.add('hidden');
+  }
+  updateDateFilterSummary();
+}
+
+function updateDateRangeTags() {
+  const container = $('#dateRangeTags');
+  container.innerHTML = '';
+  
+  // Agrupar por mês/ano
+  const dateGroups = {};
+  state.availableDates.forEach(date => {
+    const [year, month] = date.split('-');
+    const key = `${year}-${month}`;
+    if (!dateGroups[key]) {
+      dateGroups[key] = [];
+    }
+    dateGroups[key].push(date);
+  });
+  
+  // Criar tags para cada mês
+  Object.keys(dateGroups).sort().reverse().forEach(key => {
+    const [year, month] = key.split('-');
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const tag = document.createElement('div');
+    tag.className = 'date-tag';
+    tag.textContent = `${monthNames[parseInt(month)-1]}/${year}`;
+    tag.dataset.start = dateGroups[key][0];
+    tag.dataset.end = dateGroups[key][dateGroups[key].length - 1];
+    
+    tag.addEventListener('click', () => {
+      $('#filterStartDate').value = tag.dataset.start;
+      $('#filterEndDate').value = tag.dataset.end;
+      applyDateFilter();
+    });
+    
+    container.appendChild(tag);
+  });
+}
+
+function updateDateFilterSummary() {
+  const summary = $('#dateRangeSummary');
+  if (state.dateFilter.startDate && state.dateFilter.endDate) {
+    const start = new Date(state.dateFilter.startDate);
+    const end = new Date(state.dateFilter.endDate);
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    summary.textContent = `Filtrando de ${start.toLocaleDateString('pt-BR', options)} até ${end.toLocaleDateString('pt-BR', options)}`;
+  } else {
+    summary.textContent = 'Nenhum filtro aplicado';
+  }
+}
+
+function applyDateFilter() {
+  const startDate = $('#filterStartDate').value;
+  const endDate = $('#filterEndDate').value;
+  
+  if (startDate && endDate && startDate > endDate) {
+    alert('A data inicial não pode ser maior que a data final');
+    return;
+  }
+  
+  state.dateFilter.startDate = startDate;
+  state.dateFilter.endDate = endDate;
+  
+  render();
+  updateDateFilterSummary();
+}
+
+function clearDateFilter() {
+  $('#filterStartDate').value = '';
+  $('#filterEndDate').value = '';
+  state.dateFilter.startDate = null;
+  state.dateFilter.endDate = null;
+  render();
+  updateDateFilterSummary();
+}
+
 // --------- Renderização adaptada ao main.html ---------
 function render() {
   const mount = $('#labels');
@@ -698,7 +865,17 @@ function render() {
   const issues = [];
   let valid = 0, invalid = 0;
   
-  for (const data of state.labels) {
+  // Filtrar por data se houver filtro aplicado
+  let labelsToRender = state.labels;
+  if (state.dateFilter.startDate && state.dateFilter.endDate) {
+    labelsToRender = state.labels.filter(item => {
+      if (!item.dataEmissao) return false;
+      return item.dataEmissao >= state.dateFilter.startDate && 
+             item.dataEmissao <= state.dateFilter.endDate;
+    });
+  }
+  
+  for (const data of labelsToRender) {
     const errs = validateLabel(data);
     const isErr = errs.length>0;
     if (isErr) invalid++; else valid++;
@@ -762,7 +939,7 @@ function render() {
   }
   
   // update count and issues
-  $('#countLabels').textContent = state.labels.length;
+  $('#countLabels').textContent = `${labelsToRender.length} de ${state.labels.length} etiquetas`;
   const issuesEl = $('#issues'); 
   issuesEl.innerHTML='';
   
@@ -830,6 +1007,8 @@ async function handleFiles(files) {
   try {
     const texts = await readFilesAsText(files);
     const all = [];
+    const datesSet = new Set(); // Para coletar datas únicas
+    
     for (const {name,text} of texts) {
       try {
         // Verifica se o arquivo contém conteúdo XML válido
@@ -839,9 +1018,18 @@ async function handleFiles(files) {
         
         const doc = parseXml(text);
         const data = extractFromDoc(doc);
+        
+        // Adiciona a data ao conjunto de datas disponíveis
+        if (data.dataEmissao) {
+          datesSet.add(data.dataEmissao);
+        }
+        
         // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
         console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
-        for (const item of data.items) all.push(...expandByFracionamento(item));
+        for (const item of data.items) {
+          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao});
+          all.push(...expandedItems);
+        }
       } catch (e) {
         // Cria um item de erro que será detectado pela validação
         all.push({ 
@@ -855,11 +1043,19 @@ async function handleFiles(files) {
           emitCnpj:'', 
           dest:'', 
           nNF:'', 
+          dataEmissao: '',
           _fatalError: String(e.message||e)
         });
       }
     }
+    
+    // Atualiza as datas disponíveis
+    state.availableDates = Array.from(datesSet).sort();
     state.labels = all;
+    
+    // Atualiza os filtros de data
+    updateDateFilters();
+    
     render();
   } catch (e) {
     console.error(e); 
@@ -955,7 +1151,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
 
   // clear
-  $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; });
+  $('#btnClear').addEventListener('click', ()=>{ 
+    state.labels=[]; 
+    state.availableDates = [];
+    render(); 
+    $('#file-name').textContent='Nenhum arquivo selecionado'; 
+    updateDateFilters();
+  });
 
   // print
   $('#btnPrint').addEventListener('click', handlePrint);
@@ -964,6 +1166,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#btnPreview').addEventListener('click', renderPrintPreview);
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
   $('#printFromPreview').addEventListener('click', handlePrint);
+
+  // Filtros de data
+  $('#applyDateFilter').addEventListener('click', applyDateFilter);
+  $('#clearDateFilter').addEventListener('click', clearDateFilter);
 
   // config modal
   function openCfg(){
