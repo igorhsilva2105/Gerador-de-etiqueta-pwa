@@ -331,6 +331,18 @@
       background-color: #3b82f6;
       color: white;
     }
+
+    /* Estilos para filtros de hora */
+    .time-filter-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: end;
+      margin-bottom: 0.5rem;
+    }
+
+    .time-filter-row label {
+      flex: 1;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -370,9 +382,9 @@
         </label>
       </div>
 
-      <!-- Filtros de data (inicialmente oculto) -->
+      <!-- Filtros de data e hora (inicialmente oculto) -->
       <div id="dateFilters" class="date-filters hidden">
-        <h3 class="font-medium mb-2">Filtrar por data de emissão</h3>
+        <h3 class="font-medium mb-2">Filtrar por data e hora de emissão</h3>
         <div class="date-filter-row">
           <label>
             <span class="block text-sm text-slate-600 mb-1">Data inicial</span>
@@ -381,6 +393,16 @@
           <label>
             <span class="block text-sm text-slate-600 mb-1">Data final</span>
             <input type="date" id="filterEndDate" class="block w-full rounded-md border border-slate-300 p-2">
+          </label>
+        </div>
+        <div class="time-filter-row">
+          <label>
+            <span class="block text-sm text-slate-600 mb-1">Hora inicial</span>
+            <input type="time" id="filterStartTime" class="block w-full rounded-md border border-slate-300 p-2" value="00:00">
+          </label>
+          <label>
+            <span class="block text-sm text-slate-600 mb-1">Hora final</span>
+            <input type="time" id="filterEndTime" class="block w-full rounded-md border border-slate-300 p-2" value="23:59">
           </label>
           <button id="applyDateFilter" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm h-[42px]">Aplicar</button>
           <button id="clearDateFilter" class="px-4 py-2 rounded-md border border-slate-300 text-sm h-[42px]">Limpar</button>
@@ -641,7 +663,9 @@ const state = {
   availableDates: [],
   dateFilter: {
     startDate: null,
-    endDate: null
+    endDate: null,
+    startTime: null,
+    endTime: null
   },
   cfg: {
     logo: "",
@@ -720,13 +744,18 @@ function extractFromDoc(doc) {
   const destName = text(findFirstByLocalName(dest||doc,'xNome'));
   const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
   
-  // Extrair data de emissão
+  // Extrair data e hora de emissão
   let dataEmissao = '';
+  let horaEmissao = '';
   const dhEmi = text(findFirstByLocalName(ide, 'dhEmi'));
   if (dhEmi) {
-    // Formato: 2021-06-01T10:00:00-03:00 -> queremos a parte da data
-    const datePart = dhEmi.split('T')[0];
+    // Formato: 2021-06-01T10:00:00-03:00 -> separar data e hora
+    const [datePart, timePart] = dhEmi.split('T');
     if (datePart) dataEmissao = datePart;
+    if (timePart) {
+      // Remover o timezone se existir
+      horaEmissao = timePart.split('-')[0].split('+')[0];
+    }
   }
   
   const dets = findAllByLocalName(doc, 'det');
@@ -741,9 +770,9 @@ function extractFromDoc(doc) {
     const qCom = num(qComStr, NaN);
     return { xProd,cEAN,cProd,qCom,qComStr,uCom,vUnCom,
              emit:emitName, emitCnpj, // passa CNPJ aqui
-             dest:destName,nNF,dataEmissao };
+             dest:destName,nNF,dataEmissao,horaEmissao };
   });
-  return { emitName, emitCnpj, destName, nNF, dataEmissao, items };
+  return { emitName, emitCnpj, destName, nNF, dataEmissao, horaEmissao, items };
 }
 
 function expandByFracionamento(item) {
@@ -774,7 +803,7 @@ function validateLabel(data) {
   return errs;
 }
 
-// --------- Filtro por data ---------
+// --------- Filtro por data e hora ---------
 function updateDateFilters() {
   const dateFilters = $('#dateFilters');
   if (state.availableDates.length > 0) {
@@ -814,6 +843,8 @@ function updateDateRangeTags() {
     tag.addEventListener('click', () => {
       $('#filterStartDate').value = tag.dataset.start;
       $('#filterEndDate').value = tag.dataset.end;
+      $('#filterStartTime').value = '00:00';
+      $('#filterEndTime').value = '23:59';
       applyDateFilter();
     });
     
@@ -824,9 +855,9 @@ function updateDateRangeTags() {
 function updateDateFilterSummary() {
   const summary = $('#dateRangeSummary');
   if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    const start = new Date(state.dateFilter.startDate);
-    const end = new Date(state.dateFilter.endDate);
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    const start = new Date(`${state.dateFilter.startDate}T${state.dateFilter.startTime || '00:00'}`);
+    const end = new Date(`${state.dateFilter.endDate}T${state.dateFilter.endTime || '23:59'}`);
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
     summary.textContent = `Filtrando de ${start.toLocaleDateString('pt-BR', options)} até ${end.toLocaleDateString('pt-BR', options)}`;
   } else {
     summary.textContent = 'Nenhum filtro aplicado';
@@ -836,6 +867,8 @@ function updateDateFilterSummary() {
 function applyDateFilter() {
   const startDate = $('#filterStartDate').value;
   const endDate = $('#filterEndDate').value;
+  const startTime = $('#filterStartTime').value || '00:00';
+  const endTime = $('#filterEndTime').value || '23:59';
   
   if (startDate && endDate && startDate > endDate) {
     alert('A data inicial não pode ser maior que a data final');
@@ -844,6 +877,8 @@ function applyDateFilter() {
   
   state.dateFilter.startDate = startDate;
   state.dateFilter.endDate = endDate;
+  state.dateFilter.startTime = startTime;
+  state.dateFilter.endTime = endTime;
   
   render();
   updateDateFilterSummary();
@@ -852,8 +887,12 @@ function applyDateFilter() {
 function clearDateFilter() {
   $('#filterStartDate').value = '';
   $('#filterEndDate').value = '';
+  $('#filterStartTime').value = '00:00';
+  $('#filterEndTime').value = '23:59';
   state.dateFilter.startDate = null;
   state.dateFilter.endDate = null;
+  state.dateFilter.startTime = null;
+  state.dateFilter.endTime = null;
   render();
   updateDateFilterSummary();
 }
@@ -865,13 +904,18 @@ function render() {
   const issues = [];
   let valid = 0, invalid = 0;
   
-  // Filtrar por data se houver filtro aplicado
+  // Filtrar por data e hora se houver filtro aplicado
   let labelsToRender = state.labels;
   if (state.dateFilter.startDate && state.dateFilter.endDate) {
     labelsToRender = state.labels.filter(item => {
       if (!item.dataEmissao) return false;
-      return item.dataEmissao >= state.dateFilter.startDate && 
-             item.dataEmissao <= state.dateFilter.endDate;
+      
+      // Criar objetos Date para comparação
+      const itemDateTime = new Date(`${item.dataEmissao}T${item.horaEmissao || '00:00'}`);
+      const startDateTime = new Date(`${state.dateFilter.startDate}T${state.dateFilter.startTime || '00:00'}`);
+      const endDateTime = new Date(`${state.dateFilter.endDate}T${state.dateFilter.endTime || '23:59'}`);
+      
+      return itemDateTime >= startDateTime && itemDateTime <= endDateTime;
     });
   }
   
@@ -1027,7 +1071,7 @@ async function handleFiles(files) {
         // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
         console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
         for (const item of data.items) {
-          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao});
+          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao, horaEmissao: data.horaEmissao});
           all.push(...expandedItems);
         }
       } catch (e) {
@@ -1044,6 +1088,7 @@ async function handleFiles(files) {
           dest:'', 
           nNF:'', 
           dataEmissao: '',
+          horaEmissao: '',
           _fatalError: String(e.message||e)
         });
       }
@@ -1167,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
   $('#printFromPreview').addEventListener('click', handlePrint);
 
-  // Filtros de data
+  // Filtros de data e hora
   $('#applyDateFilter').addEventListener('click', applyDateFilter);
   $('#clearDateFilter').addEventListener('click', clearDateFilter);
 
@@ -1258,12 +1303,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
             "theme_color": "#2563eb",
             "icons": [
                 {
-                    "src": "img/app-icon.png",
+                    "src": "img/icon/app-icon.png",
                     "sizes": "192x192",
                     "type": "image/png"
                 },
                 {
-                    "src": "img/app-icon.png,
+                    "src": "img/icon/app-icon.png",
                     "sizes": "512x512",
                     "type": "image/png"
                 }
