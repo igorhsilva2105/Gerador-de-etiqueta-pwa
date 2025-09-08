@@ -1,9 +1,10 @@
 const CACHE_NAME = 'etiquetadora-v1.0.0';
+const GHPATH = '/Gerador-de-etiqueta-pwa';
 
 const urlsToCache = [
-  '/Gerador-de-etiqueta-pwa/',
-  '/Gerador-de-etiqueta-pwa/index.html',
-  '/Gerador-de-etiqueta-pwa/manifest.json',
+  `${GHPATH}/`,
+  `${GHPATH}/index.html`,
+  `${GHPATH}/manifest.json`,
   'https://cdn.tailwindcss.com',
 ];
 
@@ -51,31 +52,9 @@ self.addEventListener('activate', (event) => {
 
 // Interceptação de requisições
 self.addEventListener('fetch', (event) => {
-  // Ignora requisições não GET
-  if (event.request.method !== 'GET') return;
+  // Ignora requisições não GET e requisições de terceiros
+  if (event.request.method !== 'GET' || !event.request.url.includes(window.location.origin)) return;
 
-  // Para arquivos XML, sempre busca na rede primeiro
-  if (event.request.url.includes('.xml')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Cachea a resposta para uso offline
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          return response;
-        })
-        .catch(() => {
-          // Se offline, tenta servir do cache
-          return caches.match(event.request);
-        })
-    );
-    return;
-  }
-
-  // Para outros recursos, estratégia Cache First
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -92,7 +71,7 @@ self.addEventListener('fetch', (event) => {
               return response;
             }
 
-            // Cachea a resposta para uso futuro
+            // Cachea a resposta para uso futuro (apenas recursos locais)
             const responseToCache = response.clone();
             caches.open(CACHE_NAME)
               .then((cache) => {
@@ -103,7 +82,10 @@ self.addEventListener('fetch', (event) => {
           })
           .catch((error) => {
             console.log('Fetch falhou; retornando página offline:', error);
-            // Pode retornar uma página offline personalizada aqui
+            // Para requisições de página, retorna a página offline
+            if (event.request.destination === 'document') {
+              return caches.match(`${GHPATH}/index.html`);
+            }
           });
       })
   );
@@ -114,39 +96,4 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-});
-
-// Evento de sync para funcionalidades offline
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    console.log('Background sync disparado');
-    // Aqui você pode implementar sincronização em background
-  }
-});
-
-// Evento de push notifications
-self.addEventListener('push', (event) => {
-  if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
-      icon: 'windows11/Square44x44Logo.targetsize-32.png',
-      badge: 'windows11/Square44x44Logo.targetsize-16.png',
-      vibrate: [200, 100, 200],
-      tag: 'etiquetadora-notification'
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
-  }
-});
-
-// Clique em notificação
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.openWindow('/')
-  );
 });
