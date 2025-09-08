@@ -97,3 +97,32 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// Periodic Background Sync
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'update-cache') {
+    console.log('Sincronização periódica: Atualizando cache...');
+    event.waitUntil(updateCache());
+  }
+});
+
+async function updateCache() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const requests = urlsToCache.map(url => new Request(url, { cache: 'reload' }));
+    
+    for (const request of requests) {
+      try {
+        const response = await fetch(request);
+        if (response.status === 200) {
+          await cache.put(request, response);
+          console.log(`Recurso atualizado: ${request.url}`);
+        }
+      } catch (error) {
+        console.log(`Falha ao atualizar ${request.url}:`, error);
+      }
+    }
+  } catch (error) {
+    console.error('Erro durante a sincronização periódica:', error);
+  }
+}
