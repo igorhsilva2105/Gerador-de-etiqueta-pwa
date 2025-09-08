@@ -1283,6 +1283,40 @@ document.addEventListener('DOMContentLoaded', ()=>{
         });
       });
     }
+    
+if ('periodicSync' in navigator && navigator.serviceWorker) {
+  navigator.serviceWorker.ready.then(async registration => {
+    try {
+      // Solicitar permissão para sincronização periódica
+      const status = await navigator.permissions.query({
+        name: 'periodic-background-sync'
+      });
+
+      if (status.state === 'granted') {
+        // Registrar sincronização diária
+        await registration.periodicSync.register('update-cache', {
+          minInterval: 24 * 60 * 60 * 1000 // 24 horas em milissegundos
+        });
+        console.log('Sincronização periódica registrada com sucesso!');
+      } else {
+        console.log('Permissão para sincronização periódica não concedida');
+      }
+    } catch (error) {
+      console.error('Erro ao registrar sincronização periódica:', error);
+    }
+  });
+}
+    // Função para verificar o status
+async function checkPeriodicSync() {
+  if ('periodicSync' in navigator && navigator.serviceWorker) {
+    const registration = await navigator.serviceWorker.ready;
+    const tags = await registration.periodicSync.getTags();
+    console.log('Sincronizações periódicas registradas:', tags);
+  }
+}
+
+// Chame a função após o registro do service worker
+checkPeriodicSync();
   </script>
 </body>
 </html>
