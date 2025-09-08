@@ -1,37 +1,32 @@
 {
   "name": "Automatizador de Etiquetas",
   "short_name": "Etiquetadora",
-  "description": "Gere e imprima etiquetas de produtos a partir de XMLs da NF-e.",
-  "start_url": ".",
+  "description": "Um gerador de etiquetas para correios a partir de XMLs de NF-e",
+  "start_url": "/Gerador-de-etiqueta-pwa/",
   "display": "standalone",
   "background_color": "#2563eb",
   "theme_color": "#2563eb",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "windows11/Square44x44Logo.targetsize-32.png",
+      "src": "/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "windows11/Square44x44Logo.targetsize-16.png",
-      "sizes": "16x16",
+      "src": "/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-64.png",
+      "sizes": "64x64",
       "type": "image/png"
     },
     {
-      "src": "windows11/Square150x150Logo.scale-100.png",
+      "src": "/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png",
       "sizes": "150x150",
       "type": "image/png"
     },
     {
-      "src": "windows11/Wide310x150Logo.scale-100.png",
-      "sizes": "310x150",
-      "type": "image/png"
-    },
-    {
-      "src": "windows11/LargeTile.scale-100.png",
+      "src": "/Gerador-de-etiqueta-pwa/windows11/LargeTile.scale-100.png",
       "sizes": "310x310",
       "type": "image/png"
     }
-  ],
-  "scope": "."
+  ]
 }
