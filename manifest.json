@@ -132,7 +132,7 @@
       "sizes": "620x300"
     },
     {
-     极 "src": "img/windows11/SplashScreen.scale-125.png",
+      "src": "img/windows11/SplashScreen.scale-125.png",
       "sizes": "775x375"
     },
     {
@@ -149,7 +149,7 @@
     },
     {
       "src": "img/windows11/Square44x44Logo.targetsize-16.png",
-      "sizes": "极16x16"
+      "sizes": "16x16"
     },
     {
       "src": "img/windows11/Square44x44Logo.targetsize-20.png",
@@ -192,7 +192,7 @@
       "sizes": "64x64"
     },
     {
-      "src": "img/windows11/Square44极x44Logo.targetsize-72.png",
+      "src": "img/windows11/Square44x44Logo.targetsize-72.png",
       "sizes": "72x72"
     },
     {
@@ -228,7 +228,7 @@
       "sizes": "32x32"
     },
     {
-      "src": "极img/windows11/Square44x44Logo.altform-unplated_targetsize-36.png",
+      "src": "img/windows11/Square44x44Logo.altform-unplated_targetsize-36.png",
       "sizes": "36x36"
     },
     {
@@ -249,7 +249,7 @@
     },
     {
       "src": "img/windows11/Square44x44Logo.altform-unplated_targetsize-64.png",
-      "sizes": "极64x64"
+      "sizes": "64x64"
     },
     {
       "src": "img/windows11/Square44x44Logo.altform-unplated_targetsize-72.png",
@@ -281,18 +281,18 @@
     },
     {
       "src": "img/windows11/Square44x44Logo.altform-lightunplated_targetsize-30.png",
-      "sizes": "30x极30"
+      "sizes": "30x30"
     },
     {
       "src": "img/windows11/Square44x44Logo.altform-lightunplated_targetsize-32.png",
-      "极sizes": "32x32"
+      "sizes": "32x32"
     },
     {
       "src": "img/windows11/Square44x44Logo.altform-lightunplated_targetsize-36.png",
       "sizes": "36x36"
     },
     {
-      "src": "img/windows极11/Square44x44Logo.altform-lightunplated_targetsize-40.png",
+      "src": "img/windows11/Square44x44Logo.altform-lightunplated_targetsize-40.png",
       "sizes": "40x40"
     },
     {
@@ -364,8 +364,8 @@
       "sizes": "29x29"
     },
     {
-      "src": "img/极ios/32.png",
-      "sizes": "32x极32"
+      "src": "img/ios/32.png",
+      "sizes": "32x32"
     },
     {
       "src": "img/ios/40.png",
@@ -417,7 +417,7 @@
     },
     {
       "src": "img/ios/120.png",
-      "sizes": "极120x120"
+      "sizes": "120x120"
     },
     {
       "src": "img/ios/128.png",
@@ -425,7 +425,7 @@
     },
     {
       "src": "img/ios/144.png",
-      "sizes": "144x极144"
+      "sizes": "144x144"
     },
     {
       "src": "img/ios/152.png",
