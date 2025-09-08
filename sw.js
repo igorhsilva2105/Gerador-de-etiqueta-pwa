@@ -1,10 +1,10 @@
 const CACHE_NAME = 'etiquetadora-v1.0.0';
+
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
+  '/Gerador-de-etiqueta-pwa/',
+  '/Gerador-de-etiqueta-pwa/index.html',
+  '/Gerador-de-etiqueta-pwa/manifest.json',
   'https://cdn.tailwindcss.com',
-  // Adicione aqui outros recursos estáticos que você queira cachear
 ];
 
 // Instalação do Service Worker
