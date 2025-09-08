@@ -1268,91 +1268,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
   </script>
   <script>
-// Registro do Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js')
-      .then(function(registration) {
-        console.log('ServiceWorker registrado com sucesso: ', registration.scope);
-        
-        // Verifica se há uma nova versão disponível
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          console.log('Nova versão do Service Worker encontrada');
-          
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed') {
-              if (navigator.serviceWorker.controller) {
-                // Nova versão disponível
-                showUpdateNotification();
-              }
-            }
-          });
+    // REGISTRO DO SERVICE WORKER
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        // Usar caminho absoluto para o service worker no GitHub Pages
+        navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
+          scope: '/Gerador-de-etiqueta-pwa/' 
+        })
+        .then(function(registration) {
+          console.log('ServiceWorker registrado com sucesso: ', registration.scope);
+        })
+        .catch(function(error) {
+          console.log('Falha no registro do ServiceWorker: ', error);
         });
-      })
-      .catch(function(error) {
-        console.log('Falha no registro do ServiceWorker: ', error);
-      });
-  });
-
-  // Listen for claims from the service worker
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!refreshing) {
-      refreshing = true;
-      window.location.reload();
-    }
-  });
-}
-
-// Função para mostrar notificação de atualização
-function showUpdateNotification() {
-  if (confirm('Uma nova versão do aplicativo está disponível. Deseja atualizar?')) {
-    // Envia mensagem para o service worker para pular a espera
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: 'SKIP_WAITING'
       });
     }
-  }
-}
-
-// Função para verificar conexão
-function checkConnection() {
-  return navigator.onLine ? 'online' : 'offline';
-}
-
-// Monitorar status da conexão
-window.addEventListener('online', () => {
-  console.log('Conectado à internet');
-  showStatusMessage('Conectado', 'green');
-});
-
-window.addEventListener('offline', () => {
-  console.log('Sem conexão com a internet');
-  showStatusMessage('Modo offline', 'orange');
-});
-
-function showStatusMessage(message, color) {
-  // Implemente uma UI para mostrar o status da conexão
-  const statusEl = document.getElementById('connection-status') || createStatusElement();
-  statusEl.textContent = message;
-  statusEl.style.backgroundColor = color;
-}
-
-function createStatusElement() {
-  const el = document.createElement('div');
-  el.id = 'connection-status';
-  el.style.position = 'fixed';
-  el.style.top = '10px';
-  el.style.right = '10px';
-  el.style.padding = '5px 10px';
-  el.style.borderRadius = '5px';
-  el.style.color = 'white';
-  el.style.zIndex = '1000';
-  document.body.appendChild(el);
-  return el;
-}
-</script>
+  </script>
 </body>
 </html>
