@@ -456,6 +456,20 @@
       "sizes": "1024x1024"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/Gerador-de-etiqueta-pwa/img/screenshot/screenshot1.png",
+      "type": "image/png",
+      "sizes": "540x720",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/Gerador-de-etiqueta-pwa/img/screenshot/screenshot2.jpg",
+      "type": "image/jpg",
+      "sizes": "720x540",
+      "form_factor": "wide"
+    }
+  ],
   "categories": [
     "business",
     "personalization",
