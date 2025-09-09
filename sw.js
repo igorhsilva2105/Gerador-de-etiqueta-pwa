@@ -125,4 +125,31 @@ async function updateCache() {
   } catch (error) {
     console.error('Erro durante a sincronização periódica:', error);
   }
+  
+    // Background Sync
+  self.addEventListener('sync', (event) => {
+    if (event.tag === 'background-sync') {
+      console.log('Background Sync disparado');
+      event.waitUntil(doBackgroundSync());
+    }
+  });
+
+  async function doBackgroundSync() {
+    try {
+      // Aqui você pode adicionar lógica de sincronização em segundo plano
+      // Por exemplo, verificar atualizações de recursos
+      console.log('Executando sincronização em segundo plano...');
+    
+      // Atualiza a cache periodicamente
+      await updateCache();
+    
+      // Mostra notificação de sucesso
+      await self.registration.showNotification('Sincronização concluída', {
+        body: 'Os recursos foram atualizados em segundo plano',
+        icon: '/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png'
+      });
+    } catch (error) {
+      console.error('Falha na sincronização em segundo plano:', error);
+    }
+  }
 }
