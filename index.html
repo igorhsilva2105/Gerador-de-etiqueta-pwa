@@ -1,1354 +1,771 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Automatizador de Etiquetas</title>
-  <!--PWA configs-->
-  <!-- Usar caminho absoluto para o manifesto -->
-  <link rel="manifest" href="/Gerador-de-etiqueta-pwa/manifest.json">
-  <meta name="theme-color" content="#2563eb">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Etiquetadora">
-  
-  <!-- Ícones PWA com caminhos absolutos -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-16.png">
-  <link rel="shortcut icon" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
-  <link rel="apple-touch-icon" href="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosso Casamento | Letícia & Igor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4b996;
+            --secondary: #8c6d46;
+            --accent: #a2836e;
+            --light: #f8f3ed;
+            --dark: #3c2f2f;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark);
+            background-color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .container p {
+            padding-left: 5px;
+            text-align: justify
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(rgba(60, 47, 47, 0.7), rgba(60, 47, 47, 0.7)), url('img/casaamento.png') no-repeat 45% center/cover;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        
+        .couple-names {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .wedding-date {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .countdown-container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        .countdown {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .countdown-item {
+            text-align: center;
+            margin: 0.5rem;
+            min-width: 120px;
+        }
+        
+        .countdown-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .countdown-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* Main Content */
+        section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            position: relative;
+            color: var(--secondary);
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        /* Our Story */
+        .our-story {
+            background-color: white;
+        }
+        
+        .story-content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .story-text {
+            flex: 1;
+            min-width: 300px;
+        }
+        .story-text p {
+            text-align: justify;
+        }
+        
+        .story-image {
+            flex: 1;
+            min-width: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: var(--transition);
+        }
+        
+        .story-image img:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Event Details */
+        .event-details {
+            background-color: var(--light);
+        }
+        
+        .events-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            transition: var(--transition);
+        }
+        
+        .event-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .event-image {
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .event-info {
+            padding: 1.5rem;
+        }
+        
+        .event-title {
+            color: var(--secondary);
+            font-size: 1.8rem;
+        }
+        
+        .event-time, .event-address {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .event-icon {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .map-container {
+            height: 250px;
+            margin-top: 1rem;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        /* Gift List */
+        .gift-list {
+            background-color: white;
+        }
+        
+        .gift-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .gift-item {
+            background: var(--light);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .gift-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .gift-image {
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .gift-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        
+        .gift-image img:hover {
+            transform: scale(1.1);
+        }
+        
+        .gift-info {
+            padding: 1.5rem;
+        }
+        
+        .gift-name {
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .gift-price {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        .gift-button {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .gift-button:hover {
+            background: var(--secondary);
+        }
+        
+        .pix-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pix-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+        
+        .pix-key {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+            word-break: break-all;
+        }
+        
+        .copy-button {
+            padding: 0.8rem 2rem;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .copy-button:hover {
+            background: var(--primary);
+        }
+        
+        /* Playlist */
+        .playlist {
+            background-color: var(--light);
+        }
+        
+        .playlist-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .spotify-embed {
+            width: 100%;
+            min-height: 380px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+        
+        /* RSVP & Messages */
+        .rsvp-messages {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+        }
+.responsive-iframe {
+    position: relative;
+    width: 100%;
+    padding-bottom: 120%; /* Altura proporcional — ajuste se necessário */
+    height: 0;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
 
-  <!-- Para Windows/PC - com caminhos absolutos -->
-  <meta name="msapplication-TileImage" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
-  <meta name="msapplication-square70x70logo" content="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-64.png">
-  <meta name="msapplication-square150x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
-  <meta name="msapplication-wide310x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Wide310x150Logo.scale-100.png">
-  <meta name="msapplication-square310x310logo" content="/Gerador-de-etiqueta-pwa/windows11/LargeTile.scale-100.png">
-
-  <!-- Tailwind via CDN (apenas para protótipo) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Estilos anteriores mantidos */
-    /* Área de impressão: etiquetas 6x4 cm em grade */
-    @page { 
-      size: A4; 
-      margin: 1cm;
+.responsive-iframe iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+        
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .form-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            overflow-x: hidden;
+        }
+        
+        .form-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .form-button {
+            width: 100%;
+            padding: 1rem;
+            background: white;
+            color: var(--secondary);
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .form-button:hover {
+            background: var(--light);
+            transform: translateY(-3px);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .footer-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-text {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+        
+        .social-icon:hover {
+            background: var(--primary);
+            transform: translateY(-5px);
+        }
+        
+        .copyright {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .couple-names {
+                font-size: 3rem;
+            }
+            
+            .countdown-number {
+                font-size: 2rem;
+            }
+            
+            .countdown-item {
+                min-width: 80px;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .story-content, .form-container {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .couple-names {
+                font-size: 2.2rem;
+            }
+            
+            .wedding-date {
+                font-size: 1rem;
+            }
+.countdown {
+        flex-wrap: nowrap;
+        justify-content: space-between;
     }
 
-    /* Estilos para visualização em tela */
-    .labels-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(6cm, 1fr));
-      gap: 4mm;
-    }
-    
-    .label {
-      width: 6cm; 
-      height: 4cm;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 6px;
-      display: flex; 
-      flex-direction: column; 
-      justify-content: space-between;
-      box-sizing: border-box;
-      background: white;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    .countdown-item {
+        min-width: auto;
+        flex: 1;
+        margin: 0 0.2rem;
     }
 
-    .label.problem {
-      border: 2px dashed #f87171 !important;
-      background-color: #fef2f2 !important;
-    }
-    
-    .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
-    .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
-    .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
-
-    /* small helper for parse status */
-    #file-name { font-size: 12px; }
-
-    /* simple modal for configs (keeps styling of main.html) */
-    .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
-
-    /* Estilos para impressão - REVISADOS */
-    @media print {
-      /* Reset completo para impressão */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-      }
-      
-      /* Ocultar todos os elementos exceto as etiquetas */
-      body > *:not(main) {
-        display: none !important;
-      }
-      
-      main {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      
-      main > *:not(section) {
-        display: none !important;
-      }
-      
-      section {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-      }
-      
-      section > *:not(.md\:col-span-2) {
-        display: none !important;
-      }
-      
-      .md\:col-span-2 {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-      }
-      
-      .md\:col-span-2 > *:first-child {
-        display: none !important;
-      }
-      
-      /* Container das etiquetas para impressão */
-      #labels {
-        display: grid !important;
-        grid-template-columns: repeat(3, 6cm) !important;
-        gap: 0.35cm !important;
-        justify-content: center;
-        width: 100%;
-        max-width: 19.5cm; /* Largura máxima para caber 3 colunas com gap */
-        margin: 1cm auto !important;
-        padding: 0 !important;
-        page-break-before: avoid;
-        page-break-after: avoid;
-      }
-      
-      /* Estilo das etiquetas na impressão */
-      .label {
-        width: 6cm !important;
-        height: 4cm !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 10px !important;
-        padding: 6px !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        overflow: hidden !important;
-      }
-      
-      /* Garantir que não haja quebras indesejadas */
-      .labels-grid {
-        page-break-inside: auto;
-      }
-      
-      /* Ocultar etiquetas com erro se a configuração estiver desativada */
-      .label.problem {
-        display: none !important;
-      }
-      
-      /* Mostrar etiquetas com erro apenas se a configuração permitir */
-      body.print-errors .label.problem {
-        display: flex !important;
-      }
+    .countdown-number {
+        font-size: 1.4rem;
     }
 
-    /* Visualização de impressão (modal) */
-    #printPreviewModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      overflow: auto;
+    .countdown-label {
+        font-size: 0.75rem;
     }
-    
-    #printPreviewContent {
-      width: 21cm;
-      min-height: 29.7cm;
-      margin: 20px auto;
-      padding: 1cm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-    }
-    
-    .print-preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      border-bottom: 1px solid #e2e8f0;
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    
-    .print-preview-controls {
-      display: flex;
-      gap: 10px;
-    }
-    
-    /* Modal para exemplo de XML */
-    #xmlExampleModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      overflow: auto;
-    }
-    
-    #xmlExampleContent {
-      width: 80%;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    
-    .xml-example-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    pre {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    
-    /* Estilo para mensagem "Sem erros" */
-    .no-issues {
-      color: #059669;
-      font-style: italic;
-    }
-
-    /* Estilo para preview de imagem */
-    .logo-preview {
-      max-width: 100px;
-      max-height: 60px;
-      margin-top: 8px;
-      display: none;
-    }
-
-    .logo-input-container {
-      display: flex;
-      gap: 8px;
-    }
-
-    .logo-input-container input[type="text"] {
-      flex: 1;
-    }
-
-    /* Estilo para o botão de remover */
-    .btn-remove {
-      background-color: #ef4444 !important;
-      color: white !important;
-    }
-
-    .btn-remove:hover {
-      background-color: #dc2626 !important;
-    }
-
-    /* Novos estilos para filtros de data */
-    .date-filters {
-      background-color: #f8fafc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-
-    .date-filter-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: end;
-      margin-bottom: 0.5rem;
-    }
-
-    .date-filter-row label {
-      flex: 1;
-    }
-
-    .date-summary {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-top: 0.5rem;
-    }
-
-    .date-range-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-
-    .date-tag {
-      background-color: #e2e8f0;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-
-    .date-tag:hover {
-      background-color: #cbd5e1;
-    }
-
-    .date-tag.active {
-      background-color: #3b82f6;
-      color: white;
-    }
-  </style>
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
-  <header id="toolbar" class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
-    <div class="max-w-6xl mx-auto p-4 flex items-center gap-3">
-      <div class="text-xl font-bold">🖨 Automatizador de Etiquetas</div>
-      <span class="badge">6×4 cm</span>
-      <div class="ml-auto flex items-center gap-2">
-        <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
-        <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
-        <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
-      </div>
-    </div>
-  </header>
+<body>
+    <!-- Header com Contagem Regressiva -->
+    <header>
+        <h1 class="couple-names">Letícia & Igor</h1>
+        <p class="wedding-date">13 de Setembro de 2025</p>
+        
+        <div class="countdown-container">
+            <div class="countdown">
+                <div class="countdown-item">
+                    <div class="countdown-number" id="days">00</div>
+                    <div class="countdown-label">Dias</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="hours">00</div>
+                    <div class="countdown-label">Horas</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="minutes">00</div>
+                    <div class="countdown-label">Minutos</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="seconds">00</div>
+                    <div class="countdown-label">Segundos</div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <main class="max-w-6xl mx-auto p-4 space-y-6">
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
-          <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
-          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
+    <!-- Nossa História -->
+    <section class="our-story">
+        <div class="container">
+            <h2 class="section-title">Nossa História</h2>
+            <div class="story-content">
+                <div class="story-text">
+                    <p>Nos conhecemos na escola, onde nossos caminhos se cruzaram pela primeira vez. Desde o primeiro momento, senti que ela era alguém muito especial, embora na época não pudesse imaginar o quanto essa pessoa iria se tornar importante na minha vida. Ao longo do tempo, enfrentamos desencontros e a distância, mais o destino sempre pareceu insistir em nos unir novamente, fortalecendo nossa conexão a cada reencontro. Com o passar dos anos, construímos uma relação sólida e autêntica, baseada em conversas profundas, confiança mútua e aprendizado contínuo um com o outro. Agora, após tudo o que passamos juntos, estamos prestes a dar o próximo passo, prontos para compartilhar nossos sonhos, enfrentar desafios e celebrar alegrias lado a lado. E, com esperança e amor no coração, seguimos juntos rumo ao altar, cientes de que nossa história ainda tem muitos capítulos felizes pela frente.</p>
+                </div>
+                <div class="story-image">
+                    <img src="img/us.jpg" alt="Foto do casal">
+                </div>
+            </div>
         </div>
-        <div class="ml-auto flex items-center gap-2">
-          <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
-          <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar XMLs…</button>
-          <button id="btnClear" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Limpar</button>
-        </div>
-      </div>
-      <div id="drop" class="mt-2 flex items-center justify-center w-full">
-        <label for="xmlInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-          <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"></path></svg>
-            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-            <p id="file-name" class="text-xs text-gray-500">Nenhum arquivo selecionado</p>
-          </div>
-        </label>
-      </div>
-
-      <!-- Filtros de data (inicialmente oculto) -->
-      <div id="dateFilters" class="date-filters hidden">
-        <h3 class="font-medium mb-2">Filtrar por data de emissão</h3>
-        <div class="date-filter-row">
-          <label>
-            <span class="block text-sm text-slate-600 mb-1">Data inicial</span>
-            <input type="date" id="filterStartDate" class="block w-full rounded-md border border-slate-300 p-2">
-          </label>
-          <label>
-            <span class="block text-sm text-slate-600 mb-1">Data final</span>
-            <input type="date" id="filterEndDate" class="block w-full rounded-md border border-slate-300 p-2">
-          </label>
-          <button id="applyDateFilter" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm h-[42px]">Aplicar</button>
-          <button id="clearDateFilter" class="px-4 py-2 rounded-md border border-slate-300 text-sm h-[42px]">Limpar</button>
-        </div>
-        <div class="date-summary" id="dateRangeSummary">Nenhum filtro aplicado</div>
-        <div class="date-range-tags" id="dateRangeTags"></div>
-      </div>
     </section>
 
-    <section class="grid md:grid-cols-3 gap-4">
-      <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-semibold">Etiquetas geradas</h2>
-          <div class="text-sm text-slate-500"><span id="countLabels">0</span> etiquetas</div>
+    <!-- Detalhes do Evento -->
+    <section class="event-details">
+        <div class="container">
+            <h2 class="section-title">Detalhes do Evento</h2>
+            <div class="events-container">
+                <!-- Cerimônia -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://diocesedetaubate.org.br/wp-content/uploads/2013/05/fachada-saopiox.jpg" alt="Local da cerimônia">
+                    </div>
+                    <div class="event-info">
+                        <h3 class="event-title">Cerimônia</h3>
+                        <div class="event-time">
+                            <i class="fas fa-clock event-icon"></i>
+                            <span>19:30 horas</span>
+                        </div>
+                        <div class="event-address">
+                            <i class="fas fa-map-marker-alt event-icon"></i>
+                            <span>Paróquia São Pio X - Igreja Matriz de São Benedito<br>R. Ten. Mesquita, 285 - Vila Pantaleao, Caçapava - SP, 12280-048</span>
+                        </div>
+                        <div class="map-container">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3670.069335930119!2d-45.71038432392781!3d-23.094557544610243!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cc51739fd171ab%3A0xa0488dee36776383!2sPar%C3%B3quia%20S%C3%A3o%20Pio%20X%20-%20Igreja%20Matriz%20de%20S%C3%A3o%20Benedito!5e0!3m2!1spt-BR!2sbr!4v1753198557151!5m2!1spt-BR!2sbr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recepção -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="img/chacara.png" alt="Local da recepção">
+                    </div>
+                    <div class="event-info">
+                        <h3 class="event-title">Recepção</h3>
+                        <div class="event-time">
+                            <i class="fas fa-clock event-icon"></i>
+                            <span>21:00 horas</span>
+                        </div>
+                        <div class="event-address">
+                            <i class="fas fa-map-marker-alt event-icon"></i>
+                            <span>Rua Mario Fouler - Caçapava (Chácara Recanto da Serra)</span>
+                        </div>
+                        <div class="map-container">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3668.7356965334307!2d-45.627855499999995!3d-23.143334199999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cc55ac3b163197%3A0x27c466e122f4d0ee!2sRecanto%20da%20Serra!5e0!3m2!1spt-BR!2sbr!4v1753198685077!5m2!1spt-BR!2sbr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="labels" class="labels-grid"></div>
-      </div>
-      <aside class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" id="erroPanel">
-        <h2 class="font-semibold mb-2">Avisos / Itens com pendências</h2>
-        <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1">
-          <li class="no-issues">Sem erros</li>
-        </ul>
-      </aside>
     </section>
-  </main>
 
-  <!-- Modal de visualização de impressão -->
-  <div id="printPreviewModal">
-    <div class="print-preview-header">
-      <h2 class="text-xl font-bold">Visualização de Impressão</h2>
-      <div class="print-preview-controls">
-        <button id="closePreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
-        <button id="printFromPreview" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
-      </div>
-    </div>
-    <div id="printPreviewContent">
-      <div id="previewLabels" class="labels-grid"></div>
+  <!-- Lista de Presentes -->
+<section class="gift-list">
+  <div class="container">
+    <h2 class="section-title">Presentes</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 2rem; text-align: justify;">
+      Seu carinho, presença e alegria são os maiores presentes que podemos receber neste dia tão especial. Caso queira nos agradar com um presente, ficaremos muito felizes e gratos. Pensamos em algumas sugestões que podem tornar esse momento ainda mais inesquecível para nós. Mas, acima de tudo, sua presença já é o melhor presente que podemos desejar!
+    </p>
+    <div style="text-align: center;">
+      <a href="nav/presentes.html" class="gift-button" style="display: inline-block; width: auto; padding: 1rem 2rem; text-decoration: none;">Ver Lista de Presentes</a>
     </div>
   </div>
+</section>
 
-  <!-- Modal de exemplo de XML -->
-  <div id="xmlExampleModal">
-    <div id="xmlExampleContent">
-      <div class="xml-example-header">
-        <h2 class="text-xl font-bold">Exemplo de XML Válido</h2>
-        <button id="closeXmlExample" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
-      </div>
-      <p class="mb-4 text-sm text-slate-600">Abaixo está um exemplo de XML no formato NF-e que é compatível com esta ferramenta:</p>
-      <pre>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"&gt;
-  &lt;NFe xmlns="http://www.portalfiscal.inf.br/nfe"&gt;
-    &lt;infNFe Id="NFe35210600000000000125550010000000011234567890" versao="4.00"&gt;
-      &lt;ide&gt;
-        &lt;cUF&gt;35&lt;/cUF&gt;
-        &lt;cNF&gt;12345678&lt;/cNF&gt;
-        &lt;natOp&gt;Venda de mercadoria&lt;/natOp&gt;
-        &lt;mod&gt;55&lt;/mod&gt;
-        &lt;serie&gt;1&lt;/serie&gt;
-        &lt;nNF&gt;123456&lt;/nNF&gt;
-        &lt;dhEmi&gt;2021-06-01T10:00:00-03:00&lt;/dhEmi&gt;
-        &lt;tpNF&gt;1&lt;/tpNF&gt;
-        &lt;idDest&gt;1&lt;/idDest&gt;
-        &lt;cMunFG&gt;3550308&lt;/cMunFG&gt;
-        &lt;tpImp&gt;1&lt;/tpImp&gt;
-        &lt;tpEmis&gt;1&lt;/tpEmis&gt;
-        &lt;cDV&gt;0&lt;/cDV&gt;
-        &lt;tpAmb&gt;2&lt;/tpAmb&gt;
-        &lt;finNFe&gt;1&lt;/finNFe&gt;
-        &lt;indFinal&gt;1&lt;/indFinal&gt;
-        &lt;indPres&gt;1&lt;/indPres&gt;
-        &lt;procEmi&gt;0&lt;/procEmi&gt;
-        &lt;verProc&gt;1.0.0&lt;/verProc&gt;
-      &lt;/ide&gt;
-      &lt;emit&gt;
-        &lt;CNPJ&gt;00000000000100&lt;/CNPJ&gt;
-        &lt;xNome&gt;Empresa Exemplo Ltda&lt;/xNome&gt;
-        &lt;xFant&gt;Exemplo Comercio&lt;/xFant&gt;
-        &lt;enderEmit&gt;
-          &lt;xLgr&gt;Rua Exemplo&lt;/xLgr&gt;
-          &lt;nro&gt;123&lt;/nro&gt;
-          &lt;xBairro&gt;Centro&lt;/xBairro&gt;
-          &lt;cMun&gt;3550308&lt;/cMun&gt;
-          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
-          &lt;UF&gt;SP&lt;/UF&gt;
-          &lt;CEP&gt;01001000&lt;/CEP&gt;
-          &lt;cPais&gt;1058&lt;/cPais&gt;
-          &lt;xPais&gt;Brasil&lt;/xPais&gt;
-          &lt;fone&gt;1133334444&lt;/fone&gt;
-        &lt;/enderEmit&gt;
-        &lt;IE&gt;111222333444&lt;/IE&gt;
-        &lt;CRT&gt;1&lt;/CRT&gt;
-      &lt;/emit&gt;
-      &lt;dest&gt;
-        &lt;CNPJ&gt;99999999000199&lt;/CNPJ&gt;
-        &lt;xNome&gt;Cliente Exemplo SA&lt;/xNome&gt;
-        &lt;enderDest&gt;
-          &lt;xLgr&gt;Avenida Teste&lt;/xLgr&gt;
-          &lt;nro&gt;456&lt;/nro&gt;
-          &lt;xBairro&gt;Jardim Exemplo&lt;/xBairro&gt;
-          &lt;cMun&gt;3550308&lt;/cMun&gt;
-          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
-          &lt;UF&gt;SP&lt;/UF&gt;
-          &lt;CEP&gt;01002000&lt;/CEP&gt;
-          &lt;cPais&gt;1058&lt;/cPais&gt;
-          &lt;xPais&gt;Brasil&lt;/xPais&gt;
-        &lt;/enderDest&gt;
-        &lt;indIEDest&gt;9&lt;/indIEDest&gt;
-      &lt;/dest&gt;
-      &lt;det nItem="1"&gt;
-        &lt;prod&gt;
-          &lt;cProd&gt;PROD001&lt;/cProd&gt;
-          &lt;cEAN&gt;7891234567890&lt;/cEAN&gt;
-          &lt;xProd&gt;Produto Exemplo A&lt;/xProd&gt;
-          &lt;NCM&gt;84716052&lt;/NCM&gt;
-          &lt;CFOP&gt;5102&lt;/CFOP&gt;
-          &lt;uCom&gt;UN&lt;/uCom&gt;
-          &lt;qCom&gt;10.0000&lt;/qCom&gt;
-          &lt;vUnCom&gt;100.00&lt;/vUnCom&gt;
-          &lt;vProd&gt;1000.00&lt;/vProd&gt;
-          &lt;cEANTrib&gt;7891234567890&lt;/cEANTrib&gt;
-          &lt;uTrib&gt;UN&lt;/uTrib&gt;
-          &lt;qTrib&gt;10.0000&lt;/qTrib&gt;
-          &lt;vUnTrib&gt;100.00&lt;/vUnTrib&gt;
-          &lt;indTot&gt;1&lt;/indTot&gt;
-        &lt;/prod&gt;
-        &lt;imposto&gt;
-          &lt;ICMS&gt;
-            &lt;ICMS00&gt;
-              &lt;orig&gt;0&lt;/orig&gt;
-              &lt;CST&gt;00&lt;/CST&gt;
-              &lt;modBC&gt;3&lt;/modBC&gt;
-              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
-              &lt;vBC&gt;1000.00&lt;/vBC&gt;
-              &lt;vICMS&gt;180.00&lt;/vICMS&gt;
-            &lt;/ICMS00&gt;
-          &lt;/ICMS&gt;
-        &lt;/imposto&gt;
-      &lt;/det&gt;
-      &lt;det nItem="2"&gt;
-        &lt;prod&gt;
-          &lt;cProd&gt;PROD002&lt;/cProd&gt;
-          &lt;cEAN&gt;7899876543210&lt;/cEAN&gt;
-          &lt;xProd&gt;Produto Exemplo B&lt;/xProd&gt;
-          &lt;NCM&gt;85171210&lt;/NCM&gt;
-          &lt;CFOP&gt;5102&lt;/CFOP&gt;
-          &lt;uCom&gt;UN&lt;/uCom&gt;
-          &lt;qCom&gt;5.0000&lt;/qCom&gt;
-          &lt;vUnCom&gt;250.00&lt;/vUnCom&gt;
-          &lt;vProd&gt;1250.00&lt;/vProd&gt;
-          &lt;cEANTrib&gt;7899876543210&lt;/cEANTrib&gt;
-          &lt;uTrib&gt;UN&lt;/uTrib&gt;
-          &lt;qTrib&gt;5.0000&lt;/qTrib&gt;
-          &lt;vUnTrib&gt;250.00&lt;/vUnTrib&gt;
-          &lt;indTot&gt;1&lt;/indTot&gt;
-        &lt;/prod&gt;
-        &lt;imposto&gt;
-          &lt;ICMS&gt;
-            &lt;ICMS00&gt;
-              &lt;orig&gt;0&lt;/orig&gt;
-              &lt;CST&gt;00&lt;/CST&gt;
-              &lt;modBC&gt;3&lt;/modBC&gt;
-              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
-              &lt;vBC&gt;1250.00&lt;/vBC&gt;
-              &lt;vICMS&gt;225.00&lt;/vICMS&gt;
-            &lt;/ICMS00&gt;
-          &lt;/ICMS&gt;
-        &lt;/imposto&gt;
-      &lt;/det&gt;
-      &lt;total&gt;
-        &lt;ICMSTot&gt;
-          &lt;vBC&gt;2250.00&lt;/vBC&gt;
-          &lt;vICMS&gt;405.00&lt;/vICMS&gt;
-          &lt;vProd&gt;2250.00&lt;/vProd&gt;
-          &lt;vNF&gt;2250.00&lt;/vNF&gt;
-        &lt;/ICMSTot&gt;
-      &lt;/total&gt;
-      &lt;transp&gt;
-        &lt;modFrete&gt;0&lt;/modFrete&gt;
-      &lt;/transp&gt;
-      &lt;cobr&gt;
-        &lt;fat&gt;
-          &lt;nFat&gt;123456&lt;/nFat&gt;
-          &lt;vOrig&gt;2250.00&lt;/vOrig&gt;
-          &lt;vLiq&gt;2250.00&lt;/vLiq&gt;
-        &lt;/fat&gt;
-        &lt;dup&gt;
-          &lt;nDup&gt;001&lt;/nDup&gt;
-          &lt;dVenc&gt;2021-06-30&lt;/dVenc&gt;
-          &lt;vDup&gt;2250.00&lt;/vDup&gt;
-        &lt;/dup&gt;
-      &lt;/cobr&gt;
-      &lt;infAdic&gt;
-        &lt;infCpl&gt;Pagamento a vista.&lt;/infCpl&gt;
-      &lt;/infAdic&gt;
-    &lt;/infNFe&gt;
-  &lt;/NFe&gt;
-&lt;/nfeProc&gt;
-      </pre>
-    </div>
-  </div>
-
-  <!-- Config modal (tailwind) -->
-  <div id="cfgModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-    <div class="modal-backdrop absolute inset-0"></div>
-    <div class="bg-white rounded-2xl shadow-lg p-6 z-10 w-11/12 max-w-xl">
-      <h3 class="text-lg font-semibold mb-3">Configurações de geração</h3>
-      <div class="grid gap-3">
-        <label class="text-sm">Logo (URL ou data URI)
-          <div class="logo-input-container mt-1">
-            <input id="cfgLogo" type="text" class="block w-full rounded-md border border-slate-300 p-2" placeholder="https://... ou data:image/png;base64,...">
-            <input type="file" id="logoUpload" accept="image/*" class="hidden">
-            <button id="logoUploadButton" type="button" class="px-4 py-2 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200">Upload</button>
-          </div>
-          <img id="logoPreview" class="logo-preview" alt="Preview da logo">
-        </label>
-        <div class="flex gap-2">
-          <label class="flex-1">Regra de fracionamento
-            <select id="cfgFracRule" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-              <option value="none">Sem fracionamento</option>
-              <option value="fixed">Fracionar em N etiquetas por item</option>
-              <option value="perQty">1 etiqueta por unidade</option>
-            </select>
-          </label>
-          <label style="width:100px">N
-            <input id="cfgFracN" type="number" min="1" value="1" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-          </label>
+    <!-- Playlist do Casal -->
+    <section class="playlist">
+        <div class="container">
+            <h2 class="section-title">Nossa Playlist</h2>
+            <div class="playlist-container">
+                <p>Essas são as músicas que marcaram a nossa história e que vão embalar a nossa festa. Sinta-se à vontade para ouvir enquanto se prepara para o grande dia!</p>
+                <div class="spotify-embed">
+                    <iframe src="https://open.spotify.com/embed/playlist/2CkJcJRN5xFwUJyAkRNrXi?utm_source=generator&theme=0" width="100%" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                </div>
+            </div>
         </div>
-        <fieldset class="flex gap-2 flex-wrap">
-          <legend class="w-full">Campos exibidos</legend>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="xProd" checked> Nome do produto</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="cEAN"> EAN</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="cProd"> Código</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="nNF" checked> Nº da nota</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="qCom" checked> Quantidade</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="uCom" checked> Unidade</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="vUnCom"> Preço</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="emit"> Emitente</label>
-          <label class="text-sm"><input type="checkbox" class="cfgField" value="dest"> Destinatário</label>
-        </fieldset>
-        <fieldset class="flex gap-2 flex-wrap">
-          <legend class="w-full">Configurações de erros</legend>
-          <label class="text-sm"><input type="checkbox" id="cfgShowErrors" checked> Exibir itens com erro</label>
-          <label class="text-sm"><input type="checkbox" id="cfgPrintErrors"> Imprimir itens com erro</label>
-        </fieldset>
-        <div class="flex justify-end gap-2 pt-2">
-          <button id="cfgCancel" class="px-4 py-2 rounded-xl border">Cancelar</button>
-          <button id="cfgSave" class="px-4 py-2 rounded-xl bg-slate-900 text-white">Salvar</button>
+    </section>
+
+    <!-- Confirmação de Presença e Mensagens -->
+    <section class="rsvp-messages">
+    <div class="container">
+        <div class="form-container">
+            <!-- Confirmação de Presença -->
+            <div class="form-section">
+                <div class="responsive-iframe">
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe0rpQffVSpbmGAzlm73CBhElfjTXPpFmghtbStfJp6hovKYQ/viewform?embedded=true" frameborder="0" allowfullscreen>Carregando…</iframe>
+                </div>
+            </div>
+            <!-- Mensagens para o Casal -->
+            <div class="form-section">
+                <div class="responsive-iframe">
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfFrhxSVbRjYtQGKWS2Z6SeMlUz2fmFyEy0xyxk8WWKHk647Q/viewform?embedded=true" frameborder="0" allowfullscreen>Carregando…</iframe>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <script>
-// --------- Estado e utilitários (adaptado do modelo) ---------
-const state = {
-  labels: [],
-  availableDates: [],
-  dateFilter: {
-    startDate: null,
-    endDate: null
-  },
-  cfg: {
-    logo: "",
-    density: 60,
-    fields: ["xProd","qCom","uCom","nNF"],
-    showErrors: true,
-    printErrors: false,
-    fracRule: "none",
-    fracN: 1
-  }
-};
-
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-function num(v, fallback = 0) { 
-  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',','.')); 
-  return Number.isFinite(n) ? n : fallback; 
-}
-function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
-function formatCNPJ(s){
-  const d = onlyDigits(s);
-  if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
-  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4'); // CPF fallback
-  return s || '-';
-}
-
-function findFirstByLocalName(root, localName) {
-  if (!root) return null;
-  const all = root.getElementsByTagName('*');
-  for (let i=0;i<all.length;i++) if (all[i].localName === localName) return all[i];
-  return null;
-}
-function findAllByLocalName(root, localName) {
-  const out=[]; if (!root) return out;
-  const all = root.getElementsByTagName('*');
-  for (let i=0;i<all.length;i++) if (all[i].localName===localName) out.push(all[i]);
-  return out;
-}
-function findTextInsensitive(root, tagName){
-  if (!root) return '';
-  const all = root.getElementsByTagName('*');
-  const low = tagName.toLowerCase();
-  for (let i=0;i<all.length;i++){
-    const ln = (all[i].localName || '').toLowerCase();
-    if (ln === low) return (all[i].textContent||'').trim();
-  }
-  return '';
-}
-function text(el){ return el ? (el.textContent||'').trim() : ''; }
-
-function parseXml(textXml) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(textXml, 'application/xml');
-  const parserError = doc.getElementsByTagName('parsererror')[0];
-  if (parserError) throw new Error('XML inválido');
-  return doc;
-}
-
-function extractFromDoc(doc) {
-  const emit = findFirstByLocalName(doc, 'emit');
-  const dest = findFirstByLocalName(doc, 'dest');
-  const ide = findFirstByLocalName(doc, 'ide') || doc;
-  const emitName = text(findFirstByLocalName(emit||doc,'xNome'));
-  // Tenta várias formas de achar CNPJ/CPF (case-insensitive). Se falhar, usa regex no XML serializado.
-  let emitCnpj = findTextInsensitive(emit||doc, 'CNPJ') || findTextInsensitive(emit||doc, 'cnpj') || findTextInsensitive(emit||doc, 'CPF') || '';
-  if (!emitCnpj) {
-    try {
-      const serialized = (new XMLSerializer()).serializeToString(doc);
-      const re = /<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i;
-      const m = serialized.match(re);
-      if (m && m[1]) emitCnpj = (m[1]||'').replace(/\D/g,'');
-    } catch(e){
-      // ignore
-    }
-  }
-  const destName = text(findFirstByLocalName(dest||doc,'xNome'));
-  const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
-  
-  // Extrair data de emissão
-  let dataEmissao = '';
-  const dhEmi = text(findFirstByLocalName(ide, 'dhEmi'));
-  if (dhEmi) {
-    // Formato: 2021-06-01T10:00:00-03:00 -> queremos a parte da data
-    const datePart = dhEmi.split('T')[0];
-    if (datePart) dataEmissao = datePart;
-  }
-  
-  const dets = findAllByLocalName(doc, 'det');
-  const items = dets.map((det)=>{
-    const prod = findFirstByLocalName(det,'prod')||det;
-    const xProd = text(findFirstByLocalName(prod,'xProd'));
-    const cEAN = text(findFirstByLocalName(prod,'cEAN'));
-    const cProd = text(findFirstByLocalName(prod,'cProd'));
-    const qComStr = text(findFirstByLocalName(prod,'qCom'));
-    const uCom = text(findFirstByLocalName(prod,'uCom'));
-    const vUnCom = text(findFirstByLocalName(prod,'vUnCom'));
-    const qCom = num(qComStr, NaN);
-    return { xProd,cEAN,cProd,qCom,qComStr,uCom,vUnCom,
-             emit:emitName, emitCnpj, // passa CNPJ aqui
-             dest:destName,nNF,dataEmissao };
-  });
-  return { emitName, emitCnpj, destName, nNF, dataEmissao, items };
-}
-
-function expandByFracionamento(item) {
-  const rule = state.cfg.fracRule;
-  if (rule === 'fixed') {
-    const n = Math.max(1, Math.floor(state.cfg.fracN||1));
-    return Array.from({length:n},()=>({...item}));
-  }
-  if (rule === 'perQty') {
-    const qty = Number.isFinite(item.qCom) ? Math.max(1, Math.round(item.qCom)) : 1;
-    return Array.from({length:qty},(_,i)=>({...item, fracIndex:i+1, fracTotal:qty}));
-  }
-  return [{...item}];
-}
-
-function validateLabel(data) {
-  const errs=[];
-  // Verifica se é um erro de parsing de arquivo
-  if (data._fatalError) {
-    errs.push('Erro no processamento do arquivo');
-    return errs;
-  }
-  
-  if (!data.xProd || data.xProd.includes('(Erro no arquivo')) errs.push('Produto sem nome');
-  if (!Number.isFinite(data.qCom) && !data.qComStr) errs.push('Quantidade ausente');
-  if (Number.isFinite(data.qCom) && data.qCom<=0) errs.push('Quantidade inválida');
-  if (data.cEAN && ![8,12,13,14].includes(String(data.cEAN).replace(/\D/g,'').length)) errs.push('EAN com tamanho incomum');
-  return errs;
-}
-
-// --------- Filtro por data ---------
-function updateDateFilters() {
-  const dateFilters = $('#dateFilters');
-  if (state.availableDates.length > 0) {
-    dateFilters.classList.remove('hidden');
-    updateDateRangeTags();
-  } else {
-    dateFilters.classList.add('hidden');
-  }
-  updateDateFilterSummary();
-}
-
-function updateDateRangeTags() {
-  const container = $('#dateRangeTags');
-  container.innerHTML = '';
-  
-  // Agrupar por mês/ano
-  const dateGroups = {};
-  state.availableDates.forEach(date => {
-    const [year, month] = date.split('-');
-    const key = `${year}-${month}`;
-    if (!dateGroups[key]) {
-      dateGroups[key] = [];
-    }
-    dateGroups[key].push(date);
-  });
-  
-  // Criar tags para cada mês
-  Object.keys(dateGroups).sort().reverse().forEach(key => {
-    const [year, month] = key.split('-');
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    const tag = document.createElement('div');
-    tag.className = 'date-tag';
-    tag.textContent = `${monthNames[parseInt(month)-1]}/${year}`;
-    tag.dataset.start = dateGroups[key][0];
-    tag.dataset.end = dateGroups[key][dateGroups[key].length - 1];
-    
-    tag.addEventListener('click', () => {
-      $('#filterStartDate').value = tag.dataset.start;
-      $('#filterEndDate').value = tag.dataset.end;
-      applyDateFilter();
-    });
-    
-    container.appendChild(tag);
-  });
-}
-
-function updateDateFilterSummary() {
-  const summary = $('#dateRangeSummary');
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    const start = new Date(state.dateFilter.startDate);
-    const end = new Date(state.dateFilter.endDate);
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    summary.textContent = `Filtrando de ${start.toLocaleDateString('pt-BR', options)} até ${end.toLocaleDateString('pt-BR', options)}`;
-  } else {
-    summary.textContent = 'Nenhum filtro aplicado';
-  }
-}
-
-function applyDateFilter() {
-  const startDate = $('#filterStartDate').value;
-  const endDate = $('#filterEndDate').value;
-  
-  if (startDate && endDate && startDate > endDate) {
-    alert('A data inicial não pode ser maior que a data final');
-    return;
-  }
-  
-  state.dateFilter.startDate = startDate;
-  state.dateFilter.endDate = endDate;
-  
-  render();
-  updateDateFilterSummary();
-}
-
-function clearDateFilter() {
-  $('#filterStartDate').value = '';
-  $('#filterEndDate').value = '';
-  state.dateFilter.startDate = null;
-  state.dateFilter.endDate = null;
-  render();
-  updateDateFilterSummary();
-}
-
-// --------- Renderização adaptada ao main.html ---------
-function render() {
-  const mount = $('#labels');
-  mount.innerHTML = '';
-  const issues = [];
-  let valid = 0, invalid = 0;
-  
-  // Filtrar por data se houver filtro aplicado
-  let labelsToRender = state.labels;
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    labelsToRender = state.labels.filter(item => {
-      if (!item.dataEmissao) return false;
-      return item.dataEmissao >= state.dateFilter.startDate && 
-             item.dataEmissao <= state.dateFilter.endDate;
-    });
-  }
-  
-  for (const data of labelsToRender) {
-    const errs = validateLabel(data);
-    const isErr = errs.length>0;
-    if (isErr) invalid++; else valid++;
-    if (isErr && !state.cfg.showErrors) continue;
-    
-    const card = document.createElement('div');
-    card.className = 'label' + (isErr? ' problem':'');
-    
-    // Header (logo acima da etiqueta)
-    const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
-    if (state.cfg.logo) {
-      const himg = document.createElement('img');
-      himg.src = state.cfg.logo;
-      himg.alt = '';
-      himg.style.maxHeight = '34px';
-      himg.style.width = '100%';
-      himg.style.objectFit = 'contain';
-      himg.onerror = function(){ this.style.display='none'; };
-      headerDiv.appendChild(himg);
-    }
-    card.appendChild(headerDiv);
-    
-    // Title
-    if (state.cfg.fields.includes('xProd')) {
-      const h3 = document.createElement('h3');
-      h3.textContent = data.xProd || '(Sem nome)';
-      card.appendChild(h3);
-    }
-    
-    // meta
-    const meta = document.createElement('div'); meta.className = 'meta';
-    function addLine(field,label,value){ 
-      if (!state.cfg.fields.includes(field)) return; 
-      const d=document.createElement('div'); 
-      d.textContent=label+': '+(value??'-'); 
-      meta.appendChild(d); 
-    }
-    addLine('cEAN','EAN', data.cEAN || '-');
-    addLine('cProd','Código', data.cProd || '-');
-    addLine('nNF','NF', data.nNF || '-');
-    addLine('qCom','Qtd', Number.isFinite(data.qCom)?data.qCom:data.qComStr||'-');
-    addLine('uCom','Un', data.uCom||'-');
-    addLine('vUnCom','Preço', data.vUnCom?('R$ '+data.vUnCom):'-');
-    addLine('emit','Emitente', data.emit||'-');
-    addLine('dest','Dest', data.dest||'-');
-    card.appendChild(meta);
-    
-    // footer
-    const footer = document.createElement('div'); footer.className='footer';
-    if (isErr) {
-      footer.textContent = 'ERRO: '+ errs.join('; ');
-    } else {
-      // mostra a frase pedida — usa formatCNPJ para ficar mais legível
-      const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
-      footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
-    }
-    card.appendChild(footer);
-    
-    mount.appendChild(card);
-    if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
-  }
-  
-  // update count and issues
-  $('#countLabels').textContent = `${labelsToRender.length} de ${state.labels.length} etiquetas`;
-  const issuesEl = $('#issues'); 
-  issuesEl.innerHTML='';
-  
-  if (issues.length === 0) {
-    const li = document.createElement('li');
-    li.textContent = 'Sem erros';
-    li.className = 'no-issues';
-    issuesEl.appendChild(li);
-  } else {
-    for (const it of issues) {
-      const li = document.createElement('li'); 
-      li.textContent = `${it.title} — ${it.errs.join('; ')}`; 
-      issuesEl.appendChild(li);
-    }
-  }
-  
-  // Atualiza o painel de avisos conforme existem erros ou não
-  const erroPanel = $('#erroPanel');
-  if (issues.length === 0) {
-    erroPanel.classList.add('bg-green-50', 'border-green-200');
-    erroPanel.classList.remove('bg-yellow-50', 'border-yellow-200');
-  } else {
-    erroPanel.classList.add('bg-yellow-50', 'border-yellow-200');
-    erroPanel.classList.remove('bg-green-50', 'border-green-200');
-  }
-}
-
-// --------- Visualização de impressão ---------
-function renderPrintPreview() {
-  const previewMount = $('#previewLabels');
-  previewMount.innerHTML = '';
-  
-  // Clona as etiquetas atuais para a visualização
-  const labelsContainer = $('#labels');
-  const labels = labelsContainer.querySelectorAll('.label');
-  
-  // Aplica estilos específicos para a visualização
-  previewMount.style.display = 'grid';
-  previewMount.style.gridTemplateColumns = 'repeat(3, 6cm)';
-  previewMount.style.gap = '0.35cm';
-  previewMount.style.justifyContent = 'center';
-  previewMount.style.width = '100%';
-  previewMount.style.margin = '0 auto';
-  
-  labels.forEach(label => {
-    const clone = label.cloneNode(true);
-    previewMount.appendChild(clone);
-  });
-  
-  // Exibe o modal de visualização
-  $('#printPreviewModal').style.display = 'block';
-}
-
-// --------- Arquivo -> leitura -> parsing ---------
-async function readFilesAsText(files) {
-  const arr = Array.from(files);
-  return Promise.all(arr.map(file=>new Promise((resolve,reject)=>{
-    const fr = new FileReader(); fr.onload = ()=> resolve({name:file.name,text:String(fr.result||'')}); fr.onerror = ()=> reject(fr.error); fr.readAsText(file);
-  })));
-}
-
-async function handleFiles(files) {
-  if (!files || files.length===0) return;
-  $('#file-name').textContent = `${files.length} arquivo(s) pronto(s) para processar`;
-  try {
-    const texts = await readFilesAsText(files);
-    const all = [];
-    const datesSet = new Set(); // Para coletar datas únicas
-    
-    for (const {name,text} of texts) {
-      try {
-        // Verifica se o arquivo contém conteúdo XML válido
-        if (!text || !text.trim().startsWith('<?xml') && !text.trim().startsWith('<nfe')) {
-          throw new Error('Arquivo não é um XML válido');
+</section>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <h3 class="footer-title">Obrigado por fazer parte do nosso dia especial!</h3>
+            <p class="footer-text">Estamos contando os minutos para celebrar ao lado das pessoas que mais amamos. Sua presença é o presente mais valioso que poderíamos receber.</p>
+            <p class="copyright">© 2025 Letícia & Igor. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+<script>
+        // Configuração da data do casamento
+        const weddingDate = new Date('September 13, 2025 19:30:00').getTime();
+        
+        // Atualização da contagem regressiva
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = weddingDate - now;
+            
+            // Cálculos para dias, horas, minutos e segundos
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // Atualização dos elementos HTML
+            document.getElementById('days').innerHTML = days.toString().padStart(2, '0');
+            document.getElementById('hours').innerHTML = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerHTML = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerHTML = seconds.toString().padStart(2, '0');
+            
+            // Se a contagem regressiva terminar
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.querySelector('.countdown-container').innerHTML = '<h2>Estamos casados!</h2>';
+            }
         }
         
-        const doc = parseXml(text);
-        const data = extractFromDoc(doc);
-        
-        // Adiciona a data ao conjunto de datas disponíveis
-        if (data.dataEmissao) {
-          datesSet.add(data.dataEmissao);
-        }
-        
-        // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
-        console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
-        for (const item of data.items) {
-          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao});
-          all.push(...expandedItems);
-        }
-      } catch (e) {
-        // Cria um item de erro que será detectado pela validação
-        all.push({ 
-          xProd: `(Erro no arquivo ${name})`, 
-          qComStr:'-', 
-          uCom:'-', 
-          vUnCom:'-', 
-          cEAN:'', 
-          cProd:'', 
-          emit:'', 
-          emitCnpj:'', 
-          dest:'', 
-          nNF:'', 
-          dataEmissao: '',
-          _fatalError: String(e.message||e)
-        });
-      }
-    }
+        // Executar a contagem regressiva a cada segundo
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown(); // Inicialização imediata
+    </script>
+    <script>
+// Script de redirecionamento para o dia do casamento com filtro por hora
+(function() {
+    // Data e hora exatas do casamento: 13 de Setembro de 2025 às 19:30
+    const weddingDateTime = new Date('September 13, 2025 19:30:00').getTime();
+    const currentDateTime = new Date().getTime();
     
-    // Atualiza as datas disponíveis
-    state.availableDates = Array.from(datesSet).sort();
-    state.labels = all;
-    
-    // Atualiza os filtros de data
-    updateDateFilters();
-    
-    render();
-  } catch (e) {
-    console.error(e); 
-    alert('Falha ao ler arquivos.');
-  }
-}
-
-// --------- Função para imprimir ---------
-function handlePrint() {
-  // Adiciona/remove classe para controlar impressão de erros
-  if (state.cfg.printErrors) {
-    document.body.classList.add('print-errors');
-  } else {
-    document.body.classList.remove('print-errors');
-  }
-  
-  window.print();
-}
-
-// --------- Função para converter imagem para base64 ---------
-function handleLogoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  if (!file.type.match('image.*')) {
-    alert('Por favor, selecione um arquivo de imagem.');
-    return;
-  }
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64 = e.target.result;
-    $('#cfgLogo').value = base64;
-    $('#logoPreview').src = base64;
-    $('#logoPreview').style.display = 'block';
-    
-    // Atualiza o botão para modo "Remover"
-    updateLogoButtonState(true);
-  };
-  reader.readAsDataURL(file);
-}
-
-// --------- Função para atualizar o estado do botão de logo ---------
-function updateLogoButtonState(hasImage) {
-  const uploadButton = $('#logoUploadButton');
-  
-  if (hasImage) {
-    uploadButton.textContent = 'Remover';
-    uploadButton.classList.remove('bg-slate-100', 'hover:bg-slate-200');
-    uploadButton.classList.add('btn-remove');
-    uploadButton.setAttribute('data-state', 'remove');
-  } else {
-    uploadButton.textContent = 'Upload';
-    uploadButton.classList.remove('btn-remove');
-    uploadButton.classList.add('bg-slate-100', 'hover:bg-slate-200');
-    uploadButton.setAttribute('data-state', 'upload');
-  }
-}
-
-// --------- Função para remover a logo ---------
-function removeLogo() {
-  $('#cfgLogo').value = '';
-  $('#logoPreview').style.display = 'none';
-  $('#logoPreview').src = '';
-  updateLogoButtonState(false);
-}
-
-// --------- Bind UI events ---------
-document.addEventListener('DOMContentLoaded', ()=>{
-  // load cfg from localStorage
-  const saved = localStorage.getItem('mag_labels_cfg'); 
-  if (saved) {
-    const savedCfg = JSON.parse(saved);
-    Object.assign(state.cfg, savedCfg);
-    
-    // Para compatibilidade com versões anteriores
-    if (typeof savedCfg.printErrors === 'undefined') {
-      state.cfg.printErrors = false;
+    // Se a data/hora atual for posterior ou igual ao horário do casamento
+    if (currentDateTime >= weddingDateTime) {
+        // Redireciona para a versão pós-casamento
+        window.location.href = 'https://seusite.com/pos-casamento.html';
     }
-    if (typeof savedCfg.showErrors === 'undefined') {
-      state.cfg.showErrors = true;
-    }
-  }
-
-  // Select button
-  $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
-  $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
-
-  // drag & drop
-  const drop = document.getElementById('drop');
-  ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
-  ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
-  drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
-
-  // clear
-  $('#btnClear').addEventListener('click', ()=>{ 
-    state.labels=[]; 
-    state.availableDates = [];
-    render(); 
-    $('#file-name').textContent='Nenhum arquivo selecionado'; 
-    updateDateFilters();
-  });
-
-  // print
-  $('#btnPrint').addEventListener('click', handlePrint);
-  
-  // print preview
-  $('#btnPreview').addEventListener('click', renderPrintPreview);
-  $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
-  $('#printFromPreview').addEventListener('click', handlePrint);
-
-  // Filtros de data
-  $('#applyDateFilter').addEventListener('click', applyDateFilter);
-  $('#clearDateFilter').addEventListener('click', clearDateFilter);
-
-  // config modal
-  function openCfg(){
-    $('#cfgLogo').value = state.cfg.logo || '';
-    $('#cfgFracRule').value = state.cfg.fracRule || 'none';
-    $('#cfgFracN').value = state.cfg.fracN || 1;
-    $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
-    $('#cfgShowErrors').checked = state.cfg.showErrors;
-    $('#cfgPrintErrors').checked = state.cfg.printErrors;
-    
-    // Mostrar preview da logo se existir
-    if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
-      $('#logoPreview').src = state.cfg.logo;
-      $('#logoPreview').style.display = 'block';
-      updateLogoButtonState(true);
-    } else {
-      $('#logoPreview').style.display = 'none';
-      updateLogoButtonState(false);
-    }
-    
-    $('#cfgModal').classList.remove('hidden');
-  }
-  
-  function closeCfg(){ $('#cfgModal').classList.add('hidden'); }
-  
-  $('#cnfPrint').addEventListener('click', openCfg);
-  $('#cfgCancel').addEventListener('click', closeCfg);
-  $('#cfgSave').addEventListener('click', ()=>{
-    state.cfg.logo = $('#cfgLogo').value.trim();
-    state.cfg.fracRule = $('#cfgFracRule').value;
-    state.cfg.fracN = num($('#cfgFracN').value,1);
-    state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
-    state.cfg.showErrors = $('#cfgShowErrors').checked;
-    state.cfg.printErrors = $('#cfgPrintErrors').checked;
-    localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
-    closeCfg(); 
-    render();
-  });
-
-  // Upload/Remover logo
-  $('#logoUploadButton').addEventListener('click', function() {
-    const state = this.getAttribute('data-state');
-    
-    if (state === 'upload') {
-      $('#logoUpload').click();
-    } else {
-      removeLogo();
-    }
-  });
-  
-  $('#logoUpload').addEventListener('change', handleLogoUpload);
-
-  // Mostrar exemplo de XML
-  $('#showXmlExample').addEventListener('click', function(e) {
-    e.preventDefault();
-    $('#xmlExampleModal').style.display = 'block';
-  });
-
-  $('#closeXmlExample').addEventListener('click', function() {
-    $('#xmlExampleModal').style.display = 'none';
-  });
-
-  // Fechar modal de exemplo de XML ao clicar fora
-  window.addEventListener('click', function(e) {
-    if (e.target === $('#xmlExampleModal')) {
-      $('#xmlExampleModal').style.display = 'none';
-    }
-    if (e.target === $('#cfgModal')) {
-      closeCfg();
-    }
-  });
-
-  // render inicial
-  render();
-});
-  </script>
-  <script>
-    // REGISTRO DO SERVICE WORKER
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        // Usar caminho absoluto para o service worker no GitHub Pages
-        navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
-          scope: '/Gerador-de-etiqueta-pwa/' 
-        })
-        .then(function(registration) {
-          console.log('ServiceWorker registrado com sucesso: ', registration.scope);
-        })
-        .catch(function(error) {
-          console.log('Falha no registro do ServiceWorker: ', error);
-        });
-      });
-    }
-    
-if ('periodicSync' in navigator && navigator.serviceWorker) {
-  navigator.serviceWorker.ready.then(async registration => {
-    try {
-      // Solicitar permissão para sincronização periódica
-      const status = await navigator.permissions.query({
-        name: 'periodic-background-sync'
-      });
-
-      if (status.state === 'granted') {
-        // Registrar sincronização diária
-        await registration.periodicSync.register('update-cache', {
-          minInterval: 24 * 60 * 60 * 1000 // 24 horas em milissegundos
-        });
-        console.log('Sincronização periódica registrada com sucesso!');
-      } else {
-        console.log('Permissão para sincronização periódica não concedida');
-      }
-    } catch (error) {
-      console.error('Erro ao registrar sincronização periódica:', error);
-    }
-  });
-}
-    // Função para verificar o status
-  async function checkPeriodicSync() {
-    if ('periodicSync' in navigator && navigator.serviceWorker) {
-      const registration = await navigator.serviceWorker.ready;
-      const tags = await registration.periodicSync.getTags();
-      console.log('Sincronizações periódicas registradas:', tags);
-    }
-  }
-
-  // Chame a função após o registro do service worker
-  checkPeriodicSync();
-    
-    // Função para registrar Background Sync
-async function registerBackgroundSync() {
-  if ('serviceWorker' in navigator && 'SyncManager' in window) {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.sync.register('background-sync');
-      console.log('Background Sync registrado com sucesso');
-    } catch (error) {
-      console.log('Background Sync não suportado:', error);
-    }
-  }
-}
-
-// Registrar Background Sync quando a página carregar
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.ready.then(registration => {
-    // Registrar sincronização em segundo plano
-    registerBackgroundSync();
-    
-    // Registrar sincronização periódica (se suportado)
-    if ('periodicSync' in registration) {
-      registration.periodicSync.register('update-cache', {
-        minInterval: 24 * 60 * 60 * 1000 // 24 horas
-      }).then(() => {
-        console.log('Sincronização periódica registrada');
-      }).catch(error => {
-        console.log('Sincronização periódica não suportada:', error);
-      });
-    }
-  });
-}
-  </script>
+})();
+</script>
 </body>
 </html>
