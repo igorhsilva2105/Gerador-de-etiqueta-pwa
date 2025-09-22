@@ -67,6 +67,15 @@
     .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
 
+    /* Estilo para campo destacado */
+    .label .meta .highlighted {
+      background-color: #000 !important;
+      color: #fff !important;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+
     /* small helper for parse status */
     #file-name { font-size: 12px; }
 
@@ -182,6 +191,17 @@
       /* Mostrar etiquetas com erro apenas se a configuração permitir */
       body.print-errors .label.problem {
         display: flex !important;
+      }
+
+      /* Estilo para campo destacado na impressão */
+      .label .meta .highlighted {
+        background-color: #000 !important;
+        color: #fff !important;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: bold;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
     }
 
@@ -685,6 +705,21 @@
             <option value="date-desc">Data de Emissão (Mais Recente)</option>
           </select>
         </label>
+        <!-- Nova opção de campo destacado -->
+        <label class="text-sm">Destacar campo
+          <select id="cfgHighlightField" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
+            <option value="">Nenhum</option>
+            <option value="nNF" selected>Nota Fiscal</option>
+            <option value="xProd">Nome do produto</option>
+            <option value="cEAN">EAN</option>
+            <option value="cProd">Código</option>
+            <option value="qCom">Quantidade</option>
+            <option value="uCom">Unidade</option>
+            <option value="vUnCom">Preço</option>
+            <option value="emit">Emitente</option>
+            <option value="dest">Destinatário</option>
+          </select>
+        </label>
         <div class="flex justify-end gap-2 pt-2">
           <button id="cfgCancel" class="px-4 py-2 rounded-xl border">Cancelar</button>
           <button id="cfgSave" class="px-4 py-2 rounded-xl bg-slate-900 text-white">Salvar</button>
@@ -712,7 +747,8 @@ const state = {
     printErrors: false,
     fracRule: "none",
     fracN: 1,
-    sortOrder: "nNF-asc" // Nova opção
+    sortOrder: "nNF-asc",
+    highlightField: "nNF" // Nova opção: campo a ser destacado
   }
 };
 
@@ -1030,20 +1066,30 @@ function render() {
     
     // meta
     const meta = document.createElement('div'); meta.className = 'meta';
-    function addLine(field,label,value){ 
+    
+    function addLine(field, label, value) { 
       if (!state.cfg.fields.includes(field)) return; 
-      const d=document.createElement('div'); 
-      d.textContent=label+': '+(value??'-'); 
+      
+      const d = document.createElement('div'); 
+      d.textContent = label + ': ' + (value ?? '-');
+      
+      // Aplicar destaque se este for o campo selecionado
+      if (state.cfg.highlightField === field) {
+        d.classList.add('highlighted');
+      }
+      
       meta.appendChild(d); 
     }
-    addLine('cEAN','EAN', data.cEAN || '-');
-    addLine('cProd','Código', data.cProd || '-');
-    addLine('nNF','NF', data.nNF || '-');
-    addLine('qCom','Qtd', Number.isFinite(data.qCom)?data.qCom:data.qComStr||'-');
-    addLine('uCom','Un', data.uCom||'-');
-    addLine('vUnCom','Preço', data.vUnCom?('R$ '+data.vUnCom):'-');
-    addLine('emit','Emitente', data.emit||'-');
-    addLine('dest','Dest', data.dest||'-');
+    
+    addLine('cEAN', 'EAN', data.cEAN || '-');
+    addLine('cProd', 'Código', data.cProd || '-');
+    addLine('nNF', 'NF', data.nNF || '-');
+    addLine('qCom', 'Qtd', Number.isFinite(data.qCom) ? data.qCom : data.qComStr || '-');
+    addLine('uCom', 'Un', data.uCom || '-');
+    addLine('vUnCom', 'Preço', data.vUnCom ? ('R$ ' + data.vUnCom) : '-');
+    addLine('emit', 'Emitente', data.emit || '-');
+    addLine('dest', 'Dest', data.dest || '-');
+    
     card.appendChild(meta);
     
     // footer
@@ -1265,6 +1311,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof savedCfg.sortOrder === 'undefined') {
       state.cfg.sortOrder = 'nNF-asc';
     }
+    if (typeof savedCfg.highlightField === 'undefined') {
+      state.cfg.highlightField = 'nNF'; // Valor padrão para versões anteriores
+    }
   }
 
   // Select button
@@ -1306,7 +1355,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
     $('#cfgShowErrors').checked = state.cfg.showErrors;
     $('#cfgPrintErrors').checked = state.cfg.printErrors;
-    $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc'; // Nova linha
+    $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc';
+    $('#cfgHighlightField').value = state.cfg.highlightField || 'nNF'; // Nova linha
     
     // Mostrar preview da logo se existir
     if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
@@ -1332,7 +1382,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
     state.cfg.showErrors = $('#cfgShowErrors').checked;
     state.cfg.printErrors = $('#cfgPrintErrors').checked;
-    state.cfg.sortOrder = $('#cfgSortOrder').value; // Nova linha
+    state.cfg.sortOrder = $('#cfgSortOrder').value;
+    state.cfg.highlightField = $('#cfgHighlightField').value; // Nova linha
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
