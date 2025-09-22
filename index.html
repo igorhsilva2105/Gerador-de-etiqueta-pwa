@@ -676,6 +676,15 @@
           <label class="text-sm"><input type="checkbox" id="cfgShowErrors" checked> Exibir itens com erro</label>
           <label class="text-sm"><input type="checkbox" id="cfgPrintErrors"> Imprimir itens com erro</label>
         </fieldset>
+        <!-- Nova opção de ordenação -->
+        <label class="text-sm">Ordenar etiquetas por
+          <select id="cfgSortOrder" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
+            <option value="nNF-asc">Nota Fiscal (Crescente)</option>
+            <option value="nNF-desc">Nota Fiscal (Decrescente)</option>
+            <option value="date-asc">Data de Emissão (Mais Antiga)</option>
+            <option value="date-desc">Data de Emissão (Mais Recente)</option>
+          </select>
+        </label>
         <div class="flex justify-end gap-2 pt-2">
           <button id="cfgCancel" class="px-4 py-2 rounded-xl border">Cancelar</button>
           <button id="cfgSave" class="px-4 py-2 rounded-xl bg-slate-900 text-white">Salvar</button>
@@ -702,7 +711,8 @@ const state = {
     showErrors: true,
     printErrors: false,
     fracRule: "none",
-    fracN: 1
+    fracN: 1,
+    sortOrder: "nNF-asc" // Nova opção
   }
 };
 
@@ -834,6 +844,34 @@ function validateLabel(data) {
   return errs;
 }
 
+// --------- Função de ordenação ---------
+function sortLabels(labels) {
+  const sortOrder = state.cfg.sortOrder || 'nNF-asc';
+  
+  return [...labels].sort((a, b) => {
+    switch (sortOrder) {
+      case 'nNF-asc':
+        return num(a.nNF) - num(b.nNF);
+      
+      case 'nNF-desc':
+        return num(b.nNF) - num(a.nNF);
+      
+      case 'date-asc':
+        const dateA = new Date(a.dataEmissao + 'T' + (a.horaEmissao || '00:00:00'));
+        const dateB = new Date(b.dataEmissao + 'T' + (b.horaEmissao || '00:00:00'));
+        return dateA - dateB;
+      
+      case 'date-desc':
+        const dateC = new Date(a.dataEmissao + 'T' + (a.horaEmissao || '00:00:00'));
+        const dateD = new Date(b.dataEmissao + 'T' + (b.horaEmissao || '00:00:00'));
+        return dateD - dateC;
+      
+      default:
+        return 0;
+    }
+  });
+}
+
 // --------- Filtro por data e hora ---------
 function updateDateFilters() {
   const dateFilters = $('#dateFilters');
@@ -942,10 +980,13 @@ function render() {
   const issues = [];
   let valid = 0, invalid = 0;
   
+  // Aplicar ordenação antes do filtro de data
+  let sortedLabels = sortLabels(state.labels);
+  
   // Filtrar por data e hora se houver filtro aplicado
-  let labelsToRender = state.labels;
+  let labelsToRender = sortedLabels;
   if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    labelsToRender = state.labels.filter(item => {
+    labelsToRender = sortedLabels.filter(item => {
       if (!item.dataEmissao) return false;
       
       // Criar objetos Date para comparação
@@ -1221,6 +1262,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof savedCfg.showErrors === 'undefined') {
       state.cfg.showErrors = true;
     }
+    if (typeof savedCfg.sortOrder === 'undefined') {
+      state.cfg.sortOrder = 'nNF-asc';
+    }
   }
 
   // Select button
@@ -1262,6 +1306,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
     $('#cfgShowErrors').checked = state.cfg.showErrors;
     $('#cfgPrintErrors').checked = state.cfg.printErrors;
+    $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc'; // Nova linha
     
     // Mostrar preview da logo se existir
     if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
@@ -1287,6 +1332,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
     state.cfg.showErrors = $('#cfgShowErrors').checked;
     state.cfg.printErrors = $('#cfgPrintErrors').checked;
+    state.cfg.sortOrder = $('#cfgSortOrder').value; // Nova linha
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
