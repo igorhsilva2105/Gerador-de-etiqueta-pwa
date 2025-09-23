@@ -5,30 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Automatizador de Etiquetas</title>
   <!--PWA configs-->
-  <!-- Usar caminho absoluto para o manifesto -->
   <link rel="manifest" href="/Gerador-de-etiqueta-pwa/manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Etiquetadora">
   
-  <!-- Ícones PWA com caminhos absolutos -->
+  <!-- Ícones PWA -->
   <link rel="icon" type="image/png" sizes="32x32" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-16.png">
   <link rel="shortcut icon" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
   <link rel="apple-touch-icon" href="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
 
-  <!-- Para Windows/PC - com caminhos absolutos -->
+  <!-- Para Windows/PC -->
   <meta name="msapplication-TileImage" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
   <meta name="msapplication-square70x70logo" content="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-64.png">
   <meta name="msapplication-square150x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
   <meta name="msapplication-wide310x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Wide310x150Logo.scale-100.png">
   <meta name="msapplication-square310x310logo" content="/Gerador-de-etiqueta-pwa/windows11/LargeTile.scale-100.png">
 
-  <!-- Tailwind via CDN (apenas para protótipo) -->
+  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Estilos anteriores mantidos */
     /* Área de impressão: etiquetas 6x4 cm em grade */
     @page { 
       size: A4; 
@@ -74,28 +72,33 @@
       padding: 2px 4px;
       border-radius: 3px;
       font-weight: bold;
-      font-size: 15px;
     }
 
     /* Estilo para campo destacado com regra específica */
     .label .meta .highlighted-rule {
-      background-color: #ef4444 !important; /* Vermelho */
+      background-color: #ef4444 !important;
       color: #fff !important;
       padding: 2px 4px;
       border-radius: 3px;
       font-weight: bold;
-      font-size: 20px;
     }
 
     /* small helper for parse status */
     #file-name { font-size: 12px; }
 
-    /* simple modal for configs (keeps styling of main.html) */
-    .modal-backdrop { background: rgba(15, 23, 42, 0.6); }
+    /* simple modal for configs */
+    .modal-backdrop { 
+      background: rgba(15, 23, 42, 0.6); 
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 40;
+    }
 
-    /* Estilos para impressão - REVISADOS */
+    /* Estilos para impressão */
     @media print {
-      /* Reset completo para impressão */
       * {
         margin: 0;
         padding: 0;
@@ -113,7 +116,6 @@
         align-items: flex-start;
       }
       
-      /* Ocultar todos os elementos exceto as etiquetas */
       body > *:not(main) {
         display: none !important;
       }
@@ -167,7 +169,7 @@
         gap: 0.35cm !important;
         justify-content: center;
         width: 100%;
-        max-width: 19.5cm; /* Largura máxima para caber 3 colunas com gap */
+        max-width: 19.5cm;
         margin: 1cm auto !important;
         padding: 0 !important;
         page-break-before: avoid;
@@ -189,22 +191,18 @@
         overflow: hidden !important;
       }
       
-      /* Garantir que não haja quebras indesejadas */
       .labels-grid {
         page-break-inside: auto;
       }
       
-      /* Ocultar etiquetas com erro se a configuração estiver desativada */
       .label.problem {
         display: none !important;
       }
       
-      /* Mostrar etiquetas com erro apenas se a configuração permitir */
       body.print-errors .label.problem {
         display: flex !important;
       }
 
-      /* Estilo para campo destacado na impressão */
       .label .meta .highlighted {
         background-color: #000 !important;
         color: #fff !important;
@@ -215,9 +213,8 @@
         print-color-adjust: exact;
       }
 
-      /* Estilo para campo destacado com regra específica na impressão */
       .label .meta .highlighted-rule {
-        background-color: #ef4444 !important; /* Vermelho */
+        background-color: #ef4444 !important;
         color: #fff !important;
         padding: 2px 4px;
         border-radius: 3px;
@@ -426,40 +423,107 @@
       display: none;
     }
 
-    /* Estilos melhorados para o modal de configurações */
-    #cfgModal .bg-white {
-      width: 500px;
-      max-width: 90vw;
-      max-height: 90vh;
+    /* Estilos melhorados para o modal de configurações - CORRIGIDOS */
+    #cfgModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #cfgModal.active {
+      display: flex;
+    }
+    
+    #cfgModal .config-container {
+      width: 420px;
+      max-width: 85vw;
+      max-height: 75vh;
       display: flex;
       flex-direction: column;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      z-index: 60;
+      position: relative;
     }
 
-    #cfgModal .bg-white > .flex-col {
-      height: 100%;
+    #cfgModal .config-header {
+      padding: 1rem 1.25rem 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: white;
+      flex-shrink: 0;
     }
 
-    #cfgModal .overflow-y-auto {
-      scrollbar-width: thin;
-      scrollbar-color: #cbd5e1 #f1f5f9;
+    #cfgModal .config-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem 1.25rem;
+      max-height: calc(75vh - 120px);
     }
 
-    #cfgModal .overflow-y-auto::-webkit-scrollbar {
+    #cfgModal .config-footer {
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    #cfgModal .config-content::-webkit-scrollbar {
       width: 6px;
     }
 
-    #cfgModal .overflow-y-auto::-webkit-scrollbar-track {
+    #cfgModal .config-content::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 3px;
     }
 
-    #cfgModal .overflow-y-auto::-webkit-scrollbar-thumb {
+    #cfgModal .config-content::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 3px;
     }
 
-    #cfgModal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    #cfgModal .config-content::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
+    }
+
+    /* Estilos para campos mais compactos */
+    .compact-field {
+      margin-bottom: 0.75rem;
+    }
+    
+    .compact-field legend {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    
+    .compact-checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    
+    .compact-checkbox-group label {
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    
+    .compact-checkbox-group input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
     }
   </style>
 </head>
@@ -723,121 +787,138 @@
     </div>
   </div>
 
-  <!-- Config modal (tailwind) - VERSÃO MELHORADA -->
-  <div id="cfgModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-    <div class="modal-backdrop absolute inset-0"></div>
-    <div class="bg-white rounded-2xl shadow-lg p-6 z-10 w-full max-w-lg" style="max-height: 90vh; width: 500px;">
-      <div class="flex flex-col h-full">
-        <h3 class="text-lg font-semibold mb-3">Configurações de geração</h3>
-        
-        <div class="flex-1 overflow-y-auto pr-2 -mr-2" style="max-height: calc(90vh - 120px);">
-          <div class="grid gap-3">
-            <label class="text-sm">Logo (URL ou data URI)
-              <div class="logo-input-container mt-1">
-                <input id="cfgLogo" type="text" class="block w-full rounded-md border border-slate-300 p-2" placeholder="https://... ou data:image/png;base64,...">
-                <input type="file" id="logoUpload" accept="image/*" class="hidden">
-                <button id="logoUploadButton" type="button" class="px-4 py-2 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200">Upload</button>
-              </div>
-              <img id="logoPreview" class="logo-preview" alt="Preview da logo">
-            </label>
-            <div class="flex gap-2">
-              <label class="flex-1">Regra de fracionamento
-                <select id="cfgFracRule" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
+  <!-- Config modal - CORRIGIDO -->
+  <div id="cfgModal">
+    <div class="modal-backdrop"></div>
+    <div class="config-container">
+      <div class="config-header">
+        <h3 class="text-lg font-semibold">Configurações de geração</h3>
+      </div>
+      
+      <div class="config-content">
+        <div class="space-y-3">
+          <div class="compact-field">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Logo (URL ou data URI)</label>
+            <div class="logo-input-container">
+              <input id="cfgLogo" type="text" class="block w-full rounded-md border border-slate-300 p-2 text-sm" placeholder="https://... ou data:image/png;base64,...">
+              <input type="file" id="logoUpload" accept="image/*" class="hidden">
+              <button id="logoUploadButton" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-sm whitespace-nowrap">Upload</button>
+            </div>
+            <img id="logoPreview" class="logo-preview mt-2" alt="Preview da logo">
+          </div>
+          
+          <div class="compact-field">
+            <div class="flex gap-2 items-end">
+              <div class="flex-1">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Regra de fracionamento</label>
+                <select id="cfgFracRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
                   <option value="none">Sem fracionamento</option>
                   <option value="fixed">Fracionar em N etiquetas por item</option>
                   <option value="perQty">1 etiqueta por unidade</option>
                 </select>
-              </label>
-              <label style="width:100px">N
-                <input id="cfgFracN" type="number" min="1" value="1" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-              </label>
-            </div>
-            <fieldset class="flex gap-2 flex-wrap">
-              <legend class="w-full">Campos exibidos</legend>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="xProd" checked> Nome do produto</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="cEAN"> EAN</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="cProd"> Código</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="nNF" checked> Nº da nota</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="qCom" checked> Quantidade</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="uCom" checked> Unidade</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="vUnCom"> Preço</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="emit"> Emitente</label>
-              <label class="text-sm"><input type="checkbox" class="cfgField" value="dest"> Destinatário</label>
-            </fieldset>
-            <fieldset class="flex gap-2 flex-wrap">
-              <legend class="w-full">Configurações de erros</legend>
-              <label class="text-sm"><input type="checkbox" id="cfgShowErrors" checked> Exibir itens com erro</label>
-              <label class="text-sm"><input type="checkbox" id="cfgPrintErrors"> Imprimir itens com erro</label>
-            </fieldset>
-            <!-- Nova opção de ordenação -->
-            <label class="text-sm">Ordenar etiquetas por
-              <select id="cfgSortOrder" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-                <option value="nNF-asc">Nota Fiscal (Crescente)</option>
-                <option value="nNF-desc">Nota Fiscal (Decrescente)</option>
-                <option value="date-asc">Data de Emissão (Mais Antiga)</option>
-                <option value="date-desc">Data de Emissão (Mais Recente)</option>
-              </select>
-            </label>
-            <!-- Nova opção de campo destacado -->
-            <label class="text-sm">Destacar campo
-              <select id="cfgHighlightField" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-                <option value="">Nenhum</option>
-                <option value="nNF" selected>Nota Fiscal</option>
-                <option value="xProd">Nome do produto</option>
-                <option value="cEAN">EAN</option>
-                <option value="cProd">Código</option>
-                <option value="qCom">Quantidade</option>
-                <option value="uCom">Unidade</option>
-                <option value="vUnCom">Preço</option>
-                <option value="emit">Emitente</option>
-                <option value="dest">Destinatário</option>
-              </select>
-            </label>
-            <!-- Nova opção de campo destacado com regra específica -->
-            <label class="text-sm">Destacar campo (regra específica)
-              <select id="cfgHighlightFieldRule" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-                <option value="">Nenhum</option>
-                <option value="nNF">Nota Fiscal</option>
-                <option value="xProd">Nome do produto</option>
-                <option value="cEAN">EAN</option>
-                <option value="cProd">Código</option>
-                <option value="qCom" selected>Quantidade</option>
-                <option value="uCom">Unidade</option>
-                <option value="vUnCom">Preço</option>
-                <option value="emit">Emitente</option>
-                <option value="dest">Destinatário</option>
-              </select>
-            </label>
-            <!-- Configuração da regra específica -->
-            <div id="ruleConfig" class="rule-config">
-              <label class="text-sm">Condição para destacar
-                <select id="cfgRuleCondition" class="mt-1 block w-full rounded-md border border-slate-300 p-2">
-                  <option value="qtyGreaterThan1">Quantidade maior que 1</option>
-                  <option value="qtyGreaterThan10">Quantidade maior que 10</option>
-                  <option value="qtyGreaterThan100">Quantidade maior que 100</option>
-                  <option value="custom">Personalizada</option>
-                </select>
-              </label>
-              <div id="customRuleConfig" class="mt-2 hidden">
-                <label class="text-sm">Regra personalizada (JavaScript)
-                  <input type="text" id="cfgCustomRule" class="mt-1 block w-full rounded-md border border-slate-300 p-2" placeholder="Ex: value > 1">
-                </label>
-                <p class="text-xs text-slate-500 mt-1">Use "value" para referenciar o valor do campo</p>
+              </div>
+              <div style="width:70px">
+                <label class="block text-sm font-medium text-slate-700 mb-1">N</label>
+                <input id="cfgFracN" type="number" min="1" value="1" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
               </div>
             </div>
           </div>
+          
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Campos exibidos</legend>
+              <div class="compact-checkbox-group">
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="xProd" checked> Nome do produto</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="cEAN"> EAN</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="cProd"> Código</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="nNF" checked> Nº da nota</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="qCom" checked> Quantidade</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="uCom" checked> Unidade</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="vUnCom"> Preço</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="emit"> Emitente</label>
+                <label class="text-sm"><input type="checkbox" class="cfgField" value="dest"> Destinatário</label>
+              </div>
+            </fieldset>
+          </div>
+          
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Configurações de erros</legend>
+              <div class="space-y-1">
+                <label class="text-sm flex items-center"><input type="checkbox" id="cfgShowErrors" checked class="mr-2"> Exibir itens com erro</label>
+                <label class="text-sm flex items-center"><input type="checkbox" id="cfgPrintErrors" class="mr-2"> Imprimir itens com erro</label>
+              </div>
+            </fieldset>
+          </div>
+          
+          <div class="compact-field">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Ordenar etiquetas por</label>
+            <select id="cfgSortOrder" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+              <option value="nNF-asc">Nota Fiscal (Crescente)</option>
+              <option value="nNF-desc">Nota Fiscal (Decrescente)</option>
+              <option value="date-asc">Data de Emissão (Mais Antiga)</option>
+              <option value="date-desc">Data de Emissão (Mais Recente)</option>
+            </select>
+          </div>
+          
+          <div class="compact-field">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Destacar campo</label>
+            <select id="cfgHighlightField" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+              <option value="">Nenhum</option>
+              <option value="nNF" selected>Nota Fiscal</option>
+              <option value="xProd">Nome do produto</option>
+              <option value="cEAN">EAN</option>
+              <option value="cProd">Código</option>
+              <option value="qCom">Quantidade</option>
+              <option value="uCom">Unidade</option>
+              <option value="vUnCom">Preço</option>
+              <option value="emit">Emitente</option>
+              <option value="dest">Destinatário</option>
+            </select>
+          </div>
+          
+          <div class="compact-field">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Destacar campo (regra específica)</label>
+            <select id="cfgHighlightFieldRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+              <option value="">Nenhum</option>
+              <option value="nNF">Nota Fiscal</option>
+              <option value="xProd">Nome do produto</option>
+              <option value="cEAN">EAN</option>
+              <option value="cProd">Código</option>
+              <option value="qCom" selected>Quantidade</option>
+              <option value="uCom">Unidade</option>
+              <option value="vUnCom">Preço</option>
+              <option value="emit">Emitente</option>
+              <option value="dest">Destinatário</option>
+            </select>
+          </div>
+          
+          <div id="ruleConfig" class="rule-config compact-field">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Condição para destacar</label>
+            <select id="cfgRuleCondition" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+              <option value="qtyGreaterThan1">Quantidade maior que 1</option>
+              <option value="qtyGreaterThan10">Quantidade maior que 10</option>
+              <option value="qtyGreaterThan100">Quantidade maior que 100</option>
+              <option value="custom">Personalizada</option>
+            </select>
+            <div id="customRuleConfig" class="mt-2 hidden">
+              <label class="block text-sm font-medium text-slate-700 mb-1">Regra personalizada (JavaScript)</label>
+              <input type="text" id="cfgCustomRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm" placeholder="Ex: value > 1">
+              <p class="text-xs text-slate-500 mt-1">Use "value" para referenciar o valor do campo</p>
+            </div>
+          </div>
         </div>
-        
-        <div class="flex justify-end gap-2 pt-4 mt-4 border-t border-slate-200">
-          <button id="cfgCancel" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Cancelar</button>
-          <button id="cfgSave" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Salvar</button>
-        </div>
+      </div>
+      
+      <div class="config-footer">
+        <button id="cfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
+        <button id="cfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
       </div>
     </div>
   </div>
 
   <script>
-// --------- Estado e utilitários (adaptado do modelo) ---------
+// --------- Estado e utilitários ---------
 const state = {
   labels: [],
   availableDates: [],
@@ -857,9 +938,9 @@ const state = {
     fracN: 1,
     sortOrder: "nNF-asc",
     highlightField: "nNF",
-    highlightFieldRule: "qCom", // Novo: campo para regra específica
-    ruleCondition: "qtyGreaterThan1", // Novo: condição da regra
-    customRule: "" // Novo: regra personalizada
+    highlightFieldRule: "qCom",
+    ruleCondition: "qtyGreaterThan1",
+    customRule: ""
   }
 };
 
@@ -873,7 +954,7 @@ function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
 function formatCNPJ(s){
   const d = onlyDigits(s);
   if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
-  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4'); // CPF fallback
+  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
   return s || '-';
 }
 
@@ -914,7 +995,6 @@ function extractFromDoc(doc) {
   const dest = findFirstByLocalName(doc, 'dest');
   const ide = findFirstByLocalName(doc, 'ide') || doc;
   const emitName = text(findFirstByLocalName(emit||doc,'xNome'));
-  // Tenta várias formas de achar CNPJ/CPF (case-insensitive). Se falhar, usa regex no XML serializado.
   let emitCnpj = findTextInsensitive(emit||doc, 'CNPJ') || findTextInsensitive(emit||doc, 'cnpj') || findTextInsensitive(emit||doc, 'CPF') || '';
   if (!emitCnpj) {
     try {
@@ -922,25 +1002,20 @@ function extractFromDoc(doc) {
       const re = /<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i;
       const m = serialized.match(re);
       if (m && m[1]) emitCnpj = (m[1]||'').replace(/\D/g,'');
-    } catch(e){
-      // ignore
-    }
+    } catch(e){}
   }
   const destName = text(findFirstByLocalName(dest||doc,'xNome'));
   const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
   
-  // Extrair data e hora de emissão
   let dataEmissao = '';
   let horaEmissao = '';
   const dhEmi = text(findFirstByLocalName(ide, 'dhEmi'));
   if (dhEmi) {
-    // Formato: 2021-06-01T10:00:00-03:00
     const dateTimePart = dhEmi.split('T');
     if (dateTimePart.length > 0) dataEmissao = dateTimePart[0];
     if (dateTimePart.length > 1) {
-      // Extrair apenas a parte da hora (HH:MM:SS)
       const timePart = dateTimePart[1].split('-')[0].split('+')[0];
-      horaEmissao = timePart.substring(0, 8); // Garantir formato HH:MM:SS
+      horaEmissao = timePart.substring(0, 8);
     }
   }
   
@@ -956,7 +1031,7 @@ function extractFromDoc(doc) {
     const qCom = num(qComStr, NaN);
     return { 
       xProd, cEAN, cProd, qCom, qComStr, uCom, vUnCom,
-      emit: emitName, emitCnpj, // passa CNPJ aqui
+      emit: emitName, emitCnpj,
       dest: destName, nNF, dataEmissao, horaEmissao 
     };
   });
@@ -978,7 +1053,6 @@ function expandByFracionamento(item) {
 
 function validateLabel(data) {
   const errs=[];
-  // Verifica se é um erro de parsing de arquivo
   if (data._fatalError) {
     errs.push('Erro no processamento do arquivo');
     return errs;
@@ -991,13 +1065,11 @@ function validateLabel(data) {
   return errs;
 }
 
-// --------- Nova função para verificar regra específica ---------
 function checkRuleCondition(field, value) {
   if (!state.cfg.highlightFieldRule || state.cfg.highlightFieldRule === '') {
     return false;
   }
   
-  // Só aplica se for o campo correto
   if (field !== state.cfg.highlightFieldRule) {
     return false;
   }
@@ -1018,7 +1090,6 @@ function checkRuleCondition(field, value) {
     case 'custom':
       if (state.cfg.customRule) {
         try {
-          // Cria uma função segura para avaliar a condição
           const func = new Function('value', `return ${state.cfg.customRule}`);
           return func(numValue);
         } catch (e) {
@@ -1033,7 +1104,6 @@ function checkRuleCondition(field, value) {
   }
 }
 
-// --------- Função de ordenação ---------
 function sortLabels(labels) {
   const sortOrder = state.cfg.sortOrder || 'nNF-asc';
   
@@ -1061,7 +1131,6 @@ function sortLabels(labels) {
   });
 }
 
-// --------- Filtro por data e hora ---------
 function updateDateFilters() {
   const dateFilters = $('#dateFilters');
   if (state.availableDates.length > 0) {
@@ -1077,7 +1146,6 @@ function updateDateRangeTags() {
   const container = $('#dateRangeTags');
   container.innerHTML = '';
   
-  // Agrupar por mês/ano
   const dateGroups = {};
   state.availableDates.forEach(date => {
     const [year, month] = date.split('-');
@@ -1088,7 +1156,6 @@ function updateDateRangeTags() {
     dateGroups[key].push(date);
   });
   
-  // Criar tags para cada mês
   Object.keys(dateGroups).sort().reverse().forEach(key => {
     const [year, month] = key.split('-');
     const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -1101,7 +1168,6 @@ function updateDateRangeTags() {
     tag.addEventListener('click', () => {
       $('#filterStartDate').value = tag.dataset.start;
       $('#filterEndDate').value = tag.dataset.end;
-      // Manter os horários padrão ao selecionar uma tag
       $('#filterStartTime').value = "00:00";
       $('#filterEndTime').value = "23:59";
       applyDateFilter();
@@ -1162,23 +1228,19 @@ function clearDateFilter() {
   updateDateFilterSummary();
 }
 
-// --------- Renderização adaptada ao main.html ---------
 function render() {
   const mount = $('#labels');
   mount.innerHTML = '';
   const issues = [];
   let valid = 0, invalid = 0;
   
-  // Aplicar ordenação antes do filtro de data
   let sortedLabels = sortLabels(state.labels);
   
-  // Filtrar por data e hora se houver filtro aplicado
   let labelsToRender = sortedLabels;
   if (state.dateFilter.startDate && state.dateFilter.endDate) {
     labelsToRender = sortedLabels.filter(item => {
       if (!item.dataEmissao) return false;
       
-      // Criar objetos Date para comparação
       const itemDateTime = new Date(item.dataEmissao + 'T' + (item.horaEmissao || '00:00:00'));
       const filterStartDateTime = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
       const filterEndDateTime = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
@@ -1196,7 +1258,6 @@ function render() {
     const card = document.createElement('div');
     card.className = 'label' + (isErr? ' problem':'');
     
-    // Header (logo acima da etiqueta)
     const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
     if (state.cfg.logo) {
       const himg = document.createElement('img');
@@ -1210,14 +1271,12 @@ function render() {
     }
     card.appendChild(headerDiv);
     
-    // Title
     if (state.cfg.fields.includes('xProd')) {
       const h3 = document.createElement('h3');
       h3.textContent = data.xProd || '(Sem nome)';
       card.appendChild(h3);
     }
     
-    // meta
     const meta = document.createElement('div'); meta.className = 'meta';
     
     function addLine(field, label, value) { 
@@ -1226,12 +1285,10 @@ function render() {
       const d = document.createElement('div'); 
       d.textContent = label + ': ' + (value ?? '-');
       
-      // Aplicar destaque se este for o campo selecionado
       if (state.cfg.highlightField === field) {
         d.classList.add('highlighted');
       }
       
-      // Aplicar destaque com regra específica
       if (checkRuleCondition(field, value)) {
         d.classList.add('highlighted-rule');
       }
@@ -1250,12 +1307,10 @@ function render() {
     
     card.appendChild(meta);
     
-    // footer
     const footer = document.createElement('div'); footer.className='footer';
     if (isErr) {
       footer.textContent = 'ERRO: '+ errs.join('; ');
     } else {
-      // mostra a frase pedida — usa formatCNPJ para ficar mais legível
       const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
       footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
     }
@@ -1265,7 +1320,6 @@ function render() {
     if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
   }
   
-  // update count and issues
   $('#countLabels').textContent = `${labelsToRender.length} de ${state.labels.length} etiquetas`;
   const issuesEl = $('#issues'); 
   issuesEl.innerHTML='';
@@ -1283,7 +1337,6 @@ function render() {
     }
   }
   
-  // Atualiza o painel de avisos conforme existem erros ou não
   const erroPanel = $('#erroPanel');
   if (issues.length === 0) {
     erroPanel.classList.add('bg-green-50', 'border-green-200');
@@ -1294,16 +1347,13 @@ function render() {
   }
 }
 
-// --------- Visualização de impressão ---------
 function renderPrintPreview() {
   const previewMount = $('#previewLabels');
   previewMount.innerHTML = '';
   
-  // Clona as etiquetas atuais para a visualização
   const labelsContainer = $('#labels');
   const labels = labelsContainer.querySelectorAll('.label');
   
-  // Aplica estilos específicos para a visualização
   previewMount.style.display = 'grid';
   previewMount.style.gridTemplateColumns = 'repeat(3, 6cm)';
   previewMount.style.gap = '0.35cm';
@@ -1316,11 +1366,9 @@ function renderPrintPreview() {
     previewMount.appendChild(clone);
   });
   
-  // Exibe o modal de visualização
   $('#printPreviewModal').style.display = 'block';
 }
 
-// --------- Arquivo -> leitura -> parsing ---------
 async function readFilesAsText(files) {
   const arr = Array.from(files);
   return Promise.all(arr.map(file=>new Promise((resolve,reject)=>{
@@ -1334,11 +1382,10 @@ async function handleFiles(files) {
   try {
     const texts = await readFilesAsText(files);
     const all = [];
-    const datesSet = new Set(); // Para coletar datas únicas
+    const datesSet = new Set();
     
     for (const {name,text} of texts) {
       try {
-        // Verifica se o arquivo contém conteúdo XML válido
         if (!text || !text.trim().startsWith('<?xml') && !text.trim().startsWith('<nfe')) {
           throw new Error('Arquivo não é um XML válido');
         }
@@ -1346,19 +1393,16 @@ async function handleFiles(files) {
         const doc = parseXml(text);
         const data = extractFromDoc(doc);
         
-        // Adiciona a data ao conjunto de datas disponíveis
         if (data.dataEmissao) {
           datesSet.add(data.dataEmissao);
         }
         
-        // debug: mostra no console o CNPJ encontrado para cada arquivo (útil pra troubleshooting)
         console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
         for (const item of data.items) {
           const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao, horaEmissao: data.horaEmissao});
           all.push(...expandedItems);
         }
       } catch (e) {
-        // Cria um item de erro que será detectado pela validação
         all.push({ 
           xProd: `(Erro no arquivo ${name})`, 
           qComStr:'-', 
@@ -1377,11 +1421,9 @@ async function handleFiles(files) {
       }
     }
     
-    // Atualiza as datas disponíveis
     state.availableDates = Array.from(datesSet).sort();
     state.labels = all;
     
-    // Atualiza os filtros de data
     updateDateFilters();
     
     render();
@@ -1391,9 +1433,7 @@ async function handleFiles(files) {
   }
 }
 
-// --------- Função para imprimir ---------
 function handlePrint() {
-  // Adiciona/remove classe para controlar impressão de erros
   if (state.cfg.printErrors) {
     document.body.classList.add('print-errors');
   } else {
@@ -1403,7 +1443,6 @@ function handlePrint() {
   window.print();
 }
 
-// --------- Função para converter imagem para base64 ---------
 function handleLogoUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1420,13 +1459,11 @@ function handleLogoUpload(event) {
     $('#logoPreview').src = base64;
     $('#logoPreview').style.display = 'block';
     
-    // Atualiza o botão para modo "Remover"
     updateLogoButtonState(true);
   };
   reader.readAsDataURL(file);
 }
 
-// --------- Função para atualizar o estado do botão de logo ---------
 function updateLogoButtonState(hasImage) {
   const uploadButton = $('#logoUploadButton');
   
@@ -1443,7 +1480,6 @@ function updateLogoButtonState(hasImage) {
   }
 }
 
-// --------- Função para remover a logo ---------
 function removeLogo() {
   $('#cfgLogo').value = '';
   $('#logoPreview').style.display = 'none';
@@ -1459,7 +1495,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const savedCfg = JSON.parse(saved);
     Object.assign(state.cfg, savedCfg);
     
-    // Para compatibilidade com versões anteriores
     if (typeof savedCfg.printErrors === 'undefined') {
       state.cfg.printErrors = false;
     }
@@ -1472,7 +1507,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof savedCfg.highlightField === 'undefined') {
       state.cfg.highlightField = 'nNF';
     }
-    // Novas propriedades para regras específicas
     if (typeof savedCfg.highlightFieldRule === 'undefined') {
       state.cfg.highlightFieldRule = 'qCom';
     }
@@ -1525,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  // config modal
+  // config modal - CORRIGIDO
   function openCfg(){
     $('#cfgLogo').value = state.cfg.logo || '';
     $('#cfgFracRule').value = state.cfg.fracRule || 'none';
@@ -1539,7 +1573,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $('#cfgRuleCondition').value = state.cfg.ruleCondition || 'qtyGreaterThan1';
     $('#cfgCustomRule').value = state.cfg.customRule || '';
     
-    // Mostrar/ocultar configuração de regra personalizada
     const customRuleConfig = $('#customRuleConfig');
     if (state.cfg.ruleCondition === 'custom') {
       customRuleConfig.classList.remove('hidden');
@@ -1547,7 +1580,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       customRuleConfig.classList.add('hidden');
     }
     
-    // Mostrar preview da logo se existir
     if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
       $('#logoPreview').src = state.cfg.logo;
       $('#logoPreview').style.display = 'block';
@@ -1557,10 +1589,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
       updateLogoButtonState(false);
     }
     
-    $('#cfgModal').classList.remove('hidden');
+    $('#cfgModal').classList.add('active');
   }
   
-  function closeCfg(){ $('#cfgModal').classList.add('hidden'); }
+  function closeCfg(){ 
+    $('#cfgModal').classList.remove('active'); 
+  }
   
   $('#cnfPrint').addEventListener('click', openCfg);
   $('#cfgCancel').addEventListener('click', closeCfg);
@@ -1614,15 +1648,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
+  // Fechar modal de configurações ao clicar no backdrop
+  $('#cfgModal').addEventListener('click', function(e) {
+    if (e.target === this || e.target.classList.contains('modal-backdrop')) {
+      closeCfg();
+    }
+  });
+
   // render inicial
   render();
 });
   </script>
+  
   <script>
     // REGISTRO DO SERVICE WORKER
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        // Usar caminho absoluto para o service worker no GitHub Pages
         navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
           scope: '/Gerador-de-etiqueta-pwa/' 
         })
