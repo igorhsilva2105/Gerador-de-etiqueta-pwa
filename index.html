@@ -31,7 +31,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
   
   <style>
-    /* [Todos os estilos CSS anteriores permanecem exatamente iguais] */
     /* Área de impressão: etiquetas 6x4 cm em grade */
     @page { 
       size: A4; 
@@ -965,6 +964,13 @@ function formatCNPJ(s){
   return s || '-';
 }
 
+// --------- FUNÇÃO AUXILIAR: Remover zeros à esquerda ---------
+function removeLeadingZeros(str) {
+  if (typeof str !== 'string') return str;
+  // Remove zeros à esquerda, mas mantém pelo menos um caractere se for tudo zeros
+  return str.replace(/^0+/, '') || '0';
+}
+
 function findFirstByLocalName(root, localName) {
   if (!root) return null;
   const all = root.getElementsByTagName('*');
@@ -1012,7 +1018,10 @@ function extractFromDoc(doc) {
     } catch(e){}
   }
   const destName = text(findFirstByLocalName(dest||doc,'xNome'));
-  const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
+  let nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
+  
+  // APLICAR REMOÇÃO DE ZEROS À ESQUERDA NO NNF
+  nNF = removeLeadingZeros(nNF);
   
   let dataEmissao = '';
   let horaEmissao = '';
@@ -1045,7 +1054,7 @@ function extractFromDoc(doc) {
   return { emitName, emitCnpj, destName, nNF, dataEmissao, horaEmissao, items };
 }
 
-// --------- NOVA FUNÇÃO: Extrair dados do PDF ---------
+// --------- FUNÇÃO CORRIGIDA: Extrair dados do PDF ---------
 async function extractFromPdf(pdfFile) {
   try {
     const arrayBuffer = await readFileAsArrayBuffer(pdfFile);
@@ -1061,6 +1070,20 @@ async function extractFromPdf(pdfFile) {
       // Extrair informações da nota fiscal do texto da página
       const noteData = extractNoteFromPdfText(pageText, pdfFile.name);
       if (noteData && noteData.items && noteData.items.length > 0) {
+        // Debug
+        debugPdfExtraction(pageText, noteData);
+        
+        // CORREÇÃO: Passar o número da nota para todos os itens
+        noteData.items = noteData.items.map(item => ({
+          ...item,
+          nNF: noteData.nNF,
+          dataEmissao: noteData.dataEmissao,
+          horaEmissao: noteData.horaEmissao,
+          emit: noteData.emitName,
+          emitCnpj: noteData.emitCnpj,
+          dest: noteData.destName
+        }));
+        
         allNotes.push(noteData);
       }
     }
@@ -1072,130 +1095,88 @@ async function extractFromPdf(pdfFile) {
   }
 }
 
+// --------- FUNÇÃO DE DEBUG ---------
+function debugPdfExtraction(text, noteData) {
+  console.log('=== DEBUG PDF EXTRACTION ===');
+  console.log('Texto completo:', text.substring(0, 500) + '...');
+  console.log('Nº da nota encontrado:', noteData.nNF);
+  console.log('Data encontrada:', noteData.dataEmissao);
+  console.log('Hora encontrada:', noteData.horaEmissao);
+  console.log('Número de itens:', noteData.items.length);
+  noteData.items.forEach((item, index) => {
+    console.log(`Item ${index + 1}:`, {
+      produto: item.xProd,
+      codigo: item.cProd,
+      quantidade: item.qCom,
+      nf: item.nNF
+    });
+  });
+  console.log('============================');
+}
+
+// --------- FUNÇÃO PRINCIPAL CORRIGIDA: Extrair dados do texto do PDF ---------
 function extractNoteFromPdfText(text, fileName) {
   try {
-    // Extrair número da nota
-    const nNFMatch = text.match(/Nº\s*([\d\.]+)/i);
-    const nNF = nNFMatch ? nNFMatch[1].replace(/\./g, '') : '';
+    // CORREÇÃO MELHORADA: Extrair número da nota fiscal (Nº) - múltiplos padrões
+    let nNF = '';
+    
+    // Padrão 1: "Nº 000.029.368" 
+    const nNFMatch1 = text.match(/Nº\s*0*([\d\.]+)/i);
+    if (nNFMatch1) {
+      nNF = nNFMatch1[1].replace(/\./g, '');
+      // REMOVER ZEROS À ESQUERDA
+      nNF = removeLeadingZeros(nNF);
+    } 
+    // Padrão 2: "000.029.368" (apenas a sequência)
+    else {
+      const nNFMatch2 = text.match(/(\d{3}\.\d{3}\.\d{3})/);
+      if (nNFMatch2) {
+        nNF = nNFMatch2[1].replace(/\./g, '');
+        // REMOVER ZEROS À ESQUERDA
+        nNF = removeLeadingZeros(nNF);
+      }
+      // Padrão 3: Procurar por "Nº" seguido de qualquer coisa até o próximo campo
+      else {
+        const nNFMatch3 = text.match(/Nº\s*([^\n\r\t\s]{6,15})/i);
+        if (nNFMatch3) {
+          nNF = nNFMatch3[1].replace(/\./g, '').replace(/\D/g, '');
+          // REMOVER ZEROS À ESQUERDA
+          nNF = removeLeadingZeros(nNF);
+        }
+      }
+    }
 
-    // Extrair data de emissão
+    // CORREÇÃO: Extrair data de emissão - padrão mais específico
     const dataEmissaoMatch = text.match(/DATA DA EMISSÃO\s*(\d{2}\/\d{2}\/\d{4})/i);
     const dataEmissao = dataEmissaoMatch ? dataEmissaoMatch[1] : '';
 
-    // Extrair hora de emissão
+    // CORREÇÃO: Extrair hora de emissão - padrão mais específico
     const horaEmissaoMatch = text.match(/HORA DE SAÍDA\s*(\d{2}:\d{2}:\d{2})/i);
     const horaEmissao = horaEmissaoMatch ? horaEmissaoMatch[1] : '';
 
     // Extrair emitente (fixo baseado no exemplo)
     const emitName = "LEANDRA CRISTINA DE MAGALHAES";
     
-    // Extrair CNPJ do emitente
+    // CORREÇÃO: Extrair CNPJ do emitente - padrão mais específico
     const emitCnpjMatch = text.match(/CNPJ\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/i);
-    const emitCnpj = emitCnpjMatch ? emitCnpjMatch[1].replace(/\D/g, '') : '';
+    const emitCnpj = emitCnpjMatch ? emitCnpjMatch[1].replace(/\D/g, '') : '35510096000112';
 
-    // Extrair destinatário
-    const destMatch = text.match(/DESTINATÁRIO\s*\/\s*REMETENTE\s*([^\n]+(?:\n[^\n]+)*?)(?=\s*(?:C\.N\.P\.J|DATA|FATURA))/i);
-    const destName = destMatch ? destMatch[1].trim().split('\n')[0] : '';
-
-    // Extrair produtos - padrão para identificar linhas de produto
-    const productSectionMatch = text.match(/DADOS DO PRODUTO\s*\/\s*SERVIÇOS([\s\S]*?)(?=INSCRIÇÃO MUNICIPAL|VALOR TOTAL|DADOS ADICIONAIS|RESERVADO)/i);
-    const productSection = productSectionMatch ? productSectionMatch[1] : '';
-    
-    const items = [];
-    
-    if (productSection) {
-      // Procurar por linhas que contenham código de produto e descrição
-      const productLines = productSection.split('\n').filter(line => 
-        line.trim().length > 10 && 
-        !line.includes('CÓDIGO') && 
-        !line.includes('DESCRIÇÃO') && 
-        !line.includes('NCM/SH') &&
-        !line.includes('CFOP') &&
-        !line.includes('UNID.') &&
-        !line.includes('QTD.') &&
-        !line.includes('VLR UNIT.') &&
-        !line.includes('VALOR TOTAL')
-      );
-
-      for (const line of productLines) {
-        // Tentar extrair informações do produto usando regex
-        const productMatch = line.match(/(\S+)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)/);
-        
-        if (productMatch) {
-          const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = productMatch;
-          
-          items.push({
-            xProd: xProd.trim(),
-            cEAN: '',
-            cProd: cProd.trim(),
-            qCom: num(qComStr.replace(',', '.')),
-            qComStr: qComStr,
-            uCom: uCom.trim(),
-            vUnCom: vUnCom.replace(',', '.'),
-            emit: emitName,
-            emitCnpj: emitCnpj,
-            dest: destName,
-            nNF: nNF,
-            dataEmissao: dataEmissao,
-            horaEmissao: horaEmissao
-          });
-        } else {
-          // Fallback: tentar extrair informações básicas
-          const parts = line.trim().split(/\s+/);
-          if (parts.length >= 3) {
-            const xProd = parts.slice(1, -2).join(' ');
-            const qComStr = parts[parts.length - 2];
-            const vUnCom = parts[parts.length - 1];
-            
-            items.push({
-              xProd: xProd,
-              cEAN: '',
-              cProd: parts[0],
-              qCom: num(qComStr.replace(',', '.')),
-              qComStr: qComStr,
-              uCom: 'UN',
-              vUnCom: vUnCom.replace(',', '.'),
-              emit: emitName,
-              emitCnpj: emitCnpj,
-              dest: destName,
-              nNF: nNF,
-              dataEmissao: dataEmissao,
-              horaEmissao: horaEmissao
-            });
-          }
-        }
-      }
+    // CORREÇÃO: Extrair destinatário - padrão mais robusto
+    const destMatch = text.match(/DESTINATÁRIO\s*\/\s*REMETENTE\s*\n*\s*([^\n]+)/i);
+    let destName = '';
+    if (destMatch) {
+      destName = destMatch[1].trim();
+      // Limpar possíveis quebras de linha no nome
+      destName = destName.split('\n')[0].trim();
     }
 
-    // Se não encontrou produtos com o padrão acima, tentar método alternativo
+    // CORREÇÃO MELHORADA: Extrair produtos
+    const items = extractProductsFromPdfText(text);
+    
+    // Se não encontrou produtos, tentar método alternativo
     if (items.length === 0) {
-      // Procurar por padrões de produto no texto completo
-      const alternativeProductMatch = text.match(/(MLB\d+|tdg\d+und|TPIN\d+MX\d+M|pint\d+x\d+|von\d+x\d+|vi\d+x\d+|pinmor\d+x\d+m)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)/g);
-      
-      if (alternativeProductMatch) {
-        for (const match of alternativeProductMatch) {
-          const productMatch = match.match(/(\S+)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)/);
-          if (productMatch) {
-            const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = productMatch;
-            
-            items.push({
-              xProd: xProd.trim(),
-              cEAN: '',
-              cProd: cProd.trim(),
-              qCom: num(qComStr.replace(',', '.')),
-              qComStr: qComStr,
-              uCom: uCom.trim(),
-              vUnCom: vUnCom.replace(',', '.'),
-              emit: emitName,
-              emitCnpj: emitCnpj,
-              dest: destName,
-              nNF: nNF,
-              dataEmissao: dataEmissao,
-              horaEmissao: horaEmissao
-            });
-          }
-        }
-      }
+      const alternativeItems = extractProductsAlternative(text);
+      items.push(...alternativeItems);
     }
 
     return {
@@ -1234,6 +1215,153 @@ function extractNoteFromPdfText(text, fileName) {
       }]
     };
   }
+}
+
+// --------- FUNÇÃO MELHORADA: Extrair produtos de forma mais robusta ---------
+function extractProductsFromPdfText(text) {
+  const items = [];
+  
+  try {
+    // Padrão 1: Buscar por linhas de produto completas
+    const productPattern = /(\S+)\s+([^0-9\n]{10,}?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)/g;
+    let match;
+    
+    while ((match = productPattern.exec(text)) !== null) {
+      const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = match;
+      
+      items.push({
+        xProd: xProd.trim(),
+        cEAN: '',
+        cProd: cProd.trim(),
+        qCom: num(qComStr.replace(',', '.')),
+        qComStr: qComStr,
+        uCom: uCom.trim(),
+        vUnCom: vUnCom.replace(',', '.'),
+        emit: "LEANDRA CRISTINA DE MAGALHAES",
+        emitCnpj: '35510096000112',
+        dest: '',
+        nNF: '', // Será preenchido posteriormente
+        dataEmissao: '',
+        horaEmissao: ''
+      });
+    }
+
+    // Padrão 2: Buscar por produtos com códigos MLB (Mercado Livre)
+    const mlbProductPattern = /(MLB\d+)\s+([^0-9\n]{10,}?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)/g;
+    while ((match = mlbProductPattern.exec(text)) !== null) {
+      const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = match;
+      
+      // Verificar se este produto já não foi adicionado
+      const existingProduct = items.find(item => item.cProd === cProd);
+      if (!existingProduct) {
+        items.push({
+          xProd: xProd.trim(),
+          cEAN: '',
+          cProd: cProd.trim(),
+          qCom: num(qComStr.replace(',', '.')),
+          qComStr: qComStr,
+          uCom: uCom.trim(),
+          vUnCom: vUnCom.replace(',', '.'),
+          emit: "LEANDRA CRISTINA DE MAGALHAES",
+          emitCnpj: '35510096000112',
+          dest: '',
+          nNF: '', // Será preenchido posteriormente
+          dataEmissao: '',
+          horaEmissao: ''
+        });
+      }
+    }
+
+  } catch (error) {
+    console.error('Erro na extração principal de produtos:', error);
+  }
+  
+  return items;
+}
+
+// --------- FUNÇÃO ALTERNATIVA: Extrair produtos quando o método principal falha ---------
+function extractProductsAlternative(text) {
+  const items = [];
+  
+  try {
+    // Dividir o texto em linhas
+    const lines = text.split('\n');
+    let inProductsSection = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Detectar início da seção de produtos
+      if (line.includes('DADOS DO PRODUTO') || line.includes('DESCRIÇÃO DOS PRODUTOS')) {
+        inProductsSection = true;
+        continue;
+      }
+      
+      // Detectar fim da seção de produtos
+      if (inProductsSection && (line.includes('INSCRIÇÃO MUNICIPAL') || line.includes('VALOR TOTAL') || line.includes('DADOS ADICIONAIS'))) {
+        inProductsSection = false;
+        break;
+      }
+      
+      // Processar linhas na seção de produtos
+      if (inProductsSection && line.length > 10) {
+        // Tentar identificar linhas que contêm produtos
+        // Padrão: código + descrição + valores
+        const productMatch = line.match(/(\S+)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)/);
+        
+        if (productMatch) {
+          const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = productMatch;
+          
+          items.push({
+            xProd: xProd.trim(),
+            cEAN: '',
+            cProd: cProd.trim(),
+            qCom: num(qComStr.replace(',', '.')),
+            qComStr: qComStr,
+            uCom: uCom.trim(),
+            vUnCom: vUnCom.replace(',', '.'),
+            emit: "LEANDRA CRISTINA DE MAGALHAES",
+            emitCnpj: '35510096000112',
+            dest: '',
+            nNF: '', // Será preenchido posteriormente
+            dataEmissao: '',
+            horaEmissao: ''
+          });
+        } else {
+          // Tentar padrão mais simples: código no início da linha
+          const simpleMatch = line.match(/^(MLB\d+|\w+)\s+(.+)$/);
+          if (simpleMatch) {
+            const [, cProd, rest] = simpleMatch;
+            // Procurar quantidade e valor nas próximas linhas ou na mesma linha
+            const qtyMatch = rest.match(/(\d+)[\s,\.]*([\d,\.]+)$/);
+            if (qtyMatch) {
+              const [, qComStr, vUnCom] = qtyMatch;
+              
+              items.push({
+                xProd: rest.replace(qtyMatch[0], '').trim(),
+                cEAN: '',
+                cProd: cProd.trim(),
+                qCom: num(qComStr.replace(',', '.')),
+                qComStr: qComStr,
+                uCom: 'UN',
+                vUnCom: vUnCom.replace(',', '.'),
+                emit: "LEANDRA CRISTINA DE MAGALHAES",
+                emitCnpj: '35510096000112',
+                dest: '',
+                nNF: '', // Será preenchido posteriormente
+                dataEmissao: '',
+                horaEmissao: ''
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Erro na extração alternativa de produtos:', error);
+  }
+  
+  return items;
 }
 
 function readFileAsArrayBuffer(file) {
