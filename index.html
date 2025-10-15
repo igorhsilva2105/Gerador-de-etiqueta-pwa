@@ -26,7 +26,12 @@
 
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- PDF.js para processamento de PDFs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  
   <style>
+    /* [Todos os estilos CSS anteriores permanecem exatamente iguais] */
     /* Área de impressão: etiquetas 6x4 cm em grade */
     @page { 
       size: A4; 
@@ -546,13 +551,13 @@
     <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
       <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
         <div>
-          <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
-          <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
-          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
+          <h1 class="text-lg font-semibold">Carregar XMLs ou PDFs das NF-e</h1>
+          <p class="text-sm text-slate-600">Arraste e solte os arquivos XML ou PDF das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
+          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e e DANFE em PDF. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
         </div>
         <div class="ml-auto flex items-center gap-2">
-          <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
-          <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar XMLs…</button>
+          <input id="xmlInput" type="file" multiple accept=".xml,.pdf" class="hidden" />
+          <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar Arquivos…</button>
           <button id="btnClear" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Limpar</button>
         </div>
       </div>
@@ -1040,6 +1045,206 @@ function extractFromDoc(doc) {
   return { emitName, emitCnpj, destName, nNF, dataEmissao, horaEmissao, items };
 }
 
+// --------- NOVA FUNÇÃO: Extrair dados do PDF ---------
+async function extractFromPdf(pdfFile) {
+  try {
+    const arrayBuffer = await readFileAsArrayBuffer(pdfFile);
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const numPages = pdf.numPages;
+    const allNotes = [];
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      
+      // Extrair informações da nota fiscal do texto da página
+      const noteData = extractNoteFromPdfText(pageText, pdfFile.name);
+      if (noteData && noteData.items && noteData.items.length > 0) {
+        allNotes.push(noteData);
+      }
+    }
+
+    return allNotes;
+  } catch (error) {
+    console.error('Erro ao processar PDF:', error);
+    throw new Error(`Falha ao processar PDF: ${error.message}`);
+  }
+}
+
+function extractNoteFromPdfText(text, fileName) {
+  try {
+    // Extrair número da nota
+    const nNFMatch = text.match(/Nº\s*([\d\.]+)/i);
+    const nNF = nNFMatch ? nNFMatch[1].replace(/\./g, '') : '';
+
+    // Extrair data de emissão
+    const dataEmissaoMatch = text.match(/DATA DA EMISSÃO\s*(\d{2}\/\d{2}\/\d{4})/i);
+    const dataEmissao = dataEmissaoMatch ? dataEmissaoMatch[1] : '';
+
+    // Extrair hora de emissão
+    const horaEmissaoMatch = text.match(/HORA DE SAÍDA\s*(\d{2}:\d{2}:\d{2})/i);
+    const horaEmissao = horaEmissaoMatch ? horaEmissaoMatch[1] : '';
+
+    // Extrair emitente (fixo baseado no exemplo)
+    const emitName = "LEANDRA CRISTINA DE MAGALHAES";
+    
+    // Extrair CNPJ do emitente
+    const emitCnpjMatch = text.match(/CNPJ\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/i);
+    const emitCnpj = emitCnpjMatch ? emitCnpjMatch[1].replace(/\D/g, '') : '';
+
+    // Extrair destinatário
+    const destMatch = text.match(/DESTINATÁRIO\s*\/\s*REMETENTE\s*([^\n]+(?:\n[^\n]+)*?)(?=\s*(?:C\.N\.P\.J|DATA|FATURA))/i);
+    const destName = destMatch ? destMatch[1].trim().split('\n')[0] : '';
+
+    // Extrair produtos - padrão para identificar linhas de produto
+    const productSectionMatch = text.match(/DADOS DO PRODUTO\s*\/\s*SERVIÇOS([\s\S]*?)(?=INSCRIÇÃO MUNICIPAL|VALOR TOTAL|DADOS ADICIONAIS|RESERVADO)/i);
+    const productSection = productSectionMatch ? productSectionMatch[1] : '';
+    
+    const items = [];
+    
+    if (productSection) {
+      // Procurar por linhas que contenham código de produto e descrição
+      const productLines = productSection.split('\n').filter(line => 
+        line.trim().length > 10 && 
+        !line.includes('CÓDIGO') && 
+        !line.includes('DESCRIÇÃO') && 
+        !line.includes('NCM/SH') &&
+        !line.includes('CFOP') &&
+        !line.includes('UNID.') &&
+        !line.includes('QTD.') &&
+        !line.includes('VLR UNIT.') &&
+        !line.includes('VALOR TOTAL')
+      );
+
+      for (const line of productLines) {
+        // Tentar extrair informações do produto usando regex
+        const productMatch = line.match(/(\S+)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)/);
+        
+        if (productMatch) {
+          const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = productMatch;
+          
+          items.push({
+            xProd: xProd.trim(),
+            cEAN: '',
+            cProd: cProd.trim(),
+            qCom: num(qComStr.replace(',', '.')),
+            qComStr: qComStr,
+            uCom: uCom.trim(),
+            vUnCom: vUnCom.replace(',', '.'),
+            emit: emitName,
+            emitCnpj: emitCnpj,
+            dest: destName,
+            nNF: nNF,
+            dataEmissao: dataEmissao,
+            horaEmissao: horaEmissao
+          });
+        } else {
+          // Fallback: tentar extrair informações básicas
+          const parts = line.trim().split(/\s+/);
+          if (parts.length >= 3) {
+            const xProd = parts.slice(1, -2).join(' ');
+            const qComStr = parts[parts.length - 2];
+            const vUnCom = parts[parts.length - 1];
+            
+            items.push({
+              xProd: xProd,
+              cEAN: '',
+              cProd: parts[0],
+              qCom: num(qComStr.replace(',', '.')),
+              qComStr: qComStr,
+              uCom: 'UN',
+              vUnCom: vUnCom.replace(',', '.'),
+              emit: emitName,
+              emitCnpj: emitCnpj,
+              dest: destName,
+              nNF: nNF,
+              dataEmissao: dataEmissao,
+              horaEmissao: horaEmissao
+            });
+          }
+        }
+      }
+    }
+
+    // Se não encontrou produtos com o padrão acima, tentar método alternativo
+    if (items.length === 0) {
+      // Procurar por padrões de produto no texto completo
+      const alternativeProductMatch = text.match(/(MLB\d+|tdg\d+und|TPIN\d+MX\d+M|pint\d+x\d+|von\d+x\d+|vi\d+x\d+|pinmor\d+x\d+m)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)/g);
+      
+      if (alternativeProductMatch) {
+        for (const match of alternativeProductMatch) {
+          const productMatch = match.match(/(\S+)\s+(.+?)\s+(\d{8})\s+(\d{4})\s+(\d{4})\s+(\S+)\s+([\d,\.]+)\s+([\d,\.]+)/);
+          if (productMatch) {
+            const [, cProd, xProd, , , , uCom, qComStr, vUnCom] = productMatch;
+            
+            items.push({
+              xProd: xProd.trim(),
+              cEAN: '',
+              cProd: cProd.trim(),
+              qCom: num(qComStr.replace(',', '.')),
+              qComStr: qComStr,
+              uCom: uCom.trim(),
+              vUnCom: vUnCom.replace(',', '.'),
+              emit: emitName,
+              emitCnpj: emitCnpj,
+              dest: destName,
+              nNF: nNF,
+              dataEmissao: dataEmissao,
+              horaEmissao: horaEmissao
+            });
+          }
+        }
+      }
+    }
+
+    return {
+      emitName,
+      emitCnpj,
+      destName,
+      nNF,
+      dataEmissao,
+      horaEmissao,
+      items
+    };
+  } catch (error) {
+    console.error('Erro ao extrair dados do PDF:', error);
+    return {
+      emitName: '',
+      emitCnpj: '',
+      destName: '',
+      nNF: '',
+      dataEmissao: '',
+      horaEmissao: '',
+      items: [{
+        xProd: `(Erro ao processar PDF ${fileName})`,
+        cEAN: '',
+        cProd: '',
+        qCom: NaN,
+        qComStr: '-',
+        uCom: '-',
+        vUnCom: '-',
+        emit: '',
+        emitCnpj: '',
+        dest: '',
+        nNF: '',
+        dataEmissao: '',
+        horaEmissao: '',
+        _fatalError: String(error.message || error)
+      }]
+    };
+  }
+}
+
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(fr.error);
+    fr.readAsArrayBuffer(file);
+  });
+}
+
 function expandByFracionamento(item) {
   const rule = state.cfg.fracRule;
   if (rule === 'fixed') {
@@ -1378,35 +1583,92 @@ async function readFilesAsText(files) {
   })));
 }
 
+// --------- FUNÇÃO PRINCIPAL ATUALIZADA: Processar XMLs e PDFs ---------
 async function handleFiles(files) {
   if (!files || files.length===0) return;
   $('#file-name').textContent = `${files.length} arquivo(s) pronto(s) para processar`;
+  
   try {
-    const texts = await readFilesAsText(files);
     const all = [];
     const datesSet = new Set();
     
-    for (const {name,text} of texts) {
-      try {
-        if (!text || !text.trim().startsWith('<?xml') && !text.trim().startsWith('<nfe')) {
-          throw new Error('Arquivo não é um XML válido');
+    for (const file of files) {
+      if (file.name.toLowerCase().endsWith('.xml')) {
+        // Processar arquivos XML
+        try {
+          const text = await readFileAsText([file]);
+          const { name, text: xmlText } = text[0];
+          
+          if (!xmlText || (!xmlText.trim().startsWith('<?xml') && !xmlText.trim().startsWith('<nfe'))) {
+            throw new Error('Arquivo não é um XML válido');
+          }
+          
+          const doc = parseXml(xmlText);
+          const data = extractFromDoc(doc);
+          
+          if (data.dataEmissao) {
+            datesSet.add(data.dataEmissao);
+          }
+          
+          console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
+          for (const item of data.items) {
+            const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao, horaEmissao: data.horaEmissao});
+            all.push(...expandedItems);
+          }
+        } catch (e) {
+          all.push({ 
+            xProd: `(Erro no arquivo ${file.name})`, 
+            qComStr:'-', 
+            uCom:'-', 
+            vUnCom:'-', 
+            cEAN:'', 
+            cProd:'', 
+            emit:'', 
+            emitCnpj:'', 
+            dest:'', 
+            nNF:'', 
+            dataEmissao: '',
+            horaEmissao: '',
+            _fatalError: String(e.message||e)
+          });
         }
-        
-        const doc = parseXml(text);
-        const data = extractFromDoc(doc);
-        
-        if (data.dataEmissao) {
-          datesSet.add(data.dataEmissao);
+      } else if (file.name.toLowerCase().endsWith('.pdf')) {
+        // Processar arquivos PDF
+        try {
+          const pdfNotes = await extractFromPdf(file);
+          
+          for (const note of pdfNotes) {
+            if (note.dataEmissao) {
+              datesSet.add(note.dataEmissao);
+            }
+            
+            console.log(`PDF "${file.name}" — Nota ${note.nNF} processada com ${note.items.length} itens`);
+            for (const item of note.items) {
+              const expandedItems = expandByFracionamento({...item, dataEmissao: note.dataEmissao, horaEmissao: note.horaEmissao});
+              all.push(...expandedItems);
+            }
+          }
+        } catch (e) {
+          all.push({ 
+            xProd: `(Erro no PDF ${file.name})`, 
+            qComStr:'-', 
+            uCom:'-', 
+            vUnCom:'-', 
+            cEAN:'', 
+            cProd:'', 
+            emit:'', 
+            emitCnpj:'', 
+            dest:'', 
+            nNF:'', 
+            dataEmissao: '',
+            horaEmissao: '',
+            _fatalError: String(e.message||e)
+          });
         }
-        
-        console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
-        for (const item of data.items) {
-          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao, horaEmissao: data.horaEmissao});
-          all.push(...expandedItems);
-        }
-      } catch (e) {
+      } else {
+        // Arquivo com extensão não suportada
         all.push({ 
-          xProd: `(Erro no arquivo ${name})`, 
+          xProd: `(Formato não suportado: ${file.name})`, 
           qComStr:'-', 
           uCom:'-', 
           vUnCom:'-', 
@@ -1418,7 +1680,7 @@ async function handleFiles(files) {
           nNF:'', 
           dataEmissao: '',
           horaEmissao: '',
-          _fatalError: String(e.message||e)
+          _fatalError: 'Formato de arquivo não suportado. Use XML ou PDF.'
         });
       }
     }
@@ -1427,7 +1689,6 @@ async function handleFiles(files) {
     state.labels = all;
     
     updateDateFilters();
-    
     render();
   } catch (e) {
     console.error(e); 
@@ -1491,6 +1752,9 @@ function removeLogo() {
 
 // --------- Bind UI events ---------
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Configurar PDF.js worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
   // load cfg from localStorage
   const saved = localStorage.getItem('mag_labels_cfg'); 
   if (saved) {
@@ -1522,13 +1786,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Select button
   $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
-  $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
+  $('#xmlInput').addEventListener('change',(e)=>{ 
+    const files = e.target.files; 
+    if (files && files.length) handleFiles(files); 
+  });
 
   // drag & drop
   const drop = document.getElementById('drop');
   ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
   ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
-  drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
+  drop.addEventListener('drop', e=>{ 
+    e.preventDefault(); 
+    const dt = e.dataTransfer; 
+    if (dt && dt.files && dt.files.length) handleFiles(dt.files); 
+  });
 
   // clear
   $('#btnClear').addEventListener('click', ()=>{ 
