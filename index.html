@@ -527,6 +527,36 @@
       width: 1rem;
       height: 1rem;
     }
+
+    /* Estilo para linhas de destaque por termo */
+    .term-highlight-row {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+    .term-highlight-row input {
+      padding: 0.25rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .term-highlight-row input[type="text"] {
+      flex: 1;
+    }
+    .term-highlight-row input[type="color"] {
+      width: 2rem;
+      height: 1.75rem;
+      padding: 0;
+    }
+    .term-highlight-row .btn-remove-term {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0 0.25rem;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -909,6 +939,18 @@
               <p class="text-xs text-slate-500 mt-1">Use "value" para referenciar o valor do campo</p>
             </div>
           </div>
+
+          <!-- NOVO: Destaque por termo -->
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Destaque por termo</legend>
+              <div id="termHighlightContainer" class="space-y-1 mb-2">
+                <!-- Linhas dinâmicas termo + cor -->
+              </div>
+              <button id="addTermHighlight" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-sm">+ Adicionar termo</button>
+              <p class="text-xs text-slate-500 mt-1">O texto do nome do produto que contiver o termo será exibido na cor escolhida.</p>
+            </fieldset>
+          </div>
         </div>
       </div>
       
@@ -942,7 +984,8 @@ const state = {
     highlightField: "nNF",
     highlightFieldRule: "qCom",
     ruleCondition: "qtyGreaterThan1",
-    customRule: ""
+    customRule: "",
+    termHighlights: []   // Array de { term: string, color: string }
   }
 };
 
@@ -1133,6 +1176,25 @@ function sortLabels(labels) {
   });
 }
 
+// NOVA FUNÇÃO: escapa caracteres especiais para RegExp
+function escapeRegex(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// NOVA FUNÇÃO: aplica destaques de termos ao texto do produto
+function highlightTerms(text, highlights) {
+  if (!highlights || highlights.length === 0) return text;
+  // Ordena do termo mais longo para o mais curto para evitar sobreposição
+  const sorted = [...highlights].sort((a,b) => b.term.length - a.term.length);
+  let result = text;
+  for (const h of sorted) {
+    if (!h.term) continue;
+    const regex = new RegExp(`(${escapeRegex(h.term)})`, 'gi');
+    result = result.replace(regex, `<span style="color:${h.color};">$1</span>`);
+  }
+  return result;
+}
+
 function updateDateFilters() {
   const dateFilters = $('#dateFilters');
   if (state.availableDates.length > 0) {
@@ -1275,7 +1337,13 @@ function render() {
     
     if (state.cfg.fields.includes('xProd')) {
       const h3 = document.createElement('h3');
-      h3.textContent = data.xProd || '(Sem nome)';
+      // APLICA DESTAQUE DE TERMOS, SE HOUVER
+      const rawName = data.xProd || '(Sem nome)';
+      if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
+        h3.innerHTML = highlightTerms(rawName, state.cfg.termHighlights);
+      } else {
+        h3.textContent = rawName;
+      }
       card.appendChild(h3);
     }
     
@@ -1489,6 +1557,64 @@ function removeLogo() {
   updateLogoButtonState(false);
 }
 
+// --------- FUNÇÕES PARA DESTAQUE POR TERMO ---------
+function createTermHighlightRow(term = '', color = '#ff0000') {
+  const row = document.createElement('div');
+  row.className = 'term-highlight-row';
+  
+  const termInput = document.createElement('input');
+  termInput.type = 'text';
+  termInput.placeholder = 'Termo';
+  termInput.value = term;
+  termInput.className = 'term-input';
+  
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color';
+  colorInput.value = color;
+  colorInput.className = 'color-input';
+  
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.innerHTML = '&times;';
+  removeBtn.className = 'btn-remove-term';
+  removeBtn.title = 'Remover';
+  removeBtn.addEventListener('click', () => row.remove());
+  
+  row.appendChild(termInput);
+  row.appendChild(colorInput);
+  row.appendChild(removeBtn);
+  return row;
+}
+
+function populateTermHighlights() {
+  const container = $('#termHighlightContainer');
+  container.innerHTML = '';
+  if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
+    state.cfg.termHighlights.forEach(h => {
+      container.appendChild(createTermHighlightRow(h.term, h.color));
+    });
+  } else {
+    // Adiciona uma linha vazia por padrão
+    container.appendChild(createTermHighlightRow());
+  }
+}
+
+function collectTermHighlights() {
+  const container = $('#termHighlightContainer');
+  const rows = container.querySelectorAll('.term-highlight-row');
+  const highlights = [];
+  rows.forEach(row => {
+    const termInput = row.querySelector('.term-input');
+    const colorInput = row.querySelector('.color-input');
+    const term = termInput ? termInput.value.trim() : '';
+    const color = colorInput ? colorInput.value : '#000000';
+    if (term) {
+      highlights.push({ term, color });
+    }
+  });
+  return highlights;
+}
+
 // --------- Bind UI events ---------
 document.addEventListener('DOMContentLoaded', ()=>{
   // load cfg from localStorage
@@ -1517,6 +1643,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     if (typeof savedCfg.customRule === 'undefined') {
       state.cfg.customRule = '';
+    }
+    if (typeof savedCfg.termHighlights === 'undefined') {
+      state.cfg.termHighlights = [];
     }
   }
 
@@ -1591,6 +1720,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       updateLogoButtonState(false);
     }
     
+    // Preenche os destaques por termo
+    populateTermHighlights();
+    
     $('#cfgModal').classList.add('active');
   }
   
@@ -1612,9 +1744,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.highlightFieldRule = $('#cfgHighlightFieldRule').value;
     state.cfg.ruleCondition = $('#cfgRuleCondition').value;
     state.cfg.customRule = $('#cfgCustomRule').value;
+    // Salva os destaques por termo
+    state.cfg.termHighlights = collectTermHighlights();
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
+  });
+
+  // Adicionar nova linha de termo
+  $('#addTermHighlight').addEventListener('click', () => {
+    const container = $('#termHighlightContainer');
+    container.appendChild(createTermHighlightRow());
   });
 
   // Upload/Remover logo
