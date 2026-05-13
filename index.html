@@ -205,6 +205,12 @@
         display: flex !important;
       }
 
+      /* NOVA REGRA: mascarar erros na impressão (remove o destaque visual) */
+      body.mask-print-errors .label.problem {
+        border: 1px solid #cbd5e1 !important;
+        background-color: white !important;
+      }
+
       .label .meta .highlighted {
         background-color: #000 !important;
         color: #fff !important;
@@ -557,6 +563,11 @@
       cursor: pointer;
       padding: 0 0.25rem;
     }
+    /* Estilos para o modal de preview quando mascaramento está ativo */
+    .mask-print-errors .label.problem {
+      border: 1px solid #cbd5e1 !important;
+      background-color: white !important;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -879,6 +890,8 @@
               <div class="space-y-1">
                 <label class="text-sm flex items-center"><input type="checkbox" id="cfgShowErrors" checked class="mr-2"> Exibir itens com erro</label>
                 <label class="text-sm flex items-center"><input type="checkbox" id="cfgPrintErrors" class="mr-2"> Imprimir itens com erro</label>
+                <!-- NOVA OPÇÃO -->
+                <label class="text-sm flex items-center"><input type="checkbox" id="cfgMaskPrintErrors" class="mr-2"> Mascarar erros na impressão</label>
               </div>
             </fieldset>
           </div>
@@ -940,7 +953,7 @@
             </div>
           </div>
 
-          <!-- NOVO: Destaque por termo -->
+          <!-- Destaque por termo -->
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Destaque por termo</legend>
@@ -978,6 +991,7 @@ const state = {
     fields: ["xProd","qCom","uCom","nNF"],
     showErrors: true,
     printErrors: false,
+    maskPrintErrors: false,   // NOVA PROPRIEDADE
     fracRule: "none",
     fracN: 1,
     sortOrder: "nNF-asc",
@@ -1431,6 +1445,14 @@ function renderPrintPreview() {
   previewMount.style.width = '100%';
   previewMount.style.margin = '0 auto';
   
+  // Aplica a classe de mascaramento ao conteúdo do preview, se necessário
+  const previewContent = $('#printPreviewContent');
+  if (state.cfg.printErrors && state.cfg.maskPrintErrors) {
+    previewContent.classList.add('mask-print-errors');
+  } else {
+    previewContent.classList.remove('mask-print-errors');
+  }
+  
   labels.forEach(label => {
     const clone = label.cloneNode(true);
     previewMount.appendChild(clone);
@@ -1504,12 +1526,19 @@ async function handleFiles(files) {
 }
 
 function handlePrint() {
+  // Remove classes de impressão antigas
+  document.body.classList.remove('print-errors', 'mask-print-errors');
+
+  // Adiciona classe para exibir itens com erro, se configurado
   if (state.cfg.printErrors) {
     document.body.classList.add('print-errors');
-  } else {
-    document.body.classList.remove('print-errors');
   }
-  
+
+  // Adiciona classe para mascarar o estilo de erro, se ambas as opções estiverem ativas
+  if (state.cfg.printErrors && state.cfg.maskPrintErrors) {
+    document.body.classList.add('mask-print-errors');
+  }
+
   window.print();
 }
 
@@ -1647,6 +1676,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof savedCfg.termHighlights === 'undefined') {
       state.cfg.termHighlights = [];
     }
+    // NOVA PROPRIEDADE
+    if (typeof savedCfg.maskPrintErrors === 'undefined') {
+      state.cfg.maskPrintErrors = false;
+    }
   }
 
   // Select button
@@ -1698,6 +1731,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
     $('#cfgShowErrors').checked = state.cfg.showErrors;
     $('#cfgPrintErrors').checked = state.cfg.printErrors;
+    $('#cfgMaskPrintErrors').checked = state.cfg.maskPrintErrors;   // NOVA LINHA
     $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc';
     $('#cfgHighlightField').value = state.cfg.highlightField || 'nNF';
     $('#cfgHighlightFieldRule').value = state.cfg.highlightFieldRule || 'qCom';
@@ -1739,6 +1773,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
     state.cfg.showErrors = $('#cfgShowErrors').checked;
     state.cfg.printErrors = $('#cfgPrintErrors').checked;
+    state.cfg.maskPrintErrors = $('#cfgMaskPrintErrors').checked;   // NOVA LINHA
     state.cfg.sortOrder = $('#cfgSortOrder').value;
     state.cfg.highlightField = $('#cfgHighlightField').value;
     state.cfg.highlightFieldRule = $('#cfgHighlightFieldRule').value;
