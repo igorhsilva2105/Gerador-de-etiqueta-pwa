@@ -1658,7 +1658,7 @@ function collectTermHighlights() {
   return highlights;
 }
 
-// ---------- FUNÇÕES DE OFFLINE (CÓPIA LOCAL) ----------
+// ==================== OFFLINE & BACKUP (CORRIGIDO) ====================
 const DB_NAME = 'EtiquetadoraOfflineDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'handles';
@@ -1705,6 +1705,11 @@ async function getFolderHandle() {
 }
 
 async function saveFileToFolder(folderHandle, relativePath, content, isBinary = false) {
+  // Garantir que conteúdo de texto seja string
+  if (!isBinary && typeof content !== 'string') {
+    console.warn('saveFileToFolder: conteúdo não é string, convertendo', content);
+    content = String(content);
+  }
   const pathParts = relativePath.split('/');
   const fileName = pathParts.pop();
   let currentHandle = folderHandle;
@@ -1715,15 +1720,17 @@ async function saveFileToFolder(folderHandle, relativePath, content, isBinary = 
   }
   const fileHandle = await currentHandle.getFileHandle(fileName, { create: true });
   const writable = await fileHandle.createWritable();
-  if (isBinary && content instanceof Blob) {
-    await writable.write(content);
-  } else {
-    await writable.write(content);
+  try {
+    if (isBinary && content instanceof Blob) {
+      await writable.write(content);
+    } else {
+      await writable.write(content);
+    }
+  } finally {
+    await writable.close();
   }
-  await writable.close();
 }
 
-// Retorna a lista de todos os recursos necessários (caminhos relativos ao domínio)
 async function getAllResourcePaths() {
   const baseFiles = ['index.html', 'manifest.json', 'sw.js'];
   let iconPaths = [];
@@ -1733,7 +1740,6 @@ async function getAllResourcePaths() {
     if (manifest.icons) iconPaths.push(...manifest.icons.map(icon => icon.src));
     if (manifest.screenshots) iconPaths.push(...manifest.screenshots.map(s => s.src));
   } catch(e) { console.warn('Erro ao ler manifesto:', e); }
-  // Remove duplicatas e garante que os caminhos não tenham '/' inicial
   const all = [...new Set([...baseFiles, ...iconPaths])];
   return all.map(p => p.replace(/^\//, ''));
 }
@@ -1744,7 +1750,6 @@ async function copyAppToLocalFolder(folderHandle, statusCallback) {
   const total = resourcePaths.length;
   let current = 0;
   
-  // Baixar Tailwind CSS
   statusCallback('⏳ Baixando Tailwind CSS...');
   let tailwindCss = '';
   try {
@@ -1754,11 +1759,8 @@ async function copyAppToLocalFolder(folderHandle, statusCallback) {
     statusCallback('❌ Falha ao baixar Tailwind CSS. Verifique sua conexão.');
     throw e;
   }
-  
-  // Salvar tailwind.css
   await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
   
-  // Copiar cada recurso
   for (const relPath of resourcePaths) {
     current++;
     statusCallback(`⏳ Copiando ${relPath} (${current}/${total})...`);
@@ -1784,7 +1786,6 @@ async function copyAppToLocalFolder(folderHandle, statusCallback) {
     }
   }
   
-  // Modificar o index.html copiado para usar tailwind.css local
   statusCallback('⏳ Adaptando index.html para usar CSS local...');
   const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
   let indexHtml = await indexResponse.text();
@@ -1793,7 +1794,6 @@ async function copyAppToLocalFolder(folderHandle, statusCallback) {
     '<link rel="stylesheet" href="tailwind.css">'
   );
   await saveFileToFolder(folderHandle, 'index.html', indexHtml);
-  
   statusCallback('✅ Cópia offline concluída! Abra o index.html da pasta selecionada.');
 }
 
@@ -1825,7 +1825,6 @@ async function createOfflineCopy() {
     folderHandle = await requestOfflineFolder();
     if (!folderHandle) return;
   } else {
-    // Verifica permissão ainda válida
     try {
       const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
       if (permission !== 'granted') {
@@ -1837,14 +1836,11 @@ async function createOfflineCopy() {
       if (!folderHandle) return;
     }
   }
-  
   const statusDiv = $('#offlineStatus');
-  await copyAppToLocalFolder(folderHandle, (msg) => {
-    statusDiv.innerHTML = msg;
-  });
+  await copyAppToLocalFolder(folderHandle, (msg) => { statusDiv.innerHTML = msg; });
 }
 
-// ---------- FUNÇÕES DE BACKUP ----------
+// Backup corrigido: salva todo o localStorage em arquivo JSON não vazio
 async function saveBackupToFolder() {
   const folderHandle = await getFolderHandle();
   if (!folderHandle) {
@@ -1862,19 +1858,25 @@ async function saveBackupToFolder() {
     const localStorageData = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      localStorageData[key] = localStorage.getItem(key);
+      const value = localStorage.getItem(key);
+      localStorageData[key] = value;
+    }
+    if (Object.keys(localStorageData).length === 0) {
+      alert('Não há dados no localStorage para fazer backup.');
+      return;
     }
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
     const fileName = `backup_${timestamp}.json`;
     const content = JSON.stringify(localStorageData, null, 2);
+    console.log(`Salvando backup com ${content.length} bytes`);
     await saveFileToFolder(backupDir, fileName, content);
-    $('#offlineStatus').innerHTML = `✅ Backup salvo em: backup/${fileName}`;
-    alert(`Backup salvo com sucesso!\nPasta: backup/${fileName}`);
+    $('#offlineStatus').innerHTML = `✅ Backup salvo em: backup/${fileName} (${content.length} bytes)`;
+    alert(`Backup salvo com sucesso!\nPasta: backup/${fileName}\nTamanho: ${content.length} bytes`);
   } catch (err) {
-    console.error(err);
-    $('#offlineStatus').innerHTML = '❌ Erro ao salvar backup.';
-    alert('Falha ao salvar backup.');
+    console.error('Erro ao salvar backup:', err);
+    $('#offlineStatus').innerHTML = '❌ Erro ao salvar backup. Veja o console.';
+    alert('Falha ao salvar backup: ' + err.message);
   }
 }
 
@@ -1916,7 +1918,6 @@ async function restoreBackupFromFolder() {
     for (const [key, value] of Object.entries(backupData)) {
       localStorage.setItem(key, value);
     }
-    // Recarregar configurações na memória
     const saved = localStorage.getItem('mag_labels_cfg');
     if (saved) Object.assign(state.cfg, JSON.parse(saved));
     render();
@@ -1924,8 +1925,8 @@ async function restoreBackupFromFolder() {
     alert(`Backup restaurado com sucesso!\nAs configurações foram recarregadas.`);
     $('#cfgModal').classList.remove('active');
   } catch (err) {
-    console.error(err);
-    $('#offlineStatus').innerHTML = '❌ Erro ao restaurar backup.';
+    console.error('Erro ao restaurar backup:', err);
+    $('#offlineStatus').innerHTML = '❌ Erro ao restaurar backup. Veja o console.';
     alert('Falha ao restaurar backup.');
   }
 }
