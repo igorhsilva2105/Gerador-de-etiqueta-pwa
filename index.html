@@ -570,7 +570,7 @@
     }
 
     /* Estilo para status offline */
-    #offlineStatus {
+    .offline-status {
       font-size: 0.75rem;
       word-break: break-all;
     }
@@ -970,22 +970,16 @@
             </fieldset>
           </div>
 
-          <!-- NOVA SEÇÃO: Modo Offline com Backup -->
+          <!-- Seção para criar versão offline -->
           <div class="compact-field">
             <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Modo Offline</legend>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Versão Offline</legend>
               <div class="space-y-2">
-                <label class="text-sm flex items-center">
-                  <input type="checkbox" id="cfgOfflineEnabled" class="mr-2"> Habilitar versão offline (cópia local)
-                </label>
-                <div id="offlineControls" style="display: none;">
-                  <div class="flex gap-2 mt-2 flex-wrap">
-                    <button id="selectOfflineFolder" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 text-sm">Selecionar pasta</button>
-                    <button id="syncOfflineFiles" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 text-sm">Copiar arquivos agora</button>
-                    <button id="backupSettings" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-green-100 text-sm">💾 Salvar Backup</button>
-                    <button id="restoreBackup" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-amber-100 text-sm">📂 Restaurar Backup</button>
-                  </div>
-                  <div id="offlineStatus" class="text-xs text-slate-600 mt-1"></div>
+                <button id="createOfflineVersion" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-800 text-white text-sm w-full">📁 Criar versão offline (copiar app para pasta)</button>
+                <div id="offlineStatus" class="offline-status text-xs text-slate-600 mt-1"></div>
+                <div class="flex gap-2 mt-2">
+                  <button id="backupSettings" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-green-100 text-sm flex-1">💾 Salvar Backup</button>
+                  <button id="restoreBackup" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-amber-100 text-sm flex-1">📂 Restaurar Backup</button>
                 </div>
               </div>
             </fieldset>
@@ -1025,8 +1019,7 @@ const state = {
     highlightFieldRule: "qCom",
     ruleCondition: "qtyGreaterThan1",
     customRule: "",
-    termHighlights: [],
-    offlineEnabled: false
+    termHighlights: []
   }
 };
 
@@ -1661,7 +1654,7 @@ function collectTermHighlights() {
   return highlights;
 }
 
-// ---------- FUNÇÕES PARA MODO OFFLINE E BACKUP ----------
+// ---------- FUNÇÕES PARA CRIAÇÃO DA VERSÃO OFFLINE E BACKUP ----------
 const DB_NAME = 'EtiquetadoraOfflineDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'handles';
@@ -1828,33 +1821,44 @@ async function copyAppToLocalFolder(folderHandle) {
   }
 }
 
-// ---------- NOVAS FUNÇÕES DE BACKUP ----------
 async function saveBackupToFolder() {
-  const folderHandle = await getFolderHandle();
+  let folderHandle = await getFolderHandle();
   if (!folderHandle) {
-    alert('Nenhuma pasta offline configurada. Selecione uma pasta primeiro.');
-    return;
+    // Se não houver handle, pede para criar a versão offline primeiro ou escolher pasta
+    const create = confirm('Nenhuma pasta offline configurada. Deseja selecionar uma pasta agora para criar a versão offline e depois fazer o backup?');
+    if (create) {
+      folderHandle = await requestOfflineFolder();
+      if (!folderHandle) return;
+      // Opcional: já copiar os arquivos? O usuário pode querer apenas backup, mas é melhor oferecer.
+      const copyNow = confirm('Deseja também copiar os arquivos da aplicação para esta pasta agora? (Recomendado para ter a versão offline completa)');
+      if (copyNow) {
+        await copyAppToLocalFolder(folderHandle);
+      } else {
+        updateOfflineStatus(`Pasta selecionada: ${folderHandle.name}. Clique em "Criar versão offline" para copiar os arquivos quando quiser.`);
+      }
+    } else {
+      return;
+    }
   }
+  
   const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
   if (permission !== 'granted') {
     alert('Permissão negada. Selecione a pasta novamente.');
     await saveFolderHandle(null);
-    checkOfflineStatus();
-    return;
+    const newHandle = await requestOfflineFolder();
+    if (!newHandle) return;
+    folderHandle = newHandle;
   }
   
   try {
-    // Criar subpasta "backup" se não existir
     const backupDir = await folderHandle.getDirectoryHandle('backup', { create: true });
     
-    // Obter todos os dados do localStorage
     const localStorageData = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       localStorageData[key] = localStorage.getItem(key);
     }
     
-    // Criar nome de arquivo com timestamp
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
     const fileName = `backup_${timestamp}.json`;
@@ -1872,22 +1876,27 @@ async function saveBackupToFolder() {
 }
 
 async function restoreBackupFromFolder() {
-  const folderHandle = await getFolderHandle();
+  let folderHandle = await getFolderHandle();
   if (!folderHandle) {
-    alert('Nenhuma pasta offline configurada. Selecione uma pasta primeiro.');
-    return;
+    const create = confirm('Nenhuma pasta offline configurada. Deseja selecionar uma pasta agora?');
+    if (create) {
+      folderHandle = await requestOfflineFolder();
+      if (!folderHandle) return;
+    } else {
+      return;
+    }
   }
+  
   const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
   if (permission !== 'granted') {
     alert('Permissão negada. Selecione a pasta novamente.');
     await saveFolderHandle(null);
-    checkOfflineStatus();
-    return;
+    folderHandle = await requestOfflineFolder();
+    if (!folderHandle) return;
   }
   
   try {
     const backupDir = await folderHandle.getDirectoryHandle('backup', { create: false });
-    // Listar arquivos .json na pasta backup
     const files = [];
     const entries = backupDir.values();
     for await (const entry of entries) {
@@ -1901,10 +1910,8 @@ async function restoreBackupFromFolder() {
       return;
     }
     
-    // Ordenar por nome decrescente (mais recente primeiro)
     files.sort((a, b) => b.name.localeCompare(a.name));
     
-    // Criar um seletor simples (pode ser substituído por um modal customizado)
     const fileNames = files.map(f => f.name);
     const selectedName = prompt(`Escolha um backup para restaurar (digite o número):\n${fileNames.map((n,i)=>`${i+1} - ${n}`).join('\n')}`, '1');
     if (!selectedName) return;
@@ -1920,24 +1927,20 @@ async function restoreBackupFromFolder() {
     const fileText = await fileBlob.text();
     const backupData = JSON.parse(fileText);
     
-    // Restaurar no localStorage
     for (const [key, value] of Object.entries(backupData)) {
       localStorage.setItem(key, value);
     }
     
-    // Recarregar configurações na memória
     const saved = localStorage.getItem('mag_labels_cfg');
     if (saved) {
       const savedCfg = JSON.parse(saved);
       Object.assign(state.cfg, savedCfg);
     }
     
-    // Atualizar interface
     render();
     updateOfflineStatus(`✅ Backup restaurado de: ${selectedFile.name}`);
     alert(`Backup restaurado com sucesso!\nAs configurações foram recarregadas.`);
     
-    // Fechar modal de configurações se estiver aberto
     $('#cfgModal').classList.remove('active');
   } catch (err) {
     console.error('Erro ao restaurar backup:', err);
@@ -1946,32 +1949,50 @@ async function restoreBackupFromFolder() {
   }
 }
 
-async function checkOfflineStatus() {
-  if (!state.cfg.offlineEnabled) {
-    $('#offlineControls').style.display = 'none';
-    return;
+async function createOfflineVersion() {
+  let folderHandle = await getFolderHandle();
+  if (folderHandle) {
+    const useSame = confirm(`Já existe uma pasta configurada: ${folderHandle.name}. Deseja usar a mesma pasta para copiar os arquivos? (Cancelar para escolher uma nova)`);
+    if (useSame) {
+      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        alert('Permissão expirada. Selecione a pasta novamente.');
+        folderHandle = await requestOfflineFolder();
+        if (!folderHandle) return;
+      }
+    } else {
+      folderHandle = await requestOfflineFolder();
+      if (!folderHandle) return;
+    }
+  } else {
+    folderHandle = await requestOfflineFolder();
+    if (!folderHandle) return;
   }
-  $('#offlineControls').style.display = 'block';
+  
+  await copyAppToLocalFolder(folderHandle);
+}
+
+function updateOfflineStatus(msg) {
+  const statusDiv = $('#offlineStatus');
+  if (statusDiv) statusDiv.innerHTML = msg;
+}
+
+async function checkOfflineStatus() {
   const folderHandle = await getFolderHandle();
   if (folderHandle) {
     try {
       const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
       if (permission === 'granted') {
-        updateOfflineStatus(`Pasta offline ativa: ${folderHandle.name}`);
-        return;
+        updateOfflineStatus(`Pasta offline configurada: ${folderHandle.name}`);
       } else {
-        updateOfflineStatus('Permissão para pasta offline expirada. Clique em "Selecionar pasta" novamente.');
+        updateOfflineStatus('Permissão para pasta offline expirada. Clique em "Criar versão offline" para reconfigurar.');
       }
     } catch (e) {
-      updateOfflineStatus('Handle da pasta inválido. Selecione novamente.');
+      updateOfflineStatus('Handle da pasta inválido. Clique em "Criar versão offline".');
     }
   } else {
-    updateOfflineStatus('Nenhuma pasta offline configurada. Selecione uma pasta.');
+    updateOfflineStatus('Nenhuma pasta offline configurada. Clique em "Criar versão offline".');
   }
-}
-
-function updateOfflineStatus(msg) {
-  $('#offlineStatus').innerHTML = msg;
 }
 
 // ---------- FIM DAS FUNÇÕES OFFLINE/BACKUP ----------
@@ -1993,7 +2014,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof savedCfg.customRule === 'undefined') state.cfg.customRule = '';
     if (typeof savedCfg.termHighlights === 'undefined') state.cfg.termHighlights = [];
     if (typeof savedCfg.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
-    if (typeof savedCfg.offlineEnabled === 'undefined') state.cfg.offlineEnabled = false;
   }
 
   // Botões principais
@@ -2067,15 +2087,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     
     populateTermHighlights();
-    
-    // Carregar estado offline no modal
-    $('#cfgOfflineEnabled').checked = state.cfg.offlineEnabled;
-    if (state.cfg.offlineEnabled) {
-      $('#offlineControls').style.display = 'block';
-      checkOfflineStatus();
-    } else {
-      $('#offlineControls').style.display = 'none';
-    }
+    checkOfflineStatus();
     
     $('#cfgModal').classList.add('active');
   }
@@ -2100,17 +2112,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.ruleCondition = $('#cfgRuleCondition').value;
     state.cfg.customRule = $('#cfgCustomRule').value;
     state.cfg.termHighlights = collectTermHighlights();
-    state.cfg.offlineEnabled = $('#cfgOfflineEnabled').checked;
     
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
-    // Atualiza status offline após salvar
-    if (state.cfg.offlineEnabled) {
-      checkOfflineStatus();
-    } else {
-      $('#offlineControls').style.display = 'none';
-    }
   });
 
   // Term highlight
@@ -2154,30 +2159,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  // Eventos específicos do modo offline
-  $('#selectOfflineFolder').addEventListener('click', async () => {
-    const folder = await requestOfflineFolder();
-    if (folder) {
-      updateOfflineStatus(`Pasta selecionada: ${folder.name}. Clique em "Copiar arquivos agora".`);
-    }
-  });
-  $('#syncOfflineFiles').addEventListener('click', async () => {
-    const folderHandle = await getFolderHandle();
-    if (!folderHandle) {
-      alert('Nenhuma pasta offline configurada. Selecione uma pasta primeiro.');
-      return;
-    }
-    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-    if (permission !== 'granted') {
-      alert('Permissão negada. Selecione a pasta novamente.');
-      await saveFolderHandle(null);
-      checkOfflineStatus();
-      return;
-    }
-    await copyAppToLocalFolder(folderHandle);
-  });
-  
-  // Novos eventos de backup
+  // Eventos offline/backup
+  $('#createOfflineVersion').addEventListener('click', createOfflineVersion);
   $('#backupSettings').addEventListener('click', saveBackupToFolder);
   $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
 
