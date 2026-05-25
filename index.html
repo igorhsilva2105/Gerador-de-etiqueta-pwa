@@ -24,7 +24,7 @@
   <meta name="msapplication-wide310x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Wide310x150Logo.scale-100.png">
   <meta name="msapplication-square310x310logo" content="/Gerador-de-etiqueta-pwa/windows11/LargeTile.scale-100.png">
 
-  <!-- Tailwind via CDN -->
+  <!-- Tailwind via CDN (será substituído na cópia offline) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* Área de impressão: etiquetas 6x4 cm em grade */
@@ -568,6 +568,12 @@
       border: 1px solid #cbd5e1 !important;
       background-color: white !important;
     }
+
+    /* Estilo para status offline */
+    #offlineStatus {
+      font-size: 0.75rem;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -830,7 +836,7 @@
     </div>
   </div>
 
-  <!-- Config modal - CORRIGIDO -->
+  <!-- Config modal -->
   <div id="cfgModal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
@@ -890,7 +896,6 @@
               <div class="space-y-1">
                 <label class="text-sm flex items-center"><input type="checkbox" id="cfgShowErrors" checked class="mr-2"> Exibir itens com erro</label>
                 <label class="text-sm flex items-center"><input type="checkbox" id="cfgPrintErrors" class="mr-2"> Imprimir itens com erro</label>
-                <!-- NOVA OPÇÃO -->
                 <label class="text-sm flex items-center"><input type="checkbox" id="cfgMaskPrintErrors" class="mr-2"> Mascarar erros na impressão</label>
               </div>
             </fieldset>
@@ -964,6 +969,25 @@
               <p class="text-xs text-slate-500 mt-1">O texto do nome do produto que contiver o termo será exibido na cor escolhida.</p>
             </fieldset>
           </div>
+
+          <!-- NOVA SEÇÃO: Modo Offline -->
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Modo Offline</legend>
+              <div class="space-y-2">
+                <label class="text-sm flex items-center">
+                  <input type="checkbox" id="cfgOfflineEnabled" class="mr-2"> Habilitar versão offline (cópia local)
+                </label>
+                <div id="offlineControls" style="display: none;">
+                  <div class="flex gap-2 mt-2">
+                    <button id="selectOfflineFolder" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 text-sm">Selecionar pasta</button>
+                    <button id="syncOfflineFiles" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 text-sm">Copiar arquivos agora</button>
+                  </div>
+                  <div id="offlineStatus" class="text-xs text-slate-600 mt-1"></div>
+                </div>
+              </div>
+            </fieldset>
+          </div>
         </div>
       </div>
       
@@ -991,7 +1015,7 @@ const state = {
     fields: ["xProd","qCom","uCom","nNF"],
     showErrors: true,
     printErrors: false,
-    maskPrintErrors: false,   // NOVA PROPRIEDADE
+    maskPrintErrors: false,
     fracRule: "none",
     fracN: 1,
     sortOrder: "nNF-asc",
@@ -999,7 +1023,8 @@ const state = {
     highlightFieldRule: "qCom",
     ruleCondition: "qtyGreaterThan1",
     customRule: "",
-    termHighlights: []   // Array de { term: string, color: string }
+    termHighlights: [],
+    offlineEnabled: false
   }
 };
 
@@ -1190,15 +1215,12 @@ function sortLabels(labels) {
   });
 }
 
-// NOVA FUNÇÃO: escapa caracteres especiais para RegExp
 function escapeRegex(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// NOVA FUNÇÃO: aplica destaques de termos ao texto do produto
 function highlightTerms(text, highlights) {
   if (!highlights || highlights.length === 0) return text;
-  // Ordena do termo mais longo para o mais curto para evitar sobreposição
   const sorted = [...highlights].sort((a,b) => b.term.length - a.term.length);
   let result = text;
   for (const h of sorted) {
@@ -1351,7 +1373,6 @@ function render() {
     
     if (state.cfg.fields.includes('xProd')) {
       const h3 = document.createElement('h3');
-      // APLICA DESTAQUE DE TERMOS, SE HOUVER
       const rawName = data.xProd || '(Sem nome)';
       if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
         h3.innerHTML = highlightTerms(rawName, state.cfg.termHighlights);
@@ -1445,7 +1466,6 @@ function renderPrintPreview() {
   previewMount.style.width = '100%';
   previewMount.style.margin = '0 auto';
   
-  // Aplica a classe de mascaramento ao conteúdo do preview, se necessário
   const previewContent = $('#printPreviewContent');
   if (state.cfg.printErrors && state.cfg.maskPrintErrors) {
     previewContent.classList.add('mask-print-errors');
@@ -1526,15 +1546,12 @@ async function handleFiles(files) {
 }
 
 function handlePrint() {
-  // Remove classes de impressão antigas
   document.body.classList.remove('print-errors', 'mask-print-errors');
 
-  // Adiciona classe para exibir itens com erro, se configurado
   if (state.cfg.printErrors) {
     document.body.classList.add('print-errors');
   }
 
-  // Adiciona classe para mascarar o estilo de erro, se ambas as opções estiverem ativas
   if (state.cfg.printErrors && state.cfg.maskPrintErrors) {
     document.body.classList.add('mask-print-errors');
   }
@@ -1586,7 +1603,6 @@ function removeLogo() {
   updateLogoButtonState(false);
 }
 
-// --------- FUNÇÕES PARA DESTAQUE POR TERMO ---------
 function createTermHighlightRow(term = '', color = '#ff0000') {
   const row = document.createElement('div');
   row.className = 'term-highlight-row';
@@ -1623,7 +1639,6 @@ function populateTermHighlights() {
       container.appendChild(createTermHighlightRow(h.term, h.color));
     });
   } else {
-    // Adiciona uma linha vazia por padrão
     container.appendChild(createTermHighlightRow());
   }
 }
@@ -1644,45 +1659,227 @@ function collectTermHighlights() {
   return highlights;
 }
 
-// --------- Bind UI events ---------
+// ---------- NOVAS FUNÇÕES PARA MODO OFFLINE (COPIA LOCAL) ----------
+const DB_NAME = 'EtiquetadoraOfflineDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'handles';
+let db = null;
+
+function openIndexedDB() {
+  return new Promise((resolve, reject) => {
+    if (db) return resolve(db);
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      db = request.result;
+      resolve(db);
+    };
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+  });
+}
+
+async function saveFolderHandle(handle) {
+  const idb = await openIndexedDB();
+  const tx = idb.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  store.put(handle, 'offlineFolder');
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getFolderHandle() {
+  const idb = await openIndexedDB();
+  const tx = idb.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const request = store.get('offlineFolder');
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function requestOfflineFolder() {
+  if (!window.showDirectoryPicker) {
+    alert('Seu navegador não suporta a API File System Access. Use Chrome, Edge ou Opera recentes.');
+    return null;
+  }
+  try {
+    const folderHandle = await window.showDirectoryPicker();
+    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+    if (permission === 'granted') {
+      await saveFolderHandle(folderHandle);
+      updateOfflineStatus(`Pasta selecionada: ${folderHandle.name}`);
+      return folderHandle;
+    } else {
+      alert('Permissão negada. Não é possível usar a pasta offline.');
+      return null;
+    }
+  } catch (err) {
+    console.error('Erro ao selecionar pasta:', err);
+    alert('Falha ao selecionar a pasta. Verifique o console.');
+    return null;
+  }
+}
+
+async function saveFileToFolder(folderHandle, relativePath, content, isBinary = false) {
+  const pathParts = relativePath.split('/');
+  const fileName = pathParts.pop();
+  let currentHandle = folderHandle;
+  for (const part of pathParts) {
+    if (part) {
+      currentHandle = await currentHandle.getDirectoryHandle(part, { create: true });
+    }
+  }
+  const fileHandle = await currentHandle.getFileHandle(fileName, { create: true });
+  const writable = await fileHandle.createWritable();
+  if (isBinary && content instanceof Blob) {
+    await writable.write(content);
+  } else {
+    await writable.write(content);
+  }
+  await writable.close();
+}
+
+async function getAllLocalResources() {
+  const baseFiles = [
+    'index.html',
+    'manifest.json',
+    'sw.js'
+  ];
+
+  let manifestIcons = [];
+  try {
+    const manifestRes = await fetch('/Gerador-de-etiqueta-pwa/manifest.json');
+    const manifest = await manifestRes.json();
+    if (manifest.icons) {
+      manifestIcons = manifest.icons.map(icon => icon.src);
+    }
+    if (manifest.screenshots) {
+      manifestIcons.push(...manifest.screenshots.map(s => s.src));
+    }
+  } catch (e) {
+    console.warn('Não foi possível ler o manifesto para ícones:', e);
+  }
+
+  const tailwindCss = await fetch('https://cdn.tailwindcss.com').then(res => res.text());
+
+  const allFiles = [...baseFiles, ...manifestIcons];
+  const uniqueFiles = [...new Set(allFiles)];
+  const filtered = uniqueFiles.map(f => f.replace(/^\//, '')).filter(f => f);
+  return { files: filtered, tailwindCss };
+}
+
+async function copyAppToLocalFolder(folderHandle) {
+  const statusDiv = $('#offlineStatus');
+  statusDiv.innerHTML = '⏳ Copiando arquivos... Por favor aguarde.';
+  try {
+    const { files, tailwindCss } = await getAllLocalResources();
+    
+    // 1. Salvar tailwind.css
+    await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
+    
+    // 2. Copiar cada arquivo da lista
+    for (const filePath of files) {
+      let fullUrl = `/Gerador-de-etiqueta-pwa/${filePath}`;
+      let response = await fetch(fullUrl);
+      if (!response.ok) {
+        fullUrl = `/${filePath}`;
+        response = await fetch(fullUrl);
+      }
+      if (response.ok) {
+        const contentType = response.headers.get('content-type') || '';
+        const isImage = contentType.startsWith('image/');
+        let content;
+        if (isImage) {
+          content = await response.blob();
+          await saveFileToFolder(folderHandle, filePath, content, true);
+        } else {
+          content = await response.text();
+          await saveFileToFolder(folderHandle, filePath, content);
+        }
+      } else {
+        console.warn(`Arquivo não encontrado: ${fullUrl}`);
+      }
+    }
+
+    // 3. Modificar o index.html copiado para usar tailwind.css local
+    const indexPath = 'index.html';
+    const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
+    let indexContent = await indexResponse.text();
+    indexContent = indexContent.replace(
+      /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/,
+      '<link rel="stylesheet" href="tailwind.css">'
+    );
+    await saveFileToFolder(folderHandle, 'index.html', indexContent);
+
+    statusDiv.innerHTML = '✅ Arquivos copiados com sucesso! Agora você pode abrir o index.html desta pasta sem internet.';
+    setTimeout(() => {
+      alert('Cópia concluída! Para usar offline, abra o arquivo "index.html" da pasta selecionada.');
+    }, 500);
+  } catch (err) {
+    console.error(err);
+    statusDiv.innerHTML = '❌ Erro ao copiar arquivos. Veja o console.';
+  }
+}
+
+async function checkOfflineStatus() {
+  if (!state.cfg.offlineEnabled) {
+    $('#offlineControls').style.display = 'none';
+    return;
+  }
+  $('#offlineControls').style.display = 'block';
+  const folderHandle = await getFolderHandle();
+  if (folderHandle) {
+    try {
+      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+      if (permission === 'granted') {
+        updateOfflineStatus(`Pasta offline ativa: ${folderHandle.name}`);
+        return;
+      } else {
+        updateOfflineStatus('Permissão para pasta offline expirada. Clique em "Selecionar pasta" novamente.');
+      }
+    } catch (e) {
+      updateOfflineStatus('Handle da pasta inválido. Selecione novamente.');
+    }
+  } else {
+    updateOfflineStatus('Nenhuma pasta offline configurada. Selecione uma pasta.');
+  }
+}
+
+function updateOfflineStatus(msg) {
+  $('#offlineStatus').innerHTML = msg;
+}
+
+// ---------- FIM DAS FUNÇÕES OFFLINE ----------
+
+// ---------- EVENTOS E INICIALIZAÇÃO ----------
 document.addEventListener('DOMContentLoaded', ()=>{
-  // load cfg from localStorage
+  // Carregar configurações do localStorage
   const saved = localStorage.getItem('mag_labels_cfg'); 
   if (saved) {
     const savedCfg = JSON.parse(saved);
     Object.assign(state.cfg, savedCfg);
     
-    if (typeof savedCfg.printErrors === 'undefined') {
-      state.cfg.printErrors = false;
-    }
-    if (typeof savedCfg.showErrors === 'undefined') {
-      state.cfg.showErrors = true;
-    }
-    if (typeof savedCfg.sortOrder === 'undefined') {
-      state.cfg.sortOrder = 'nNF-asc';
-    }
-    if (typeof savedCfg.highlightField === 'undefined') {
-      state.cfg.highlightField = 'nNF';
-    }
-    if (typeof savedCfg.highlightFieldRule === 'undefined') {
-      state.cfg.highlightFieldRule = 'qCom';
-    }
-    if (typeof savedCfg.ruleCondition === 'undefined') {
-      state.cfg.ruleCondition = 'qtyGreaterThan1';
-    }
-    if (typeof savedCfg.customRule === 'undefined') {
-      state.cfg.customRule = '';
-    }
-    if (typeof savedCfg.termHighlights === 'undefined') {
-      state.cfg.termHighlights = [];
-    }
-    // NOVA PROPRIEDADE
-    if (typeof savedCfg.maskPrintErrors === 'undefined') {
-      state.cfg.maskPrintErrors = false;
-    }
+    if (typeof savedCfg.printErrors === 'undefined') state.cfg.printErrors = false;
+    if (typeof savedCfg.showErrors === 'undefined') state.cfg.showErrors = true;
+    if (typeof savedCfg.sortOrder === 'undefined') state.cfg.sortOrder = 'nNF-asc';
+    if (typeof savedCfg.highlightField === 'undefined') state.cfg.highlightField = 'nNF';
+    if (typeof savedCfg.highlightFieldRule === 'undefined') state.cfg.highlightFieldRule = 'qCom';
+    if (typeof savedCfg.ruleCondition === 'undefined') state.cfg.ruleCondition = 'qtyGreaterThan1';
+    if (typeof savedCfg.customRule === 'undefined') state.cfg.customRule = '';
+    if (typeof savedCfg.termHighlights === 'undefined') state.cfg.termHighlights = [];
+    if (typeof savedCfg.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
+    if (typeof savedCfg.offlineEnabled === 'undefined') state.cfg.offlineEnabled = false;
   }
 
-  // Select button
+  // Botões principais
   $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
   $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
 
@@ -1703,17 +1900,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // print
   $('#btnPrint').addEventListener('click', handlePrint);
-  
-  // print preview
   $('#btnPreview').addEventListener('click', renderPrintPreview);
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
   $('#printFromPreview').addEventListener('click', handlePrint);
 
-  // Filtros de data e hora
+  // filtros data
   $('#applyDateFilter').addEventListener('click', applyDateFilter);
   $('#clearDateFilter').addEventListener('click', clearDateFilter);
 
-  // Mostrar/ocultar configuração de regra personalizada
+  // regra personalizada
   $('#cfgRuleCondition').addEventListener('change', function() {
     const customRuleConfig = $('#customRuleConfig');
     if (this.value === 'custom') {
@@ -1723,7 +1918,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  // config modal - CORRIGIDO
+  // Modal de configurações
   function openCfg(){
     $('#cfgLogo').value = state.cfg.logo || '';
     $('#cfgFracRule').value = state.cfg.fracRule || 'none';
@@ -1731,7 +1926,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
     $('#cfgShowErrors').checked = state.cfg.showErrors;
     $('#cfgPrintErrors').checked = state.cfg.printErrors;
-    $('#cfgMaskPrintErrors').checked = state.cfg.maskPrintErrors;   // NOVA LINHA
+    $('#cfgMaskPrintErrors').checked = state.cfg.maskPrintErrors;
     $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc';
     $('#cfgHighlightField').value = state.cfg.highlightField || 'nNF';
     $('#cfgHighlightFieldRule').value = state.cfg.highlightFieldRule || 'qCom';
@@ -1754,8 +1949,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
       updateLogoButtonState(false);
     }
     
-    // Preenche os destaques por termo
     populateTermHighlights();
+    
+    // Carregar estado offline no modal
+    $('#cfgOfflineEnabled').checked = state.cfg.offlineEnabled;
+    if (state.cfg.offlineEnabled) {
+      $('#offlineControls').style.display = 'block';
+      checkOfflineStatus();
+    } else {
+      $('#offlineControls').style.display = 'none';
+    }
     
     $('#cfgModal').classList.add('active');
   }
@@ -1773,49 +1976,53 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
     state.cfg.showErrors = $('#cfgShowErrors').checked;
     state.cfg.printErrors = $('#cfgPrintErrors').checked;
-    state.cfg.maskPrintErrors = $('#cfgMaskPrintErrors').checked;   // NOVA LINHA
+    state.cfg.maskPrintErrors = $('#cfgMaskPrintErrors').checked;
     state.cfg.sortOrder = $('#cfgSortOrder').value;
     state.cfg.highlightField = $('#cfgHighlightField').value;
     state.cfg.highlightFieldRule = $('#cfgHighlightFieldRule').value;
     state.cfg.ruleCondition = $('#cfgRuleCondition').value;
     state.cfg.customRule = $('#cfgCustomRule').value;
-    // Salva os destaques por termo
     state.cfg.termHighlights = collectTermHighlights();
+    state.cfg.offlineEnabled = $('#cfgOfflineEnabled').checked;
+    
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
+    // Atualiza status offline após salvar
+    if (state.cfg.offlineEnabled) {
+      checkOfflineStatus();
+    } else {
+      $('#offlineControls').style.display = 'none';
+    }
   });
 
-  // Adicionar nova linha de termo
+  // Term highlight
   $('#addTermHighlight').addEventListener('click', () => {
     const container = $('#termHighlightContainer');
     container.appendChild(createTermHighlightRow());
   });
 
-  // Upload/Remover logo
+  // Logo upload/remove
   $('#logoUploadButton').addEventListener('click', function() {
-    const state = this.getAttribute('data-state');
-    
-    if (state === 'upload') {
+    const btnState = this.getAttribute('data-state');
+    if (btnState === 'upload') {
       $('#logoUpload').click();
     } else {
       removeLogo();
     }
   });
-  
   $('#logoUpload').addEventListener('change', handleLogoUpload);
 
-  // Mostrar exemplo de XML
+  // Exemplo XML
   $('#showXmlExample').addEventListener('click', function(e) {
     e.preventDefault();
     $('#xmlExampleModal').style.display = 'block';
   });
-
   $('#closeXmlExample').addEventListener('click', function() {
     $('#xmlExampleModal').style.display = 'none';
   });
 
-  // Fechar modal de exemplo de XML ao clicar fora
+  // Fechar modais ao clicar fora
   window.addEventListener('click', function(e) {
     if (e.target === $('#xmlExampleModal')) {
       $('#xmlExampleModal').style.display = 'none';
@@ -1824,34 +2031,54 @@ document.addEventListener('DOMContentLoaded', ()=>{
       closeCfg();
     }
   });
-
-  // Fechar modal de configurações ao clicar no backdrop
   $('#cfgModal').addEventListener('click', function(e) {
     if (e.target === this || e.target.classList.contains('modal-backdrop')) {
       closeCfg();
     }
   });
 
-  // render inicial
-  render();
-});
-  </script>
-  
-  <script>
-    // REGISTRO DO SERVICE WORKER
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
-          scope: '/Gerador-de-etiqueta-pwa/' 
-        })
-        .then(function(registration) {
-          console.log('ServiceWorker registrado com sucesso: ', registration.scope);
-        })
-        .catch(function(error) {
-          console.log('Falha no registro del ServiceWorker: ', error);
-        });
-      });
+  // Eventos específicos do modo offline
+  $('#selectOfflineFolder').addEventListener('click', async () => {
+    const folder = await requestOfflineFolder();
+    if (folder) {
+      updateOfflineStatus(`Pasta selecionada: ${folder.name}. Clique em "Copiar arquivos agora".`);
     }
+  });
+  $('#syncOfflineFiles').addEventListener('click', async () => {
+    const folderHandle = await getFolderHandle();
+    if (!folderHandle) {
+      alert('Nenhuma pasta offline configurada. Selecione uma pasta primeiro.');
+      return;
+    }
+    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') {
+      alert('Permissão negada. Selecione a pasta novamente.');
+      await saveFolderHandle(null);
+      checkOfflineStatus();
+      return;
+    }
+    await copyAppToLocalFolder(folderHandle);
+  });
+
+  // Inicialização
+  render();
+  checkOfflineStatus();
+});
+
+// Service Worker (já existente)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
+      scope: '/Gerador-de-etiqueta-pwa/' 
+    })
+    .then(function(registration) {
+      console.log('ServiceWorker registrado com sucesso: ', registration.scope);
+    })
+    .catch(function(error) {
+      console.log('Falha no registro del ServiceWorker: ', error);
+    });
+  });
+}
   </script>
 </body>
 </html>
