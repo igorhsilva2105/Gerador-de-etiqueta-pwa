@@ -1658,7 +1658,7 @@ function collectTermHighlights() {
   return highlights;
 }
 
-// ==================== OFFLINE & BACKUP (CORRIGIDO) ====================
+// ==================== OFFLINE & BACKUP (CORRIGIDO COM FALLBACK TAILWIND) ====================
 const DB_NAME = 'EtiquetadoraOfflineDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'handles';
@@ -1705,7 +1705,6 @@ async function getFolderHandle() {
 }
 
 async function saveFileToFolder(folderHandle, relativePath, content, isBinary = false) {
-  // Garantir que conteúdo de texto seja string
   if (!isBinary && typeof content !== 'string') {
     console.warn('saveFileToFolder: conteúdo não é string, convertendo', content);
     content = String(content);
@@ -1744,21 +1743,61 @@ async function getAllResourcePaths() {
   return all.map(p => p.replace(/^\//, ''));
 }
 
+// Função robusta para baixar Tailwind com fallback
+async function fetchTailwindCss() {
+  const urls = [
+    'https://cdn.tailwindcss.com',
+    'https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css',
+    'https://unpkg.com/tailwindcss@^1/dist/tailwind.min.css'
+  ];
+  for (const url of urls) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 100) {
+          console.log(`Tailwind baixado com sucesso de: ${url}`);
+          return text;
+        }
+      }
+    } catch (e) {
+      console.warn(`Falha ao baixar de ${url}:`, e.message);
+    }
+  }
+  // Fallback: CSS mínimo com as classes essenciais para a aplicação não quebrar
+  console.warn('Usando fallback CSS interno para Tailwind');
+  return `/* Fallback CSS para estilos essenciais */
+.container { width: 100%; }
+.flex { display: flex; }
+.grid { display: grid; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.ml-auto { margin-left: auto; }
+.p-4 { padding: 1rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.text-sm { font-size: 0.875rem; }
+.text-lg { font-size: 1.125rem; }
+.font-semibold { font-weight: 600; }
+.rounded-xl { border-radius: 0.75rem; }
+.border { border-width: 1px; }
+.bg-white { background-color: #fff; }
+.bg-slate-50 { background-color: #f8fafc; }
+.text-slate-800 { color: #1e293b; }
+`;
+}
+
 async function copyAppToLocalFolder(folderHandle, statusCallback) {
   statusCallback('⏳ Buscando lista de arquivos...');
   const resourcePaths = await getAllResourcePaths();
   const total = resourcePaths.length;
   let current = 0;
   
-  statusCallback('⏳ Baixando Tailwind CSS...');
-  let tailwindCss = '';
-  try {
-    const resp = await fetch('https://cdn.tailwindcss.com');
-    tailwindCss = await resp.text();
-  } catch(e) {
-    statusCallback('❌ Falha ao baixar Tailwind CSS. Verifique sua conexão.');
-    throw e;
-  }
+  statusCallback('⏳ Baixando Tailwind CSS (tentando múltiplas fontes)...');
+  const tailwindCss = await fetchTailwindCss();
   await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
   
   for (const relPath of resourcePaths) {
@@ -1840,7 +1879,7 @@ async function createOfflineCopy() {
   await copyAppToLocalFolder(folderHandle, (msg) => { statusDiv.innerHTML = msg; });
 }
 
-// Backup corrigido: salva todo o localStorage em arquivo JSON não vazio
+// Backup (já corrigido, com verificação de dados)
 async function saveBackupToFolder() {
   const folderHandle = await getFolderHandle();
   if (!folderHandle) {
@@ -1869,10 +1908,9 @@ async function saveBackupToFolder() {
     const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
     const fileName = `backup_${timestamp}.json`;
     const content = JSON.stringify(localStorageData, null, 2);
-    console.log(`Salvando backup com ${content.length} bytes`);
     await saveFileToFolder(backupDir, fileName, content);
     $('#offlineStatus').innerHTML = `✅ Backup salvo em: backup/${fileName} (${content.length} bytes)`;
-    alert(`Backup salvo com sucesso!\nPasta: backup/${fileName}\nTamanho: ${content.length} bytes`);
+    alert(`Backup salvo com sucesso!\nTamanho: ${content.length} bytes`);
   } catch (err) {
     console.error('Erro ao salvar backup:', err);
     $('#offlineStatus').innerHTML = '❌ Erro ao salvar backup. Veja o console.';
