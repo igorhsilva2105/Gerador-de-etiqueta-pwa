@@ -431,7 +431,7 @@
       display: none;
     }
 
-    /* Estilos melhorados para o modal de configurações - CORRIGIDOS */
+    /* Estilos melhorados para o modal de configurações */
     #cfgModal {
       display: none;
       position: fixed;
@@ -573,6 +573,10 @@
     .offline-status {
       font-size: 0.75rem;
       word-break: break-all;
+      margin-top: 0.5rem;
+      padding: 0.25rem;
+      background: #f1f5f9;
+      border-radius: 0.25rem;
     }
   </style>
 </head>
@@ -970,17 +974,17 @@
             </fieldset>
           </div>
 
-          <!-- Seção para criar versão offline -->
+          <!-- SEÇÃO: Cópia Offline e Backup -->
           <div class="compact-field">
             <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Versão Offline</legend>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Offline & Backup</legend>
               <div class="space-y-2">
-                <button id="createOfflineVersion" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-800 text-white text-sm w-full">📁 Criar versão offline (copiar app para pasta)</button>
-                <div id="offlineStatus" class="offline-status text-xs text-slate-600 mt-1"></div>
-                <div class="flex gap-2 mt-2">
-                  <button id="backupSettings" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-green-100 text-sm flex-1">💾 Salvar Backup</button>
-                  <button id="restoreBackup" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-amber-100 text-sm flex-1">📂 Restaurar Backup</button>
+                <div class="flex gap-2 flex-wrap">
+                  <button id="createOfflineCopy" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-100 text-sm">📀 Criar versão offline</button>
+                  <button id="backupSettings" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-green-100 text-sm">💾 Salvar Backup</button>
+                  <button id="restoreBackup" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-amber-100 text-sm">📂 Restaurar Backup</button>
                 </div>
+                <div id="offlineStatus" class="offline-status"></div>
               </div>
             </fieldset>
           </div>
@@ -1654,7 +1658,7 @@ function collectTermHighlights() {
   return highlights;
 }
 
-// ---------- FUNÇÕES PARA CRIAÇÃO DA VERSÃO OFFLINE E BACKUP ----------
+// ---------- FUNÇÕES DE OFFLINE (CÓPIA LOCAL) ----------
 const DB_NAME = 'EtiquetadoraOfflineDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'handles';
@@ -1700,29 +1704,6 @@ async function getFolderHandle() {
   });
 }
 
-async function requestOfflineFolder() {
-  if (!window.showDirectoryPicker) {
-    alert('Seu navegador não suporta a API File System Access. Use Chrome, Edge ou Opera recentes.');
-    return null;
-  }
-  try {
-    const folderHandle = await window.showDirectoryPicker();
-    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-    if (permission === 'granted') {
-      await saveFolderHandle(folderHandle);
-      updateOfflineStatus(`Pasta selecionada: ${folderHandle.name}`);
-      return folderHandle;
-    } else {
-      alert('Permissão negada. Não é possível usar a pasta offline.');
-      return null;
-    }
-  } catch (err) {
-    console.error('Erro ao selecionar pasta:', err);
-    alert('Falha ao selecionar a pasta. Verifique o console.');
-    return null;
-  }
-}
-
 async function saveFileToFolder(folderHandle, relativePath, content, isBinary = false) {
   const pathParts = relativePath.split('/');
   const fileName = pathParts.pop();
@@ -1742,269 +1723,220 @@ async function saveFileToFolder(folderHandle, relativePath, content, isBinary = 
   await writable.close();
 }
 
-async function getAllLocalResources() {
-  const baseFiles = [
-    'index.html',
-    'manifest.json',
-    'sw.js'
-  ];
-
-  let manifestIcons = [];
+// Retorna a lista de todos os recursos necessários (caminhos relativos ao domínio)
+async function getAllResourcePaths() {
+  const baseFiles = ['index.html', 'manifest.json', 'sw.js'];
+  let iconPaths = [];
   try {
     const manifestRes = await fetch('/Gerador-de-etiqueta-pwa/manifest.json');
     const manifest = await manifestRes.json();
-    if (manifest.icons) {
-      manifestIcons = manifest.icons.map(icon => icon.src);
-    }
-    if (manifest.screenshots) {
-      manifestIcons.push(...manifest.screenshots.map(s => s.src));
-    }
-  } catch (e) {
-    console.warn('Não foi possível ler o manifesto para ícones:', e);
-  }
-
-  const tailwindCss = await fetch('https://cdn.tailwindcss.com').then(res => res.text());
-
-  const allFiles = [...baseFiles, ...manifestIcons];
-  const uniqueFiles = [...new Set(allFiles)];
-  const filtered = uniqueFiles.map(f => f.replace(/^\//, '')).filter(f => f);
-  return { files: filtered, tailwindCss };
+    if (manifest.icons) iconPaths.push(...manifest.icons.map(icon => icon.src));
+    if (manifest.screenshots) iconPaths.push(...manifest.screenshots.map(s => s.src));
+  } catch(e) { console.warn('Erro ao ler manifesto:', e); }
+  // Remove duplicatas e garante que os caminhos não tenham '/' inicial
+  const all = [...new Set([...baseFiles, ...iconPaths])];
+  return all.map(p => p.replace(/^\//, ''));
 }
 
-async function copyAppToLocalFolder(folderHandle) {
-  const statusDiv = $('#offlineStatus');
-  statusDiv.innerHTML = '⏳ Copiando arquivos... Por favor aguarde.';
+async function copyAppToLocalFolder(folderHandle, statusCallback) {
+  statusCallback('⏳ Buscando lista de arquivos...');
+  const resourcePaths = await getAllResourcePaths();
+  const total = resourcePaths.length;
+  let current = 0;
+  
+  // Baixar Tailwind CSS
+  statusCallback('⏳ Baixando Tailwind CSS...');
+  let tailwindCss = '';
   try {
-    const { files, tailwindCss } = await getAllLocalResources();
-    
-    await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
-    
-    for (const filePath of files) {
-      let fullUrl = `/Gerador-de-etiqueta-pwa/${filePath}`;
-      let response = await fetch(fullUrl);
+    const resp = await fetch('https://cdn.tailwindcss.com');
+    tailwindCss = await resp.text();
+  } catch(e) {
+    statusCallback('❌ Falha ao baixar Tailwind CSS. Verifique sua conexão.');
+    throw e;
+  }
+  
+  // Salvar tailwind.css
+  await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
+  
+  // Copiar cada recurso
+  for (const relPath of resourcePaths) {
+    current++;
+    statusCallback(`⏳ Copiando ${relPath} (${current}/${total})...`);
+    const fullUrl = `/Gerador-de-etiqueta-pwa/${relPath}`;
+    try {
+      const response = await fetch(fullUrl);
       if (!response.ok) {
-        fullUrl = `/${filePath}`;
-        response = await fetch(fullUrl);
+        console.warn(`Recurso não encontrado: ${fullUrl}`);
+        continue;
       }
-      if (response.ok) {
-        const contentType = response.headers.get('content-type') || '';
-        const isImage = contentType.startsWith('image/');
-        let content;
-        if (isImage) {
-          content = await response.blob();
-          await saveFileToFolder(folderHandle, filePath, content, true);
-        } else {
-          content = await response.text();
-          await saveFileToFolder(folderHandle, filePath, content);
-        }
+      const contentType = response.headers.get('content-type') || '';
+      const isBinary = contentType.startsWith('image/') || contentType.startsWith('application/octet-stream');
+      let content;
+      if (isBinary) {
+        content = await response.blob();
+        await saveFileToFolder(folderHandle, relPath, content, true);
       } else {
-        console.warn(`Arquivo não encontrado: ${fullUrl}`);
+        content = await response.text();
+        await saveFileToFolder(folderHandle, relPath, content);
       }
+    } catch(err) {
+      console.error(`Erro ao copiar ${relPath}:`, err);
     }
+  }
+  
+  // Modificar o index.html copiado para usar tailwind.css local
+  statusCallback('⏳ Adaptando index.html para usar CSS local...');
+  const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
+  let indexHtml = await indexResponse.text();
+  indexHtml = indexHtml.replace(
+    /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/,
+    '<link rel="stylesheet" href="tailwind.css">'
+  );
+  await saveFileToFolder(folderHandle, 'index.html', indexHtml);
+  
+  statusCallback('✅ Cópia offline concluída! Abra o index.html da pasta selecionada.');
+}
 
-    const indexPath = 'index.html';
-    const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
-    let indexContent = await indexResponse.text();
-    indexContent = indexContent.replace(
-      /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/,
-      '<link rel="stylesheet" href="tailwind.css">'
-    );
-    await saveFileToFolder(folderHandle, 'index.html', indexContent);
-
-    statusDiv.innerHTML = '✅ Arquivos copiados com sucesso! Agora você pode abrir o index.html desta pasta sem internet.';
-    setTimeout(() => {
-      alert('Cópia concluída! Para usar offline, abra o arquivo "index.html" da pasta selecionada.');
-    }, 500);
+async function requestOfflineFolder() {
+  if (!window.showDirectoryPicker) {
+    alert('Seu navegador não suporta a API File System Access. Use Chrome, Edge ou Opera recentes.');
+    return null;
+  }
+  try {
+    const folderHandle = await window.showDirectoryPicker();
+    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+    if (permission === 'granted') {
+      await saveFolderHandle(folderHandle);
+      return folderHandle;
+    } else {
+      alert('Permissão negada.');
+      return null;
+    }
   } catch (err) {
-    console.error(err);
-    statusDiv.innerHTML = '❌ Erro ao copiar arquivos. Veja o console.';
+    console.error('Erro ao selecionar pasta:', err);
+    alert('Falha ao selecionar a pasta.');
+    return null;
   }
 }
 
-async function saveBackupToFolder() {
+async function createOfflineCopy() {
   let folderHandle = await getFolderHandle();
   if (!folderHandle) {
-    // Se não houver handle, pede para criar a versão offline primeiro ou escolher pasta
-    const create = confirm('Nenhuma pasta offline configurada. Deseja selecionar uma pasta agora para criar a versão offline e depois fazer o backup?');
-    if (create) {
+    folderHandle = await requestOfflineFolder();
+    if (!folderHandle) return;
+  } else {
+    // Verifica permissão ainda válida
+    try {
+      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        folderHandle = await requestOfflineFolder();
+        if (!folderHandle) return;
+      }
+    } catch(e) {
       folderHandle = await requestOfflineFolder();
       if (!folderHandle) return;
-      // Opcional: já copiar os arquivos? O usuário pode querer apenas backup, mas é melhor oferecer.
-      const copyNow = confirm('Deseja também copiar os arquivos da aplicação para esta pasta agora? (Recomendado para ter a versão offline completa)');
-      if (copyNow) {
-        await copyAppToLocalFolder(folderHandle);
-      } else {
-        updateOfflineStatus(`Pasta selecionada: ${folderHandle.name}. Clique em "Criar versão offline" para copiar os arquivos quando quiser.`);
-      }
-    } else {
-      return;
     }
   }
   
+  const statusDiv = $('#offlineStatus');
+  await copyAppToLocalFolder(folderHandle, (msg) => {
+    statusDiv.innerHTML = msg;
+  });
+}
+
+// ---------- FUNÇÕES DE BACKUP ----------
+async function saveBackupToFolder() {
+  const folderHandle = await getFolderHandle();
+  if (!folderHandle) {
+    alert('Nenhuma pasta offline configurada. Clique em "Criar versão offline" primeiro.');
+    return;
+  }
   const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
   if (permission !== 'granted') {
-    alert('Permissão negada. Selecione a pasta novamente.');
+    alert('Permissão negada. Reconfigure a pasta offline clicando em "Criar versão offline".');
     await saveFolderHandle(null);
-    const newHandle = await requestOfflineFolder();
-    if (!newHandle) return;
-    folderHandle = newHandle;
+    return;
   }
-  
   try {
     const backupDir = await folderHandle.getDirectoryHandle('backup', { create: true });
-    
     const localStorageData = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       localStorageData[key] = localStorage.getItem(key);
     }
-    
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
     const fileName = `backup_${timestamp}.json`;
-    
-    const backupContent = JSON.stringify(localStorageData, null, 2);
-    await saveFileToFolder(backupDir, fileName, backupContent);
-    
-    updateOfflineStatus(`✅ Backup salvo em: backup/${fileName}`);
+    const content = JSON.stringify(localStorageData, null, 2);
+    await saveFileToFolder(backupDir, fileName, content);
+    $('#offlineStatus').innerHTML = `✅ Backup salvo em: backup/${fileName}`;
     alert(`Backup salvo com sucesso!\nPasta: backup/${fileName}`);
   } catch (err) {
-    console.error('Erro ao salvar backup:', err);
-    updateOfflineStatus('❌ Erro ao salvar backup. Veja o console.');
+    console.error(err);
+    $('#offlineStatus').innerHTML = '❌ Erro ao salvar backup.';
     alert('Falha ao salvar backup.');
   }
 }
 
 async function restoreBackupFromFolder() {
-  let folderHandle = await getFolderHandle();
+  const folderHandle = await getFolderHandle();
   if (!folderHandle) {
-    const create = confirm('Nenhuma pasta offline configurada. Deseja selecionar uma pasta agora?');
-    if (create) {
-      folderHandle = await requestOfflineFolder();
-      if (!folderHandle) return;
-    } else {
-      return;
-    }
+    alert('Nenhuma pasta offline configurada. Clique em "Criar versão offline" primeiro.');
+    return;
   }
-  
   const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
   if (permission !== 'granted') {
-    alert('Permissão negada. Selecione a pasta novamente.');
+    alert('Permissão negada. Reconfigure a pasta offline.');
     await saveFolderHandle(null);
-    folderHandle = await requestOfflineFolder();
-    if (!folderHandle) return;
+    return;
   }
-  
   try {
     const backupDir = await folderHandle.getDirectoryHandle('backup', { create: false });
     const files = [];
-    const entries = backupDir.values();
-    for await (const entry of entries) {
-      if (entry.kind === 'file' && entry.name.endsWith('.json')) {
-        files.push(entry);
-      }
+    for await (const entry of backupDir.values()) {
+      if (entry.kind === 'file' && entry.name.endsWith('.json')) files.push(entry);
     }
-    
     if (files.length === 0) {
       alert('Nenhum arquivo de backup encontrado na pasta backup.');
       return;
     }
-    
-    files.sort((a, b) => b.name.localeCompare(a.name));
-    
+    files.sort((a,b) => b.name.localeCompare(a.name));
     const fileNames = files.map(f => f.name);
-    const selectedName = prompt(`Escolha um backup para restaurar (digite o número):\n${fileNames.map((n,i)=>`${i+1} - ${n}`).join('\n')}`, '1');
+    const selectedName = prompt(`Escolha um backup para restaurar:\n${fileNames.map((n,i)=>`${i+1} - ${n}`).join('\n')}`, '1');
     if (!selectedName) return;
     const idx = parseInt(selectedName) - 1;
     if (isNaN(idx) || idx < 0 || idx >= files.length) {
       alert('Seleção inválida.');
       return;
     }
-    
-    const selectedFile = files[idx];
-    const fileHandle = await backupDir.getFileHandle(selectedFile.name);
-    const fileBlob = await fileHandle.getFile();
-    const fileText = await fileBlob.text();
-    const backupData = JSON.parse(fileText);
-    
+    const fileHandle = await backupDir.getFileHandle(files[idx].name);
+    const blob = await fileHandle.getFile();
+    const text = await blob.text();
+    const backupData = JSON.parse(text);
     for (const [key, value] of Object.entries(backupData)) {
       localStorage.setItem(key, value);
     }
-    
+    // Recarregar configurações na memória
     const saved = localStorage.getItem('mag_labels_cfg');
-    if (saved) {
-      const savedCfg = JSON.parse(saved);
-      Object.assign(state.cfg, savedCfg);
-    }
-    
+    if (saved) Object.assign(state.cfg, JSON.parse(saved));
     render();
-    updateOfflineStatus(`✅ Backup restaurado de: ${selectedFile.name}`);
+    $('#offlineStatus').innerHTML = `✅ Backup restaurado de: ${files[idx].name}`;
     alert(`Backup restaurado com sucesso!\nAs configurações foram recarregadas.`);
-    
     $('#cfgModal').classList.remove('active');
   } catch (err) {
-    console.error('Erro ao restaurar backup:', err);
-    updateOfflineStatus('❌ Erro ao restaurar backup. Veja o console.');
+    console.error(err);
+    $('#offlineStatus').innerHTML = '❌ Erro ao restaurar backup.';
     alert('Falha ao restaurar backup.');
   }
 }
 
-async function createOfflineVersion() {
-  let folderHandle = await getFolderHandle();
-  if (folderHandle) {
-    const useSame = confirm(`Já existe uma pasta configurada: ${folderHandle.name}. Deseja usar a mesma pasta para copiar os arquivos? (Cancelar para escolher uma nova)`);
-    if (useSame) {
-      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-      if (permission !== 'granted') {
-        alert('Permissão expirada. Selecione a pasta novamente.');
-        folderHandle = await requestOfflineFolder();
-        if (!folderHandle) return;
-      }
-    } else {
-      folderHandle = await requestOfflineFolder();
-      if (!folderHandle) return;
-    }
-  } else {
-    folderHandle = await requestOfflineFolder();
-    if (!folderHandle) return;
-  }
-  
-  await copyAppToLocalFolder(folderHandle);
-}
-
-function updateOfflineStatus(msg) {
-  const statusDiv = $('#offlineStatus');
-  if (statusDiv) statusDiv.innerHTML = msg;
-}
-
-async function checkOfflineStatus() {
-  const folderHandle = await getFolderHandle();
-  if (folderHandle) {
-    try {
-      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-      if (permission === 'granted') {
-        updateOfflineStatus(`Pasta offline configurada: ${folderHandle.name}`);
-      } else {
-        updateOfflineStatus('Permissão para pasta offline expirada. Clique em "Criar versão offline" para reconfigurar.');
-      }
-    } catch (e) {
-      updateOfflineStatus('Handle da pasta inválido. Clique em "Criar versão offline".');
-    }
-  } else {
-    updateOfflineStatus('Nenhuma pasta offline configurada. Clique em "Criar versão offline".');
-  }
-}
-
-// ---------- FIM DAS FUNÇÕES OFFLINE/BACKUP ----------
-
-// ---------- EVENTOS E INICIALIZAÇÃO ----------
+// ---------- INICIALIZAÇÃO E EVENTOS ----------
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Carregar configurações do localStorage
+  // Carregar configurações
   const saved = localStorage.getItem('mag_labels_cfg'); 
   if (saved) {
     const savedCfg = JSON.parse(saved);
     Object.assign(state.cfg, savedCfg);
-    
     if (typeof savedCfg.printErrors === 'undefined') state.cfg.printErrors = false;
     if (typeof savedCfg.showErrors === 'undefined') state.cfg.showErrors = true;
     if (typeof savedCfg.sortOrder === 'undefined') state.cfg.sortOrder = 'nNF-asc';
@@ -2020,42 +1952,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
   $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
 
-  // drag & drop
   const drop = document.getElementById('drop');
   ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
   ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
   drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
 
-  // clear
-  $('#btnClear').addEventListener('click', ()=>{ 
-    state.labels=[]; 
-    state.availableDates = [];
-    render(); 
-    $('#file-name').textContent='Nenhum arquivo selecionado'; 
-    updateDateFilters();
-  });
-
-  // print
+  $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; state.availableDates=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; updateDateFilters(); });
   $('#btnPrint').addEventListener('click', handlePrint);
   $('#btnPreview').addEventListener('click', renderPrintPreview);
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
   $('#printFromPreview').addEventListener('click', handlePrint);
-
-  // filtros data
   $('#applyDateFilter').addEventListener('click', applyDateFilter);
   $('#clearDateFilter').addEventListener('click', clearDateFilter);
 
-  // regra personalizada
   $('#cfgRuleCondition').addEventListener('change', function() {
-    const customRuleConfig = $('#customRuleConfig');
-    if (this.value === 'custom') {
-      customRuleConfig.classList.remove('hidden');
-    } else {
-      customRuleConfig.classList.add('hidden');
-    }
+    $('#customRuleConfig').classList.toggle('hidden', this.value !== 'custom');
   });
 
-  // Modal de configurações
+  // Modal configurações
   function openCfg(){
     $('#cfgLogo').value = state.cfg.logo || '';
     $('#cfgFracRule').value = state.cfg.fracRule || 'none';
@@ -2069,14 +1983,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $('#cfgHighlightFieldRule').value = state.cfg.highlightFieldRule || 'qCom';
     $('#cfgRuleCondition').value = state.cfg.ruleCondition || 'qtyGreaterThan1';
     $('#cfgCustomRule').value = state.cfg.customRule || '';
-    
-    const customRuleConfig = $('#customRuleConfig');
-    if (state.cfg.ruleCondition === 'custom') {
-      customRuleConfig.classList.remove('hidden');
-    } else {
-      customRuleConfig.classList.add('hidden');
-    }
-    
+    $('#customRuleConfig').classList.toggle('hidden', state.cfg.ruleCondition !== 'custom');
     if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
       $('#logoPreview').src = state.cfg.logo;
       $('#logoPreview').style.display = 'block';
@@ -2085,17 +1992,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       $('#logoPreview').style.display = 'none';
       updateLogoButtonState(false);
     }
-    
     populateTermHighlights();
-    checkOfflineStatus();
-    
     $('#cfgModal').classList.add('active');
   }
-  
-  function closeCfg(){ 
-    $('#cfgModal').classList.remove('active'); 
-  }
-  
+  function closeCfg(){ $('#cfgModal').classList.remove('active'); }
   $('#cnfPrint').addEventListener('click', openCfg);
   $('#cfgCancel').addEventListener('click', closeCfg);
   $('#cfgSave').addEventListener('click', ()=>{
@@ -2112,75 +2012,45 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.ruleCondition = $('#cfgRuleCondition').value;
     state.cfg.customRule = $('#cfgCustomRule').value;
     state.cfg.termHighlights = collectTermHighlights();
-    
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
     closeCfg(); 
     render();
   });
 
-  // Term highlight
   $('#addTermHighlight').addEventListener('click', () => {
-    const container = $('#termHighlightContainer');
-    container.appendChild(createTermHighlightRow());
+    $('#termHighlightContainer').appendChild(createTermHighlightRow());
   });
 
-  // Logo upload/remove
   $('#logoUploadButton').addEventListener('click', function() {
-    const btnState = this.getAttribute('data-state');
-    if (btnState === 'upload') {
-      $('#logoUpload').click();
-    } else {
-      removeLogo();
-    }
+    if (this.getAttribute('data-state') === 'upload') $('#logoUpload').click();
+    else removeLogo();
   });
   $('#logoUpload').addEventListener('change', handleLogoUpload);
 
-  // Exemplo XML
-  $('#showXmlExample').addEventListener('click', function(e) {
-    e.preventDefault();
-    $('#xmlExampleModal').style.display = 'block';
+  $('#showXmlExample').addEventListener('click', (e) => { e.preventDefault(); $('#xmlExampleModal').style.display = 'block'; });
+  $('#closeXmlExample').addEventListener('click', () => { $('#xmlExampleModal').style.display = 'none'; });
+  window.addEventListener('click', (e) => {
+    if (e.target === $('#xmlExampleModal')) $('#xmlExampleModal').style.display = 'none';
+    if (e.target === $('#cfgModal')) closeCfg();
   });
-  $('#closeXmlExample').addEventListener('click', function() {
-    $('#xmlExampleModal').style.display = 'none';
-  });
-
-  // Fechar modais ao clicar fora
-  window.addEventListener('click', function(e) {
-    if (e.target === $('#xmlExampleModal')) {
-      $('#xmlExampleModal').style.display = 'none';
-    }
-    if (e.target === $('#cfgModal')) {
-      closeCfg();
-    }
-  });
-  $('#cfgModal').addEventListener('click', function(e) {
-    if (e.target === this || e.target.classList.contains('modal-backdrop')) {
-      closeCfg();
-    }
+  $('#cfgModal').addEventListener('click', (e) => {
+    if (e.target === this || e.target.classList.contains('modal-backdrop')) closeCfg();
   });
 
-  // Eventos offline/backup
-  $('#createOfflineVersion').addEventListener('click', createOfflineVersion);
+  // Botões offline e backup
+  $('#createOfflineCopy').addEventListener('click', createOfflineCopy);
   $('#backupSettings').addEventListener('click', saveBackupToFolder);
   $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
 
-  // Inicialização
   render();
-  checkOfflineStatus();
 });
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
-      scope: '/Gerador-de-etiqueta-pwa/' 
-    })
-    .then(function(registration) {
-      console.log('ServiceWorker registrado com sucesso: ', registration.scope);
-    })
-    .catch(function(error) {
-      console.log('Falha no registro del ServiceWorker: ', error);
-    });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { scope: '/Gerador-de-etiqueta-pwa/' })
+      .then(reg => console.log('ServiceWorker registrado:', reg.scope))
+      .catch(err => console.log('Falha no ServiceWorker:', err));
   });
 }
   </script>
