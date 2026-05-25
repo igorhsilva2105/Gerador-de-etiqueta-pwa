@@ -970,7 +970,7 @@
             </fieldset>
           </div>
 
-          <!-- NOVA SEÇÃO: Modo Offline -->
+          <!-- NOVA SEÇÃO: Modo Offline com Backup -->
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Modo Offline</legend>
@@ -979,9 +979,11 @@
                   <input type="checkbox" id="cfgOfflineEnabled" class="mr-2"> Habilitar versão offline (cópia local)
                 </label>
                 <div id="offlineControls" style="display: none;">
-                  <div class="flex gap-2 mt-2">
+                  <div class="flex gap-2 mt-2 flex-wrap">
                     <button id="selectOfflineFolder" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 text-sm">Selecionar pasta</button>
                     <button id="syncOfflineFiles" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 text-sm">Copiar arquivos agora</button>
+                    <button id="backupSettings" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-green-100 text-sm">💾 Salvar Backup</button>
+                    <button id="restoreBackup" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-amber-100 text-sm">📂 Restaurar Backup</button>
                   </div>
                   <div id="offlineStatus" class="text-xs text-slate-600 mt-1"></div>
                 </div>
@@ -1659,7 +1661,7 @@ function collectTermHighlights() {
   return highlights;
 }
 
-// ---------- NOVAS FUNÇÕES PARA MODO OFFLINE (COPIA LOCAL) ----------
+// ---------- FUNÇÕES PARA MODO OFFLINE E BACKUP ----------
 const DB_NAME = 'EtiquetadoraOfflineDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'handles';
@@ -1782,10 +1784,8 @@ async function copyAppToLocalFolder(folderHandle) {
   try {
     const { files, tailwindCss } = await getAllLocalResources();
     
-    // 1. Salvar tailwind.css
     await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
     
-    // 2. Copiar cada arquivo da lista
     for (const filePath of files) {
       let fullUrl = `/Gerador-de-etiqueta-pwa/${filePath}`;
       let response = await fetch(fullUrl);
@@ -1809,7 +1809,6 @@ async function copyAppToLocalFolder(folderHandle) {
       }
     }
 
-    // 3. Modificar o index.html copiado para usar tailwind.css local
     const indexPath = 'index.html';
     const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
     let indexContent = await indexResponse.text();
@@ -1826,6 +1825,124 @@ async function copyAppToLocalFolder(folderHandle) {
   } catch (err) {
     console.error(err);
     statusDiv.innerHTML = '❌ Erro ao copiar arquivos. Veja o console.';
+  }
+}
+
+// ---------- NOVAS FUNÇÕES DE BACKUP ----------
+async function saveBackupToFolder() {
+  const folderHandle = await getFolderHandle();
+  if (!folderHandle) {
+    alert('Nenhuma pasta offline configurada. Selecione uma pasta primeiro.');
+    return;
+  }
+  const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+  if (permission !== 'granted') {
+    alert('Permissão negada. Selecione a pasta novamente.');
+    await saveFolderHandle(null);
+    checkOfflineStatus();
+    return;
+  }
+  
+  try {
+    // Criar subpasta "backup" se não existir
+    const backupDir = await folderHandle.getDirectoryHandle('backup', { create: true });
+    
+    // Obter todos os dados do localStorage
+    const localStorageData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      localStorageData[key] = localStorage.getItem(key);
+    }
+    
+    // Criar nome de arquivo com timestamp
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
+    const fileName = `backup_${timestamp}.json`;
+    
+    const backupContent = JSON.stringify(localStorageData, null, 2);
+    await saveFileToFolder(backupDir, fileName, backupContent);
+    
+    updateOfflineStatus(`✅ Backup salvo em: backup/${fileName}`);
+    alert(`Backup salvo com sucesso!\nPasta: backup/${fileName}`);
+  } catch (err) {
+    console.error('Erro ao salvar backup:', err);
+    updateOfflineStatus('❌ Erro ao salvar backup. Veja o console.');
+    alert('Falha ao salvar backup.');
+  }
+}
+
+async function restoreBackupFromFolder() {
+  const folderHandle = await getFolderHandle();
+  if (!folderHandle) {
+    alert('Nenhuma pasta offline configurada. Selecione uma pasta primeiro.');
+    return;
+  }
+  const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
+  if (permission !== 'granted') {
+    alert('Permissão negada. Selecione a pasta novamente.');
+    await saveFolderHandle(null);
+    checkOfflineStatus();
+    return;
+  }
+  
+  try {
+    const backupDir = await folderHandle.getDirectoryHandle('backup', { create: false });
+    // Listar arquivos .json na pasta backup
+    const files = [];
+    const entries = backupDir.values();
+    for await (const entry of entries) {
+      if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+        files.push(entry);
+      }
+    }
+    
+    if (files.length === 0) {
+      alert('Nenhum arquivo de backup encontrado na pasta backup.');
+      return;
+    }
+    
+    // Ordenar por nome decrescente (mais recente primeiro)
+    files.sort((a, b) => b.name.localeCompare(a.name));
+    
+    // Criar um seletor simples (pode ser substituído por um modal customizado)
+    const fileNames = files.map(f => f.name);
+    const selectedName = prompt(`Escolha um backup para restaurar (digite o número):\n${fileNames.map((n,i)=>`${i+1} - ${n}`).join('\n')}`, '1');
+    if (!selectedName) return;
+    const idx = parseInt(selectedName) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= files.length) {
+      alert('Seleção inválida.');
+      return;
+    }
+    
+    const selectedFile = files[idx];
+    const fileHandle = await backupDir.getFileHandle(selectedFile.name);
+    const fileBlob = await fileHandle.getFile();
+    const fileText = await fileBlob.text();
+    const backupData = JSON.parse(fileText);
+    
+    // Restaurar no localStorage
+    for (const [key, value] of Object.entries(backupData)) {
+      localStorage.setItem(key, value);
+    }
+    
+    // Recarregar configurações na memória
+    const saved = localStorage.getItem('mag_labels_cfg');
+    if (saved) {
+      const savedCfg = JSON.parse(saved);
+      Object.assign(state.cfg, savedCfg);
+    }
+    
+    // Atualizar interface
+    render();
+    updateOfflineStatus(`✅ Backup restaurado de: ${selectedFile.name}`);
+    alert(`Backup restaurado com sucesso!\nAs configurações foram recarregadas.`);
+    
+    // Fechar modal de configurações se estiver aberto
+    $('#cfgModal').classList.remove('active');
+  } catch (err) {
+    console.error('Erro ao restaurar backup:', err);
+    updateOfflineStatus('❌ Erro ao restaurar backup. Veja o console.');
+    alert('Falha ao restaurar backup.');
   }
 }
 
@@ -1857,7 +1974,7 @@ function updateOfflineStatus(msg) {
   $('#offlineStatus').innerHTML = msg;
 }
 
-// ---------- FIM DAS FUNÇÕES OFFLINE ----------
+// ---------- FIM DAS FUNÇÕES OFFLINE/BACKUP ----------
 
 // ---------- EVENTOS E INICIALIZAÇÃO ----------
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -2059,13 +2176,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     await copyAppToLocalFolder(folderHandle);
   });
+  
+  // Novos eventos de backup
+  $('#backupSettings').addEventListener('click', saveBackupToFolder);
+  $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
 
   // Inicialização
   render();
   checkOfflineStatus();
 });
 
-// Service Worker (já existente)
+// Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { 
