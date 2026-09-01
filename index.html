@@ -1,2114 +1,524 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Automatizador de Etiquetas</title>
-  <link rel="icon" type="image/png" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
-  <!-- PWA configs -->
-  <link rel="manifest" href="/Gerador-de-etiqueta-pwa/manifest.json">
-  <meta name="theme-color" content="#2563eb">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Etiquetadora">
-
-  <!-- Ícones PWA -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-16.png">
-  <link rel="shortcut icon" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
-  <link rel="apple-touch-icon" href="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
-
-  <!-- Para Windows/PC -->
-  <meta name="msapplication-TileImage" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
-  <meta name="msapplication-square70x70logo" content="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-64.png">
-  <meta name="msapplication-square150x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
-  <meta name="msapplication-wide310x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Wide310x150Logo.scale-100.png">
-  <meta name="msapplication-square310x310logo" content="/Gerador-de-etiqueta-pwa/windows11/LargeTile.scale-100.png">
-
-  <!-- Tailwind via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    /* Estilos base com variáveis CSS */
-    :root {
-      --label-width: 6cm;
-      --label-height: 4cm;
-      --cols: 3;
-      --rows: 0;
-      --gap: 0.35cm;
-    }
-
-    /* Área de impressão */
-    @page { 
-      size: A4; 
-      margin: 1cm;
-    }
-
-    /* Grade de etiquetas em tela */
-    #labels {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(var(--label-width), 1fr));
-      gap: var(--gap);
-    }
-
-    .label {
-      width: var(--label-width);
-      height: var(--label-height);
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-sizing: border-box;
-      background: white;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .label.problem {
-      border: 2px dashed #f87171 !important;
-      background-color: #fef2f2 !important;
-    }
-
-    .label h3 { font-size: 12pt; line-height: 1.1; font-weight: 700; margin: 0; }
-    .label .meta { font-size: 8pt; line-height: 1.1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
-    .label .meta div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .label .footer { font-size: 7pt; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 3px; }
-
-    .label .meta .highlighted {
-      background-color: #000 !important;
-      color: #fff !important;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    .label .meta .highlighted-rule {
-      background-color: #ef4444 !important;
-      color: #fff !important;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-weight: bold;
-      font-size: 20px;
-    }
-
-    /* Estilos para impressão */
-    @media print {
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-      }
-      
-      body > *:not(main) {
-        display: none !important;
-      }
-      
-      main {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      
-      main > *:not(section) {
-        display: none !important;
-      }
-      
-      section {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-      }
-      
-      section > *:not(.md\:col-span-2) {
-        display: none !important;
-      }
-      
-      .md\:col-span-2 {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-      }
-      
-      .md\:col-span-2 > *:first-child {
-        display: none !important;
-      }
-      
-      #labels {
-        display: grid !important;
-        grid-template-columns: repeat(var(--cols), var(--label-width)) !important;
-        gap: var(--gap) !important;
-        justify-content: center;
-        width: 100%;
-        max-width: calc(var(--cols) * var(--label-width) + (var(--cols) - 1) * var(--gap) + 2cm);
-        margin: 1cm auto !important;
-        padding: 0 !important;
-        page-break-before: avoid;
-        page-break-after: avoid;
-      }
-      
-      .label-page-break {
-        page-break-after: always;
-        break-after: page;
-        width: 100%;
-        height: 0;
-        margin: 0;
-        padding: 0;
-        border: none;
-        visibility: hidden;
-      }
-
-      .label {
-        width: var(--label-width) !important;
-        height: var(--label-height) !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 10px !important;
-        padding: 6px !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        overflow: hidden !important;
-      }
-      
-      .label.problem {
-        display: none !important;
-      }
-      
-      body.print-errors .label.problem {
-        display: flex !important;
-      }
-
-      body.mask-print-errors .label.problem {
-        border: 1px solid #cbd5e1 !important;
-        background-color: white !important;
-      }
-
-      .label .meta .highlighted,
-      .label .meta .highlighted-rule {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-    }
-
-    /* Demais estilos (modais, etc.) */
-    #printPreviewModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      overflow: auto;
-    }
-    
-    #printPreviewContent {
-      width: 21cm;
-      min-height: 29.7cm;
-      margin: 20px auto;
-      padding: 1cm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-    }
-    
-    .print-preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      border-bottom: 1px solid #e2e8f0;
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    
-    .print-preview-controls {
-      display: flex;
-      gap: 10px;
-    }
-    
-    #xmlExampleModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      overflow: auto;
-    }
-    
-    #xmlExampleContent {
-      width: 80%;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    
-    .xml-example-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    pre {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    
-    .no-issues { color: #059669; font-style: italic; }
-    .logo-preview { max-width: 100px; max-height: 60px; margin-top: 8px; display: none; }
-    .logo-input-container { display: flex; gap: 8px; }
-    .logo-input-container input[type="text"] { flex: 1; }
-    .btn-remove { background-color: #ef4444 !important; color: white !important; }
-    .btn-remove:hover { background-color: #dc2626 !important; }
-
-    .date-filters {
-      background-color: #f8fafc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-    .date-filter-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: end;
-      margin-bottom: 0.5rem;
-    }
-    .date-filter-row label { flex: 1; }
-    .date-summary { font-size: 0.875rem; color: #64748b; margin-top: 0.5rem; }
-    .date-range-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-    .date-tag {
-      background-color: #e2e8f0;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-    .date-tag:hover { background-color: #cbd5e1; }
-    .date-tag.active { background-color: #3b82f6; color: white; }
-    .time-input { margin-top: 0.5rem; }
-    .time-input label {
-      display: block;
-      margin-bottom: 0.25rem;
-      font-size: 0.875rem;
-      color: #64748b;
-    }
-    .time-input input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.375rem;
-    }
-    .rule-config {
-      background-color: #f8fafc;
-      border-radius: 0.375rem;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-    }
-    .rule-config.hidden { display: none; }
-
-    /* Modal de configurações com backdrop suave */
-    #cfgModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 50;
-      align-items: center;
-      justify-content: center;
-    }
-    #cfgModal.active { display: flex; }
-    #cfgModal .modal-backdrop {
-      background: rgba(0, 0, 0, 0.25);
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 51;
-    }
-    #cfgModal .config-container {
-      width: 420px;
-      max-width: 85vw;
-      max-height: 75vh;
-      display: flex;
-      flex-direction: column;
-      background: white;
-      border-radius: 0.75rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      overflow: hidden;
-      z-index: 60;
-      position: relative;
-    }
-    #cfgModal .config-header {
-      padding: 1rem 1.25rem 0.5rem;
-      border-bottom: 1px solid #e2e8f0;
-      background: white;
-      flex-shrink: 0;
-    }
-    #cfgModal .config-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0.75rem 1.25rem;
-      max-height: calc(75vh - 120px);
-    }
-    #cfgModal .config-footer {
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid #e2e8f0;
-      background: #f8fafc;
-      flex-shrink: 0;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-    }
-    #cfgModal .config-content::-webkit-scrollbar { width: 6px; }
-    #cfgModal .config-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
-    #cfgModal .config-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    #cfgModal .config-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-    .compact-field { margin-bottom: 0.75rem; }
-    .compact-field legend { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
-    .compact-checkbox-group {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-    }
-    .compact-checkbox-group label {
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .compact-checkbox-group input[type="checkbox"] { width: 1rem; height: 1rem; }
-
-    .term-highlight-row {
-      display: flex;
-      gap: 0.25rem;
-      align-items: center;
-      margin-bottom: 0.25rem;
-    }
-    .term-highlight-row input {
-      padding: 0.25rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.25rem;
-      font-size: 0.8rem;
-    }
-    .term-highlight-row input[type="text"] { flex: 1; }
-    .term-highlight-row input[type="color"] { width: 2rem; height: 1.75rem; padding: 0; }
-    .term-highlight-row .btn-remove-term {
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 0 0.25rem;
-    }
-    .mask-print-errors .label.problem {
-      border: 1px solid #cbd5e1 !important;
-      background-color: white !important;
-    }
-    .offline-status {
-      font-size: 0.75rem;
-      word-break: break-all;
-      margin-top: 0.5rem;
-      padding: 0.25rem;
-      background: #f1f5f9;
-      border-radius: 0.25rem;
-    }
-
-    /* badge atualizável */
-    #sizeBadge {
-      font-size: 0.75rem;
-      background: #e2e8f0;
-      padding: 0.15rem 0.6rem;
-      border-radius: 9999px;
-      font-weight: 500;
-      color: #1e293b;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversor ZPL → TSPL - Serial + USB</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-50 text-slate-800">
-  <header id="toolbar" class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
-    <div class="max-w-6xl mx-auto p-4 flex items-center gap-3">
-      <div class="text-xl font-bold">🖨 Automatizador de Etiquetas</div>
-      <span id="sizeBadge" class="badge">6×4 cm</span>
-      <div class="ml-auto flex items-center gap-2">
-        <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
-        <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
-        <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
-      </div>
-    </div>
-  </header>
+<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800 min-h-screen">
 
-  <main class="max-w-6xl mx-auto p-4 space-y-6">
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
-          <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
-          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
-        </div>
-        <div class="ml-auto flex items-center gap-2">
-          <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
-          <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar XMLs…</button>
-          <button id="btnClear" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Limpar</button>
-        </div>
-      </div>
-      <div id="drop" class="mt-2 flex items-center justify-center w-full">
-        <label for="xmlInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-          <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"></path></svg>
-            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-            <p id="file-name" class="text-xs text-gray-500">Nenhum arquivo selecionado</p>
-          </div>
-        </label>
-      </div>
+    <div class="max-w-6xl mx-auto space-y-6">
 
-      <!-- Filtros de data -->
-      <div id="dateFilters" class="date-filters hidden">
-        <h3 class="font-medium mb-2">Filtrar por data e hora de emissão</h3>
-        <div class="date-filter-row">
-          <label>
-            <span class="block text-sm text-slate-600 mb-1">Data inicial</span>
-            <input type="date" id="filterStartDate" class="block w-full rounded-md border border-slate-300 p-2">
-            <div class="time-input">
-              <label for="filterStartTime" class="block text-sm text-slate-600 mb-1">Hora inicial</label>
-              <input type="time" id="filterStartTime" value="00:00" class="block w-full rounded-md border border-slate-300 p-2">
-            </div>
-          </label>
-          <label>
-            <span class="block text-sm text-slate-600 mb-1">Data final</span>
-            <input type="date" id="filterEndDate" class="block w-full rounded-md border border-slate-300 p-2">
-            <div class="time-input">
-              <label for="filterEndTime" class="block text-sm text-slate-600 mb-1">Hora final</label>
-              <input type="time" id="filterEndTime" value="23:59" class="block w-full rounded-md border border-slate-300 p-2">
-            </div>
-          </label>
-          <div style="display: flex; flex-direction: column; justify-content: flex-end;">
-            <button id="applyDateFilter" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm h-[42px] mb-2">Aplicar</button>
-            <button id="clearDateFilter" class="px-4 py-2 rounded-md border border-slate-300 text-sm h-[42px]">Limpar</button>
-          </div>
-        </div>
-        <div class="date-summary" id="dateRangeSummary">Nenhum filtro aplicado</div>
-        <div class="date-range-tags" id="dateRangeTags"></div>
-      </div>
-    </section>
-
-    <section class="grid md:grid-cols-3 gap-4">
-      <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-semibold">Etiquetas geradas</h2>
-          <div class="text-sm text-slate-500"><span id="countLabels">0</span> etiquetas</div>
-        </div>
-        <div id="labels" class="labels-grid"></div>
-      </div>
-      <aside class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" id="erroPanel">
-        <h2 class="font-semibold mb-2">Avisos / Itens com pendências</h2>
-        <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1">
-          <li class="no-issues">Sem erros</li>
-        </ul>
-      </aside>
-    </section>
-  </main>
-
-  <!-- Modal de visualização de impressão -->
-  <div id="printPreviewModal">
-    <div class="print-preview-header">
-      <h2 class="text-xl font-bold">Visualização de Impressão</h2>
-      <div class="print-preview-controls">
-        <button id="closePreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
-        <button id="printFromPreview" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
-      </div>
-    </div>
-    <div id="printPreviewContent">
-      <div id="previewLabels" class="labels-grid"></div>
-    </div>
-  </div>
-
-  <!-- Modal de exemplo de XML -->
-  <div id="xmlExampleModal">
-    <div id="xmlExampleContent">
-      <div class="xml-example-header">
-        <h2 class="text-xl font-bold">Exemplo de XML Válido</h2>
-        <button id="closeXmlExample" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
-      </div>
-      <p class="mb-4 text-sm text-slate-600">Abaixo está um exemplo de XML no formato NF-e que é compatível com esta ferramenta:</p>
-      <pre>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"&gt;
-  &lt;NFe xmlns="http://www.portalfiscal.inf.br/nfe"&gt;
-    &lt;infNFe Id="NFe35210600000000000125550010000000011234567890" versao="4.00"&gt;
-      &lt;ide&gt;
-        &lt;cUF&gt;35&lt;/cUF&gt;
-        &lt;cNF&gt;12345678&lt;/cNF&gt;
-        &lt;natOp&gt;Venda de mercadoria&lt;/natOp&gt;
-        &lt;mod&gt;55&lt;/mod&gt;
-        &lt;serie&gt;1&lt;/serie&gt;
-        &lt;nNF&gt;123456&lt;/nNF&gt;
-        &lt;dhEmi&gt;2021-06-01T10:00:00-03:00&lt;/dhEmi&gt;
-        &lt;tpNF&gt;1&lt;/tpNF&gt;
-        &lt;idDest&gt;1&lt;/idDest&gt;
-        &lt;cMunFG&gt;3550308&lt;/cMunFG&gt;
-        &lt;tpImp&gt;1&lt;/tpImp&gt;
-        &lt;tpEmis&gt;1&lt;/tpEmis&gt;
-        &lt;cDV&gt;0&lt;/cDV&gt;
-        &lt;tpAmb&gt;2&lt;/tpAmb&gt;
-        &lt;finNFe&gt;1&lt;/finNFe&gt;
-        &lt;indFinal&gt;1&lt;/indFinal&gt;
-        &lt;indPres&gt;1&lt;/indPres&gt;
-        &lt;procEmi&gt;0&lt;/procEmi&gt;
-        &lt;verProc&gt;1.0.0&lt;/verProc&gt;
-      &lt;/ide&gt;
-      &lt;emit&gt;
-        &lt;CNPJ&gt;00000000000100&lt;/CNPJ&gt;
-        &lt;xNome&gt;Empresa Exemplo Ltda&lt;/xNome&gt;
-        &lt;xFant&gt;Exemplo Comercio&lt;/xFant&gt;
-        &lt;enderEmit&gt;
-          &lt;xLgr&gt;Rua Exemplo&lt;/xLgr&gt;
-          &lt;nro&gt;123&lt;/nro&gt;
-          &lt;xBairro&gt;Centro&lt;/xBairro&gt;
-          &lt;cMun&gt;3550308&lt;/cMun&gt;
-          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
-          &lt;UF&gt;SP&lt;/UF&gt;
-          &lt;CEP&gt;01001000&lt;/CEP&gt;
-          &lt;cPais&gt;1058&lt;/cPais&gt;
-          &lt;xPais&gt;Brasil&lt;/xPais&gt;
-          &lt;fone&gt;1133334444&lt;/fone&gt;
-        &lt;/enderEmit&gt;
-        &lt;IE&gt;111222333444&lt;/IE&gt;
-        &lt;CRT&gt;1&lt;/CRT&gt;
-      &lt;/emit&gt;
-      &lt;dest&gt;
-        &lt;CNPJ&gt;99999999000199&lt;/CNPJ&gt;
-        &lt;xNome&gt;Cliente Exemplo SA&lt;/xNome&gt;
-        &lt;enderDest&gt;
-          &lt;xLgr&gt;Avenida Teste&lt;/xLgr&gt;
-          &lt;nro&gt;456&lt;/nro&gt;
-          &lt;xBairro&gt;Jardim Exemplo&lt;/xBairro&gt;
-          &lt;cMun&gt;3550308&lt;/cMun&gt;
-          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
-          &lt;UF&gt;SP&lt;/UF&gt;
-          &lt;CEP&gt;01002000&lt;/CEP&gt;
-          &lt;cPais&gt;1058&lt;/cPais&gt;
-          &lt;xPais&gt;Brasil&lt;/xPais&gt;
-        &lt;/enderDest&gt;
-        &lt;indIEDest&gt;9&lt;/indIEDest&gt;
-      &lt;/dest&gt;
-      &lt;det nItem="1"&gt;
-        &lt;prod&gt;
-          &lt;cProd&gt;PROD001&lt;/cProd&gt;
-          &lt;cEAN&gt;7891234567890&lt;/cEAN&gt;
-          &lt;xProd&gt;Produto Exemplo A&lt;/xProd&gt;
-          &lt;NCM&gt;84716052&lt;/NCM&gt;
-          &lt;CFOP&gt;5102&lt;/CFOP&gt;
-          &lt;uCom&gt;UN&lt;/uCom&gt;
-          &lt;qCom&gt;10.0000&lt;/qCom&gt;
-          &lt;vUnCom&gt;100.00&lt;/vUnCom&gt;
-          &lt;vProd&gt;1000.00&lt;/vProd&gt;
-          &lt;cEANTrib&gt;7891234567890&lt;/cEANTrib&gt;
-          &lt;uTrib&gt;UN&lt;/uTrib&gt;
-          &lt;qTrib&gt;10.0000&lt;/qTrib&gt;
-          &lt;vUnTrib&gt;100.00&lt;/vUnTrib&gt;
-          &lt;indTot&gt;1&lt;/indTot&gt;
-        &lt;/prod&gt;
-        &lt;imposto&gt;
-          &lt;ICMS&gt;
-            &lt;ICMS00&gt;
-              &lt;orig&gt;0&lt;/orig&gt;
-              &lt;CST&gt;00&lt;/CST&gt;
-              &lt;modBC&gt;3&lt;/modBC&gt;
-              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
-              &lt;vBC&gt;1000.00&lt;/vBC&gt;
-              &lt;vICMS&gt;180.00&lt;/vICMS&gt;
-            &lt;/ICMS00&gt;
-          &lt;/ICMS&gt;
-        &lt;/imposto&gt;
-      &lt;/det&gt;
-      &lt;det nItem="2"&gt;
-        &lt;prod&gt;
-          &lt;cProd&gt;PROD002&lt;/cProd&gt;
-          &lt;cEAN&gt;7899876543210&lt;/cEAN&gt;
-          &lt;xProd&gt;Produto Exemplo B&lt;/xProd&gt;
-          &lt;NCM&gt;85171210&lt;/NCM&gt;
-          &lt;CFOP&gt;5102&lt;/CFOP&gt;
-          &lt;uCom&gt;UN&lt;/uCom&gt;
-          &lt;qCom&gt;5.0000&lt;/qCom&gt;
-          &lt;vUnCom&gt;250.00&lt;/vUnCom&gt;
-          &lt;vProd&gt;1250.00&lt;/vProd&gt;
-          &lt;cEANTrib&gt;7899876543210&lt;/cEANTrib&gt;
-          &lt;uTrib&gt;UN&lt;/uTrib&gt;
-          &lt;qTrib&gt;5.0000&lt;/qTrib&gt;
-          &lt;vUnTrib&gt;250.00&lt;/vUnTrib&gt;
-          &lt;indTot&gt;1&lt;/indTot&gt;
-        &lt;/prod&gt;
-        &lt;imposto&gt;
-          &lt;ICMS&gt;
-            &lt;ICMS00&gt;
-              &lt;orig&gt;0&lt;/orig&gt;
-              &lt;CST&gt;00&lt;/CST&gt;
-              &lt;modBC&gt;3&lt;/modBC&gt;
-              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
-              &lt;vBC&gt;1250.00&lt;/vBC&gt;
-              &lt;vICMS&gt;225.00&lt;/vICMS&gt;
-            &lt;/ICMS00&gt;
-          &lt;/ICMS&gt;
-        &lt;/imposto&gt;
-      &lt;/det&gt;
-      &lt;total&gt;
-        &lt;ICMSTot&gt;
-          &lt;vBC&gt;2250.00&lt;/vBC&gt;
-          &lt;vICMS&gt;405.00&lt;/vICMS&gt;
-          &lt;vProd&gt;2250.00&lt;/vProd&gt;
-          &lt;vNF&gt;2250.00&lt;/vNF&gt;
-        &lt;/ICMSTot&gt;
-      &lt;/total&gt;
-      &lt;transp&gt;
-        &lt;modFrete&gt;0&lt;/modFrete&gt;
-      &lt;/transp&gt;
-      &lt;cobr&gt;
-        &lt;fat&gt;
-          &lt;nFat&gt;123456&lt;/nFat&gt;
-          &lt;vOrig&gt;2250.00&lt;/vOrig&gt;
-          &lt;vLiq&gt;2250.00&lt;/vLiq&gt;
-        &lt;/fat&gt;
-        &lt;dup&gt;
-          &lt;nDup&gt;001&lt;/nDup&gt;
-          &lt;dVenc&gt;2021-06-30&lt;/dVenc&gt;
-          &lt;vDup&gt;2250.00&lt;/vDup&gt;
-        &lt;/dup&gt;
-      &lt;/cobr&gt;
-      &lt;infAdic&gt;
-        &lt;infCpl&gt;Pagamento a vista.&lt;/infCpl&gt;
-      &lt;/infAdic&gt;
-    &lt;/infNFe&gt;
-  &lt;/NFe&gt;
-&lt;/nfeProc&gt;
-      </pre>
-    </div>
-  </div>
-
-  <!-- Config modal com novos campos: unidade e orientação -->
-  <div id="cfgModal">
-    <div class="modal-backdrop"></div>
-    <div class="config-container">
-      <div class="config-header">
-        <h3 class="text-lg font-semibold">Configurações de geração</h3>
-      </div>
-      
-      <div class="config-content">
-        <div class="space-y-3">
-          <div class="compact-field">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Logo (URL ou data URI)</label>
-            <div class="logo-input-container">
-              <input id="cfgLogo" type="text" class="block w-full rounded-md border border-slate-300 p-2 text-sm" placeholder="https://... ou data:image/png;base64,...">
-              <input type="file" id="logoUpload" accept="image/*" class="hidden">
-              <button id="logoUploadButton" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-sm whitespace-nowrap">Upload</button>
-            </div>
-            <img id="logoPreview" class="logo-preview mt-2" alt="Preview da logo">
-          </div>
-          
-          <!-- Unidade de medida e orientação -->
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Unidade de medida</legend>
-              <select id="cfgUnit" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                <option value="cm">Centímetros (cm)</option>
-                <option value="mm">Milímetros (mm)</option>
-                <option value="in">Polegadas (in)</option>
-                <option value="px">Pixels (px)</option>
-                <option value="%">Porcentagem (%)</option>
-              </select>
-            </fieldset>
-          </div>
-
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Orientação da etiqueta</legend>
-              <select id="cfgOrientation" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                <option value="portrait">Retrato (altura ≥ largura)</option>
-                <option value="landscape">Paisagem (largura ≥ altura)</option>
-              </select>
-              <p class="text-xs text-slate-500 mt-1">Ao mudar, largura e altura serão trocadas automaticamente se necessário.</p>
-            </fieldset>
-          </div>
-
-          <!-- Dimensões -->
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
-              <div class="flex gap-2">
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Largura</span>
-                  <input type="number" id="cfgLabelWidth" value="6" min="0.1" max="999" step="0.5"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Altura</span>
-                  <input type="number" id="cfgLabelHeight" value="4" min="0.1" max="999" step="0.5"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
-              </div>
-            </fieldset>
-          </div>
-
-          <div class="compact-field">
-            <div class="flex gap-2">
-              <label class="flex-1">
-                <span class="block text-sm font-medium text-slate-700 mb-1">Colunas por folha</span>
-                <input type="number" id="cfgColsPerPage" value="3" min="1" max="6" step="1"
-                       class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-              </label>
-              <label class="flex-1">
-                <span class="block text-sm font-medium text-slate-700 mb-1">Linhas por folha</span>
-                <input type="number" id="cfgRowsPerPage" value="0" min="0" max="20" step="1"
-                       class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                <p class="text-xs text-slate-500 mt-1">0 = automático</p>
-              </label>
-            </div>
-          </div>
-
-          <div class="compact-field">
-            <div class="flex gap-2 items-end">
-              <div class="flex-1">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Regra de fracionamento</label>
-                <select id="cfgFracRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                  <option value="none">Sem fracionamento</option>
-                  <option value="fixed">Fracionar em N etiquetas por item</option>
-                  <option value="perQty">1 etiqueta por unidade</option>
-                </select>
-              </div>
-              <div style="width:70px">
-                <label class="block text-sm font-medium text-slate-700 mb-1">N</label>
-                <input id="cfgFracN" type="number" min="1" value="1" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-              </div>
-            </div>
-          </div>
-          
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Campos exibidos</legend>
-              <div class="compact-checkbox-group">
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="xProd" checked> Nome do produto</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="cEAN"> EAN</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="cProd"> Código</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="nNF" checked> Nº da nota</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="qCom" checked> Quantidade</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="uCom" checked> Unidade</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="vUnCom"> Preço</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="emit"> Emitente</label>
-                <label class="text-sm"><input type="checkbox" class="cfgField" value="dest"> Destinatário</label>
-              </div>
-            </fieldset>
-          </div>
-          
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Configurações de erros</legend>
-              <div class="space-y-1">
-                <label class="text-sm flex items-center"><input type="checkbox" id="cfgShowErrors" checked class="mr-2"> Exibir itens com erro</label>
-                <label class="text-sm flex items-center"><input type="checkbox" id="cfgPrintErrors" class="mr-2"> Imprimir itens com erro</label>
-                <label class="text-sm flex items-center"><input type="checkbox" id="cfgMaskPrintErrors" class="mr-2"> Mascarar erros na impressão</label>
-              </div>
-            </fieldset>
-          </div>
-          
-          <div class="compact-field">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Ordenar etiquetas por</label>
-            <select id="cfgSortOrder" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-              <option value="nNF-asc">Nota Fiscal (Crescente)</option>
-              <option value="nNF-desc">Nota Fiscal (Decrescente)</option>
-              <option value="date-asc">Data de Emissão (Mais Antiga)</option>
-              <option value="date-desc">Data de Emissão (Mais Recente)</option>
-            </select>
-          </div>
-          
-          <div class="compact-field">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Destacar campo</label>
-            <select id="cfgHighlightField" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-              <option value="">Nenhum</option>
-              <option value="nNF" selected>Nota Fiscal</option>
-              <option value="xProd">Nome do produto</option>
-              <option value="cEAN">EAN</option>
-              <option value="cProd">Código</option>
-              <option value="qCom">Quantidade</option>
-              <option value="uCom">Unidade</option>
-              <option value="vUnCom">Preço</option>
-              <option value="emit">Emitente</option>
-              <option value="dest">Destinatário</option>
-            </select>
-          </div>
-          
-          <div class="compact-field">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Destacar campo (regra específica)</label>
-            <select id="cfgHighlightFieldRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-              <option value="">Nenhum</option>
-              <option value="nNF">Nota Fiscal</option>
-              <option value="xProd">Nome do produto</option>
-              <option value="cEAN">EAN</option>
-              <option value="cProd">Código</option>
-              <option value="qCom" selected>Quantidade</option>
-              <option value="uCom">Unidade</option>
-              <option value="vUnCom">Preço</option>
-              <option value="emit">Emitente</option>
-              <option value="dest">Destinatário</option>
-            </select>
-          </div>
-          
-          <div id="ruleConfig" class="rule-config compact-field">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Condição para destacar</label>
-            <select id="cfgRuleCondition" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-              <option value="qtyGreaterThan1">Quantidade maior que 1</option>
-              <option value="qtyGreaterThan10">Quantidade maior que 10</option>
-              <option value="qtyGreaterThan100">Quantidade maior que 100</option>
-              <option value="custom">Personalizada</option>
-            </select>
-            <div id="customRuleConfig" class="mt-2 hidden">
-              <label class="block text-sm font-medium text-slate-700 mb-1">Regra personalizada (JavaScript)</label>
-              <input type="text" id="cfgCustomRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm" placeholder="Ex: value > 1">
-              <p class="text-xs text-slate-500 mt-1">Use "value" para referenciar o valor do campo</p>
-            </div>
-          </div>
-
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Destaque por termo</legend>
-              <div id="termHighlightContainer" class="space-y-1 mb-2"></div>
-              <button id="addTermHighlight" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-sm">+ Adicionar termo</button>
-              <p class="text-xs text-slate-500 mt-1">O texto do nome do produto que contiver o termo será exibido na cor escolhida.</p>
-            </fieldset>
-          </div>
-
-          <div class="compact-field">
-            <fieldset>
-              <legend class="block text-sm font-medium text-slate-700 mb-1">Offline & Backup</legend>
-              <div class="space-y-2">
-                <div class="flex gap-2 flex-wrap">
-                  <button id="createOfflineCopy" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-100 text-sm">📀 Criar versão offline</button>
-                  <button id="backupSettings" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-green-100 text-sm">💾 Salvar Backup</button>
-                  <button id="restoreBackup" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-amber-100 text-sm">📂 Restaurar Backup</button>
+        <!-- Cabeçalho -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-600 p-3 rounded-xl text-white flex items-center justify-center">
+                    <i data-lucide="file-code-2" class="w-8 h-8"></i>
                 </div>
-                <div id="offlineStatus" class="offline-status"></div>
-              </div>
-            </fieldset>
-          </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Conversor ZPL → TSPL</h1>
+                    <p class="text-slate-500">Converta e imprima via Serial (COM) ou USB direto</p>
+                </div>
+            </div>
         </div>
-      </div>
-      
-      <div class="config-footer">
-        <button id="cfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
-        <button id="cfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
-      </div>
+
+        <!-- Alertas -->
+        <div id="error-container" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-center gap-3 text-red-700 shadow-sm">
+            <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <p id="error-text" class="text-sm"></p>
+        </div>
+        <div id="info-container" class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg flex items-center gap-3 text-blue-700 shadow-sm">
+            <i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+            <p id="info-text" class="text-sm"></p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Lado Esquerdo: Input ZPL -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[700px]">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+                    <h2 class="font-semibold text-slate-700 flex items-center gap-2">
+                        <i data-lucide="code-2" class="w-[18px] h-[18px]"></i>
+                        Código Fonte ZPL
+                    </h2>
+                    <button onclick="document.getElementById('file-input').click()" class="flex items-center gap-2 text-sm bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors font-medium text-slate-600">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        Carregar .zpl
+                    </button>
+                    <input type="file" id="file-input" accept=".zpl,.txt" class="hidden" onchange="handleFileUpload(event)">
+                </div>
+
+                <div class="flex-1 p-4 flex flex-col">
+                    <textarea id="zpl-input" class="flex-1 w-full p-4 bg-slate-900 text-green-400 font-mono text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" spellcheck="false" placeholder="^XA&#10;^FO50,50^ADN,36,20^FDInsira o ZPL aqui^FS&#10;^XZ">^XA
+^FO50,50^A0N,50,50^FDTeste de Conversao ZPL^FS
+^FO50,150^BY3,2,100^BCN,100,Y,N,N^FD123456789^FS
+^FO50,300^GB700,5,5^FS
+^XZ</textarea>
+
+                    <button onclick="convertToTSPL()" class="mt-4 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer shadow-sm">
+                        <i data-lucide="file-text" class="w-[18px] h-[18px]"></i>
+                        Converter para TSPL
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lado Direito: Resultado TSPL + Conexão -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[700px]">
+
+                <div class="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
+                    <h2 class="font-semibold text-slate-700 flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-[18px] h-[18px]"></i>
+                        Resultado TSPL
+                    </h2>
+                </div>
+
+                <div class="flex-1 p-4 flex flex-col">
+                    <!-- Estado Vazio -->
+                    <div id="empty-tspl" class="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
+                        <i data-lucide="file-code-2" class="w-12 h-12 opacity-20"></i>
+                        <p>O código TSPL gerado aparecerá aqui.</p>
+                    </div>
+
+                    <!-- Conteúdo TSPL -->
+                    <div id="content-tspl" class="hidden flex-1 flex flex-col h-full">
+                        <div class="bg-blue-50 border border-blue-100 text-blue-800 text-xs p-3 rounded-lg mb-3">
+                            <strong>Nota:</strong> A conversão TSPL é baseada em heurísticas para os comandos mais comuns (texto, código de barras, caixas).
+                        </div>
+                        <textarea id="tspl-output" readonly class="flex-1 w-full p-4 bg-slate-100 text-slate-800 font-mono text-sm rounded-xl focus:outline-none resize-none border border-slate-200"></textarea>
+
+                        <!-- Configurações de conexão -->
+                        <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <label class="block text-slate-600 font-medium">Método</label>
+                                <select id="connection-method" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="serial">Porta Serial (COM)</option>
+                                    <option value="usb">USB Direto (WebUSB)</option>
+                                </select>
+                            </div>
+                            <div id="serial-settings">
+                                <label class="block text-slate-600 font-medium">Baud Rate</label>
+                                <select id="baud-rate" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="9600">9600</option>
+                                    <option value="19200">19200</option>
+                                    <option value="38400">38400</option>
+                                    <option value="57600">57600</option>
+                                    <option value="115200" selected>115200</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex gap-3">
+                            <button onclick="downloadTSPL()" class="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer">
+                                <i data-lucide="file-down" class="w-[18px] h-[18px]"></i>
+                                Baixar .tspl
+                            </button>
+                            <button id="connect-btn" onclick="toggleConnection()" class="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer">
+                                <i data-lucide="usb" class="w-[18px] h-[18px]"></i>
+                                Conectar
+                            </button>
+                        </div>
+                        <div id="connection-status" class="text-xs text-slate-500 text-center mt-2"></div>
+
+                        <!-- Botão de impressão (aparece só quando conectado) -->
+                        <button id="print-btn" onclick="sendPrint()" class="hidden mt-2 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer w-full">
+                            <i data-lucide="printer" class="w-[18px] h-[18px]"></i>
+                            Imprimir Etiqueta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-// --------- Estado e utilitários ---------
-const state = {
-  labels: [],
-  availableDates: [],
-  dateFilter: {
-    startDate: null,
-    endDate: null,
-    startTime: "00:00",
-    endTime: "23:59"
-  },
-  cfg: {
-    logo: "",
-    density: 60,
-    fields: ["xProd","qCom","uCom","nNF"],
-    showErrors: true,
-    printErrors: false,
-    maskPrintErrors: false,
-    fracRule: "none",
-    fracN: 1,
-    sortOrder: "nNF-asc",
-    highlightField: "nNF",
-    highlightFieldRule: "qCom",
-    ruleCondition: "qtyGreaterThan1",
-    customRule: "",
-    termHighlights: [],
-    labelWidth: 6,
-    labelHeight: 4,
-    colsPerPage: 3,
-    rowsPerPage: 0,
-    unit: "cm",
-    orientation: "portrait"
-  }
-};
+    <script>
+        lucide.createIcons();
 
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-function num(v, fallback = 0) { 
-  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',','.')); 
-  return Number.isFinite(n) ? n : fallback; 
-}
-function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
-function formatCNPJ(s){
-  const d = onlyDigits(s);
-  if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
-  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
-  return s || '-';
-}
+        // ===== Variáveis globais =====
+        let currentTsplContent = '';
+        let connectionType = null; // 'serial' ou 'usb'
+        let serialPort = null;
+        let writer = null;
+        let reader = null;
+        let usbDevice = null;
+        let usbEndpoint = null;
+        let usbInterfaceNumber = 0;
 
-function findFirstByLocalName(root, localName) {
-  if (!root) return null;
-  const all = root.getElementsByTagName('*');
-  for (let i=0;i<all.length;i++) if (all[i].localName === localName) return all[i];
-  return null;
-}
-function findAllByLocalName(root, localName) {
-  const out=[]; if (!root) return out;
-  const all = root.getElementsByTagName('*');
-  for (let i=0;i<all.length;i++) if (all[i].localName===localName) out.push(all[i]);
-  return out;
-}
-function findTextInsensitive(root, tagName){
-  if (!root) return '';
-  const all = root.getElementsByTagName('*');
-  const low = tagName.toLowerCase();
-  for (let i=0;i<all.length;i++){
-    const ln = (all[i].localName || '').toLowerCase();
-    if (ln === low) return (all[i].textContent||'').trim();
-  }
-  return '';
-}
-function text(el){ return el ? (el.textContent||'').trim() : ''; }
+        // ===== DOM references =====
+        const errorContainer = document.getElementById('error-container');
+        const errorText = document.getElementById('error-text');
+        const infoContainer = document.getElementById('info-container');
+        const infoText = document.getElementById('info-text');
+        const statusEl = document.getElementById('connection-status');
+        const connectBtn = document.getElementById('connect-btn');
+        const printBtn = document.getElementById('print-btn');
+        const methodSelect = document.getElementById('connection-method');
+        const serialSettings = document.getElementById('serial-settings');
 
-function parseXml(textXml) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(textXml, 'application/xml');
-  const parserError = doc.getElementsByTagName('parsererror')[0];
-  if (parserError) throw new Error('XML inválido');
-  return doc;
-}
-
-function extractFromDoc(doc) {
-  const emit = findFirstByLocalName(doc, 'emit');
-  const dest = findFirstByLocalName(doc, 'dest');
-  const ide = findFirstByLocalName(doc, 'ide') || doc;
-  const emitName = text(findFirstByLocalName(emit||doc,'xNome'));
-  let emitCnpj = findTextInsensitive(emit||doc, 'CNPJ') || findTextInsensitive(emit||doc, 'cnpj') || findTextInsensitive(emit||doc, 'CPF') || '';
-  if (!emitCnpj) {
-    try {
-      const serialized = (new XMLSerializer()).serializeToString(doc);
-      const re = /<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i;
-      const m = serialized.match(re);
-      if (m && m[1]) emitCnpj = (m[1]||'').replace(/\D/g,'');
-    } catch(e){}
-  }
-  const destName = text(findFirstByLocalName(dest||doc,'xNome'));
-  const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
-  
-  let dataEmissao = '';
-  let horaEmissao = '';
-  const dhEmi = text(findFirstByLocalName(ide, 'dhEmi'));
-  if (dhEmi) {
-    const dateTimePart = dhEmi.split('T');
-    if (dateTimePart.length > 0) dataEmissao = dateTimePart[0];
-    if (dateTimePart.length > 1) {
-      const timePart = dateTimePart[1].split('-')[0].split('+')[0];
-      horaEmissao = timePart.substring(0, 8);
-    }
-  }
-  
-  const dets = findAllByLocalName(doc, 'det');
-  const items = dets.map((det)=>{
-    const prod = findFirstByLocalName(det,'prod')||det;
-    const xProd = text(findFirstByLocalName(prod,'xProd'));
-    const cEAN = text(findFirstByLocalName(prod,'cEAN'));
-    const cProd = text(findFirstByLocalName(prod,'cProd'));
-    const qComStr = text(findFirstByLocalName(prod,'qCom'));
-    const uCom = text(findFirstByLocalName(prod,'uCom'));
-    const vUnCom = text(findFirstByLocalName(prod,'vUnCom'));
-    const qCom = num(qComStr, NaN);
-    return { 
-      xProd, cEAN, cProd, qCom, qComStr, uCom, vUnCom,
-      emit: emitName, emitCnpj,
-      dest: destName, nNF, dataEmissao, horaEmissao 
-    };
-  });
-  return { emitName, emitCnpj, destName, nNF, dataEmissao, horaEmissao, items };
-}
-
-function expandByFracionamento(item) {
-  const rule = state.cfg.fracRule;
-  if (rule === 'fixed') {
-    const n = Math.max(1, Math.floor(state.cfg.fracN||1));
-    return Array.from({length:n},()=>({...item}));
-  }
-  if (rule === 'perQty') {
-    const qty = Number.isFinite(item.qCom) ? Math.max(1, Math.round(item.qCom)) : 1;
-    return Array.from({length:qty},(_,i)=>({...item, fracIndex:i+1, fracTotal:qty}));
-  }
-  return [{...item}];
-}
-
-function validateLabel(data) {
-  const errs=[];
-  if (data._fatalError) {
-    errs.push('Erro no processamento do arquivo');
-    return errs;
-  }
-  
-  if (!data.xProd || data.xProd.includes('(Erro no arquivo')) errs.push('Produto sem nome');
-  if (!Number.isFinite(data.qCom) && !data.qComStr) errs.push('Quantidade ausente');
-  if (Number.isFinite(data.qCom) && data.qCom<=0) errs.push('Quantidade inválida');
-  if (data.cEAN && ![8,12,13,14].includes(String(data.cEAN).replace(/\D/g,'').length)) errs.push('EAN com tamanho incomum');
-  return errs;
-}
-
-function checkRuleCondition(field, value) {
-  if (!state.cfg.highlightFieldRule || state.cfg.highlightFieldRule === '') {
-    return false;
-  }
-  
-  if (field !== state.cfg.highlightFieldRule) {
-    return false;
-  }
-  
-  const condition = state.cfg.ruleCondition;
-  const numValue = num(value, 0);
-  
-  switch (condition) {
-    case 'qtyGreaterThan1':
-      return numValue > 1;
-    case 'qtyGreaterThan10':
-      return numValue > 10;
-    case 'qtyGreaterThan100':
-      return numValue > 100;
-    case 'custom':
-      if (state.cfg.customRule) {
-        try {
-          const func = new Function('value', `return ${state.cfg.customRule}`);
-          return func(numValue);
-        } catch (e) {
-          console.error('Erro na regra personalizada:', e);
-          return false;
-        }
-      }
-      return false;
-    default:
-      return false;
-  }
-}
-
-function sortLabels(labels) {
-  const sortOrder = state.cfg.sortOrder || 'nNF-asc';
-  
-  return [...labels].sort((a, b) => {
-    switch (sortOrder) {
-      case 'nNF-asc':
-        return num(a.nNF) - num(b.nNF);
-      case 'nNF-desc':
-        return num(b.nNF) - num(a.nNF);
-      case 'date-asc':
-        const dateA = new Date(a.dataEmissao + 'T' + (a.horaEmissao || '00:00:00'));
-        const dateB = new Date(b.dataEmissao + 'T' + (b.horaEmissao || '00:00:00'));
-        return dateA - dateB;
-      case 'date-desc':
-        const dateC = new Date(a.dataEmissao + 'T' + (a.horaEmissao || '00:00:00'));
-        const dateD = new Date(b.dataEmissao + 'T' + (b.horaEmissao || '00:00:00'));
-        return dateD - dateC;
-      default:
-        return 0;
-    }
-  });
-}
-
-function escapeRegex(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function highlightTerms(text, highlights) {
-  if (!highlights || highlights.length === 0) return text;
-  const sorted = [...highlights].sort((a,b) => b.term.length - a.term.length);
-  let result = text;
-  for (const h of sorted) {
-    if (!h.term) continue;
-    const regex = new RegExp(`(${escapeRegex(h.term)})`, 'gi');
-    result = result.replace(regex, `<span style="color:${h.color};">$1</span>`);
-  }
-  return result;
-}
-
-function updateDateFilters() {
-  const dateFilters = $('#dateFilters');
-  if (state.availableDates.length > 0) {
-    dateFilters.classList.remove('hidden');
-    updateDateRangeTags();
-  } else {
-    dateFilters.classList.add('hidden');
-  }
-  updateDateFilterSummary();
-}
-
-function updateDateRangeTags() {
-  const container = $('#dateRangeTags');
-  container.innerHTML = '';
-  
-  const dateGroups = {};
-  state.availableDates.forEach(date => {
-    const [year, month] = date.split('-');
-    const key = `${year}-${month}`;
-    if (!dateGroups[key]) {
-      dateGroups[key] = [];
-    }
-    dateGroups[key].push(date);
-  });
-  
-  Object.keys(dateGroups).sort().reverse().forEach(key => {
-    const [year, month] = key.split('-');
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    const tag = document.createElement('div');
-    tag.className = 'date-tag';
-    tag.textContent = `${monthNames[parseInt(month)-1]}/${year}`;
-    tag.dataset.start = dateGroups[key][0];
-    tag.dataset.end = dateGroups[key][dateGroups[key].length - 1];
-    
-    tag.addEventListener('click', () => {
-      $('#filterStartDate').value = tag.dataset.start;
-      $('#filterEndDate').value = tag.dataset.end;
-      $('#filterStartTime').value = "00:00";
-      $('#filterEndTime').value = "23:59";
-      applyDateFilter();
-    });
-    
-    container.appendChild(tag);
-  });
-}
-
-function updateDateFilterSummary() {
-  const summary = $('#dateRangeSummary');
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    const start = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
-    const end = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
-    const options = { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    summary.textContent = `Filtrando de ${start.toLocaleDateString('pt-BR', options)} até ${end.toLocaleDateString('pt-BR', options)}`;
-  } else {
-    summary.textContent = 'Nenhum filtro aplicado';
-  }
-}
-
-function applyDateFilter() {
-  const startDate = $('#filterStartDate').value;
-  const endDate = $('#filterEndDate').value;
-  const startTime = $('#filterStartTime').value;
-  const endTime = $('#filterEndTime').value;
-  
-  if (startDate && endDate && startDate > endDate) {
-    alert('A data inicial não pode ser maior que a data final');
-    return;
-  }
-  
-  state.dateFilter.startDate = startDate;
-  state.dateFilter.endDate = endDate;
-  state.dateFilter.startTime = startTime;
-  state.dateFilter.endTime = endTime;
-  
-  render();
-  updateDateFilterSummary();
-}
-
-function clearDateFilter() {
-  $('#filterStartDate').value = '';
-  $('#filterEndDate').value = '';
-  $('#filterStartTime').value = '00:00';
-  $('#filterEndTime').value = '23:59';
-  state.dateFilter.startDate = null;
-  state.dateFilter.endDate = null;
-  state.dateFilter.startTime = '00:00';
-  state.dateFilter.endTime = '23:59';
-  render();
-  updateDateFilterSummary();
-}
-
-// Ajusta orientação (troca largura/altura se necessário)
-function applyOrientation() {
-  const orient = state.cfg.orientation;
-  let w = state.cfg.labelWidth;
-  let h = state.cfg.labelHeight;
-  if (orient === 'portrait' && w > h) {
-    state.cfg.labelWidth = h;
-    state.cfg.labelHeight = w;
-  } else if (orient === 'landscape' && h > w) {
-    state.cfg.labelWidth = h;
-    state.cfg.labelHeight = w;
-  }
-}
-
-function updateBadge() {
-  const badge = document.getElementById('sizeBadge');
-  if (badge) {
-    badge.textContent = `${state.cfg.labelWidth}×${state.cfg.labelHeight} ${state.cfg.unit}`;
-  }
-}
-
-function render() {
-  const mount = $('#labels');
-  const widthVal = state.cfg.labelWidth + state.cfg.unit;
-  const heightVal = state.cfg.labelHeight + state.cfg.unit;
-  mount.style.setProperty('--label-width', widthVal);
-  mount.style.setProperty('--label-height', heightVal);
-  mount.style.setProperty('--cols', state.cfg.colsPerPage);
-  mount.style.setProperty('--rows', state.cfg.rowsPerPage);
-  mount.style.setProperty('--gap', '0.35cm');
-
-  // Atualiza o badge
-  updateBadge();
-
-  mount.innerHTML = '';
-  const issues = [];
-  let valid = 0, invalid = 0;
-  
-  let sortedLabels = sortLabels(state.labels);
-  
-  let labelsToRender = sortedLabels;
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    labelsToRender = sortedLabels.filter(item => {
-      if (!item.dataEmissao) return false;
-      const itemDateTime = new Date(item.dataEmissao + 'T' + (item.horaEmissao || '00:00:00'));
-      const filterStartDateTime = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
-      const filterEndDateTime = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
-      return itemDateTime >= filterStartDateTime && itemDateTime <= filterEndDateTime;
-    });
-  }
-  
-  const rows = state.cfg.rowsPerPage || 0;
-  const cols = state.cfg.colsPerPage || 3;
-  const itemsPerPage = rows > 0 ? rows * cols : Infinity;
-  
-  for (let i = 0; i < labelsToRender.length; i++) {
-    const data = labelsToRender[i];
-    const errs = validateLabel(data);
-    const isErr = errs.length>0;
-    if (isErr) invalid++; else valid++;
-    if (isErr && !state.cfg.showErrors) continue;
-    
-    const card = document.createElement('div');
-    card.className = 'label' + (isErr? ' problem':'');
-    card.style.width = widthVal;
-    card.style.height = heightVal;
-    
-    const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
-    if (state.cfg.logo) {
-      const himg = document.createElement('img');
-      himg.src = state.cfg.logo;
-      himg.alt = '';
-      himg.style.maxHeight = '34px';
-      himg.style.width = '100%';
-      himg.style.objectFit = 'contain';
-      himg.onerror = function(){ this.style.display='none'; };
-      headerDiv.appendChild(himg);
-    }
-    card.appendChild(headerDiv);
-    
-    if (state.cfg.fields.includes('xProd')) {
-      const h3 = document.createElement('h3');
-      const rawName = data.xProd || '(Sem nome)';
-      if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
-        h3.innerHTML = highlightTerms(rawName, state.cfg.termHighlights);
-      } else {
-        h3.textContent = rawName;
-      }
-      card.appendChild(h3);
-    }
-    
-    const meta = document.createElement('div'); meta.className = 'meta';
-    
-    function addLine(field, label, value) { 
-      if (!state.cfg.fields.includes(field)) return; 
-      const d = document.createElement('div'); 
-      d.textContent = label + ': ' + (value ?? '-');
-      if (state.cfg.highlightField === field) d.classList.add('highlighted');
-      if (checkRuleCondition(field, value)) d.classList.add('highlighted-rule');
-      meta.appendChild(d); 
-    }
-    
-    addLine('cEAN', 'EAN', data.cEAN || '-');
-    addLine('cProd', 'Código', data.cProd || '-');
-    addLine('nNF', 'NF', data.nNF || '-');
-    addLine('qCom', 'Qtd', Number.isFinite(data.qCom) ? data.qCom : data.qComStr || '-');
-    addLine('uCom', 'Un', data.uCom || '-');
-    addLine('vUnCom', 'Preço', data.vUnCom ? ('R$ ' + data.vUnCom) : '-');
-    addLine('emit', 'Emitente', data.emit || '-');
-    addLine('dest', 'Dest', data.dest || '-');
-    
-    card.appendChild(meta);
-    
-    const footer = document.createElement('div'); footer.className='footer';
-    if (isErr) {
-      footer.textContent = 'ERRO: '+ errs.join('; ');
-    } else {
-      const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
-      footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
-    }
-    card.appendChild(footer);
-    
-    mount.appendChild(card);
-    if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
-    
-    if (rows > 0 && (i + 1) % itemsPerPage === 0 && i < labelsToRender.length - 1) {
-      const breakDiv = document.createElement('div');
-      breakDiv.className = 'label-page-break';
-      mount.appendChild(breakDiv);
-    }
-  }
-  
-  $('#countLabels').textContent = `${labelsToRender.length} de ${state.labels.length} etiquetas`;
-  const issuesEl = $('#issues'); 
-  issuesEl.innerHTML='';
-  
-  if (issues.length === 0) {
-    const li = document.createElement('li');
-    li.textContent = 'Sem erros';
-    li.className = 'no-issues';
-    issuesEl.appendChild(li);
-  } else {
-    for (const it of issues) {
-      const li = document.createElement('li'); 
-      li.textContent = `${it.title} — ${it.errs.join('; ')}`; 
-      issuesEl.appendChild(li);
-    }
-  }
-  
-  const erroPanel = $('#erroPanel');
-  if (issues.length === 0) {
-    erroPanel.classList.add('bg-green-50', 'border-green-200');
-    erroPanel.classList.remove('bg-yellow-50', 'border-yellow-200');
-  } else {
-    erroPanel.classList.add('bg-yellow-50', 'border-yellow-200');
-    erroPanel.classList.remove('bg-green-50', 'border-green-200');
-  }
-}
-
-function renderPrintPreview() {
-  const previewMount = $('#previewLabels');
-  previewMount.innerHTML = '';
-  
-  const labelsContainer = $('#labels');
-  const children = labelsContainer.children;
-  
-  const widthVal = state.cfg.labelWidth + state.cfg.unit;
-  const heightVal = state.cfg.labelHeight + state.cfg.unit;
-  
-  previewMount.style.setProperty('--label-width', widthVal);
-  previewMount.style.setProperty('--label-height', heightVal);
-  previewMount.style.setProperty('--cols', state.cfg.colsPerPage);
-  previewMount.style.setProperty('--rows', state.cfg.rowsPerPage);
-  previewMount.style.setProperty('--gap', '0.35cm');
-  previewMount.style.display = 'grid';
-  previewMount.style.gridTemplateColumns = `repeat(${state.cfg.colsPerPage}, ${widthVal})`;
-  previewMount.style.gap = '0.35cm';
-  previewMount.style.justifyContent = 'center';
-  previewMount.style.width = '100%';
-  previewMount.style.margin = '0 auto';
-  
-  const previewContent = $('#printPreviewContent');
-  if (state.cfg.printErrors && state.cfg.maskPrintErrors) {
-    previewContent.classList.add('mask-print-errors');
-  } else {
-    previewContent.classList.remove('mask-print-errors');
-  }
-  
-  for (let i = 0; i < children.length; i++) {
-    const clone = children[i].cloneNode(true);
-    previewMount.appendChild(clone);
-  }
-  
-  $('#printPreviewModal').style.display = 'block';
-}
-
-async function readFilesAsText(files) {
-  const arr = Array.from(files);
-  return Promise.all(arr.map(file=>new Promise((resolve,reject)=>{
-    const fr = new FileReader(); fr.onload = ()=> resolve({name:file.name,text:String(fr.result||'')}); fr.onerror = ()=> reject(fr.error); fr.readAsText(file);
-  })));
-}
-
-async function handleFiles(files) {
-  if (!files || files.length===0) return;
-  $('#file-name').textContent = `${files.length} arquivo(s) pronto(s) para processar`;
-  try {
-    const texts = await readFilesAsText(files);
-    const all = [];
-    const datesSet = new Set();
-    
-    for (const {name,text} of texts) {
-      try {
-        if (!text || !text.trim().startsWith('<?xml') && !text.trim().startsWith('<nfe')) {
-          throw new Error('Arquivo não é um XML válido');
-        }
-        
-        const doc = parseXml(text);
-        const data = extractFromDoc(doc);
-        
-        if (data.dataEmissao) {
-          datesSet.add(data.dataEmissao);
-        }
-        
-        console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
-        for (const item of data.items) {
-          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao, horaEmissao: data.horaEmissao});
-          all.push(...expandedItems);
-        }
-      } catch (e) {
-        all.push({ 
-          xProd: `(Erro no arquivo ${name})`, 
-          qComStr:'-', 
-          uCom:'-', 
-          vUnCom:'-', 
-          cEAN:'', 
-          cProd:'', 
-          emit:'', 
-          emitCnpj:'', 
-          dest:'', 
-          nNF:'', 
-          dataEmissao: '',
-          horaEmissao: '',
-          _fatalError: String(e.message||e)
+        // Mostrar/esconder configurações de serial conforme método
+        methodSelect.addEventListener('change', () => {
+            if (methodSelect.value === 'serial') {
+                serialSettings.style.display = 'block';
+            } else {
+                serialSettings.style.display = 'none';
+            }
+            // Se já estiver conectado, desconecta ao mudar método
+            if (serialPort || usbDevice) {
+                disconnect();
+            }
         });
-      }
-    }
-    
-    state.availableDates = Array.from(datesSet).sort();
-    state.labels = all;
-    
-    updateDateFilters();
-    render();
-  } catch (e) {
-    console.error(e); 
-    alert('Falha ao ler arquivos.');
-  }
-}
 
-function handlePrint() {
-  document.body.classList.remove('print-errors', 'mask-print-errors');
-  if (state.cfg.printErrors) document.body.classList.add('print-errors');
-  if (state.cfg.printErrors && state.cfg.maskPrintErrors) document.body.classList.add('mask-print-errors');
-  window.print();
-}
-
-function handleLogoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  if (!file.type.match('image.*')) {
-    alert('Por favor, selecione um arquivo de imagem.');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64 = e.target.result;
-    $('#cfgLogo').value = base64;
-    $('#logoPreview').src = base64;
-    $('#logoPreview').style.display = 'block';
-    updateLogoButtonState(true);
-  };
-  reader.readAsDataURL(file);
-}
-
-function updateLogoButtonState(hasImage) {
-  const uploadButton = $('#logoUploadButton');
-  if (hasImage) {
-    uploadButton.textContent = 'Remover';
-    uploadButton.classList.remove('bg-slate-100', 'hover:bg-slate-200');
-    uploadButton.classList.add('btn-remove');
-    uploadButton.setAttribute('data-state', 'remove');
-  } else {
-    uploadButton.textContent = 'Upload';
-    uploadButton.classList.remove('btn-remove');
-    uploadButton.classList.add('bg-slate-100', 'hover:bg-slate-200');
-    uploadButton.setAttribute('data-state', 'upload');
-  }
-}
-
-function removeLogo() {
-  $('#cfgLogo').value = '';
-  $('#logoPreview').style.display = 'none';
-  $('#logoPreview').src = '';
-  updateLogoButtonState(false);
-}
-
-function createTermHighlightRow(term = '', color = '#ff0000') {
-  const row = document.createElement('div');
-  row.className = 'term-highlight-row';
-  const termInput = document.createElement('input');
-  termInput.type = 'text';
-  termInput.placeholder = 'Termo';
-  termInput.value = term;
-  termInput.className = 'term-input';
-  const colorInput = document.createElement('input');
-  colorInput.type = 'color';
-  colorInput.value = color;
-  colorInput.className = 'color-input';
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.innerHTML = '&times;';
-  removeBtn.className = 'btn-remove-term';
-  removeBtn.title = 'Remover';
-  removeBtn.addEventListener('click', () => row.remove());
-  row.appendChild(termInput);
-  row.appendChild(colorInput);
-  row.appendChild(removeBtn);
-  return row;
-}
-
-function populateTermHighlights() {
-  const container = $('#termHighlightContainer');
-  container.innerHTML = '';
-  if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
-    state.cfg.termHighlights.forEach(h => {
-      container.appendChild(createTermHighlightRow(h.term, h.color));
-    });
-  } else {
-    container.appendChild(createTermHighlightRow());
-  }
-}
-
-function collectTermHighlights() {
-  const container = $('#termHighlightContainer');
-  const rows = container.querySelectorAll('.term-highlight-row');
-  const highlights = [];
-  rows.forEach(row => {
-    const termInput = row.querySelector('.term-input');
-    const colorInput = row.querySelector('.color-input');
-    const term = termInput ? termInput.value.trim() : '';
-    const color = colorInput ? colorInput.value : '#000000';
-    if (term) {
-      highlights.push({ term, color });
-    }
-  });
-  return highlights;
-}
-
-// ==================== OFFLINE & BACKUP ====================
-const DB_NAME = 'EtiquetadoraOfflineDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'handles';
-let db = null;
-
-function openIndexedDB() {
-  return new Promise((resolve, reject) => {
-    if (db) return resolve(db);
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      db = request.result;
-      resolve(db);
-    };
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-  });
-}
-
-async function saveFolderHandle(handle) {
-  const idb = await openIndexedDB();
-  const tx = idb.transaction(STORE_NAME, 'readwrite');
-  const store = tx.objectStore(STORE_NAME);
-  store.put(handle, 'offlineFolder');
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function getFolderHandle() {
-  const idb = await openIndexedDB();
-  const tx = idb.transaction(STORE_NAME, 'readonly');
-  const store = tx.objectStore(STORE_NAME);
-  const request = store.get('offlineFolder');
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function saveFileToFolder(folderHandle, relativePath, content, isBinary = false) {
-  if (!isBinary && typeof content !== 'string') {
-    console.warn('saveFileToFolder: conteúdo não é string, convertendo', content);
-    content = String(content);
-  }
-  const pathParts = relativePath.split('/');
-  const fileName = pathParts.pop();
-  let currentHandle = folderHandle;
-  for (const part of pathParts) {
-    if (part) {
-      currentHandle = await currentHandle.getDirectoryHandle(part, { create: true });
-    }
-  }
-  const fileHandle = await currentHandle.getFileHandle(fileName, { create: true });
-  const writable = await fileHandle.createWritable();
-  try {
-    if (isBinary && content instanceof Blob) {
-      await writable.write(content);
-    } else {
-      await writable.write(content);
-    }
-  } finally {
-    await writable.close();
-  }
-}
-
-async function getAllResourcePaths() {
-  const baseFiles = ['index.html', 'manifest.json', 'sw.js'];
-  let iconPaths = [];
-  try {
-    const manifestRes = await fetch('/Gerador-de-etiqueta-pwa/manifest.json');
-    const manifest = await manifestRes.json();
-    if (manifest.icons) iconPaths.push(...manifest.icons.map(icon => icon.src));
-    if (manifest.screenshots) iconPaths.push(...manifest.screenshots.map(s => s.src));
-  } catch(e) { console.warn('Erro ao ler manifesto:', e); }
-  const all = [...new Set([...baseFiles, ...iconPaths])];
-  return all.map(p => p.replace(/^\//, '')).filter(p => p.length > 0);
-}
-
-async function fetchTailwindCss() {
-  const urls = [
-    'https://cdn.tailwindcss.com',
-    'https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css',
-    'https://unpkg.com/tailwindcss@^1/dist/tailwind.min.css'
-  ];
-  for (const url of urls) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const text = await res.text();
-        if (text && text.length > 100) {
-          console.log(`Tailwind baixado com sucesso de: ${url}`);
-          return text;
+        // ===== Alertas =====
+        function showError(msg) {
+            errorContainer.classList.remove('hidden');
+            errorText.innerText = msg;
+            infoContainer.classList.add('hidden');
         }
-      }
-    } catch (e) {
-      console.warn(`Falha ao baixar de ${url}:`, e.message);
-    }
-  }
-  console.warn('Usando fallback CSS interno para Tailwind');
-  return `/* Fallback CSS para estilos essenciais */
-.container { width: 100%; }
-.flex { display: flex; }
-.grid { display: grid; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.ml-auto { margin-left: auto; }
-.p-4 { padding: 1rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.text-sm { font-size: 0.875rem; }
-.text-lg { font-size: 1.125rem; }
-.font-semibold { font-weight: 600; }
-.rounded-xl { border-radius: 0.75rem; }
-.border { border-width: 1px; }
-.bg-white { background-color: #fff; }
-.bg-slate-50 { background-color: #f8fafc; }
-.text-slate-800 { color: #1e293b; }
-`;
-}
 
-async function copyAppToLocalFolder(folderHandle, statusCallback) {
-  statusCallback('⏳ Buscando lista de arquivos...');
-  const resourcePaths = await getAllResourcePaths();
-  const total = resourcePaths.length;
-  let current = 0;
-  
-  statusCallback('⏳ Baixando Tailwind CSS (tentando múltiplas fontes)...');
-  const tailwindCss = await fetchTailwindCss();
-  await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
-  
-  for (const relPath of resourcePaths) {
-    current++;
-    statusCallback(`⏳ Copiando ${relPath} (${current}/${total})...`);
-    let fullUrl = `/Gerador-de-etiqueta-pwa/${relPath}`;
-    try {
-      let response = await fetch(fullUrl);
-      if (!response.ok) {
-        fullUrl = `/${relPath}`;
-        response = await fetch(fullUrl);
-      }
-      if (!response.ok) {
-        console.warn(`Recurso não encontrado: ${fullUrl}`);
-        continue;
-      }
-      const contentType = response.headers.get('content-type') || '';
-      const isBinary = contentType.startsWith('image/') || contentType.startsWith('application/octet-stream');
-      let content;
-      if (isBinary) {
-        content = await response.blob();
-        await saveFileToFolder(folderHandle, relPath, content, true);
-      } else {
-        content = await response.text();
-        await saveFileToFolder(folderHandle, relPath, content);
-      }
-    } catch(err) {
-      console.error(`Erro ao copiar ${relPath}:`, err);
-    }
-  }
-  
-  statusCallback('⏳ Adaptando index.html para usar CSS local...');
-  const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
-  let indexHtml = await indexResponse.text();
-  indexHtml = indexHtml.replace(
-    /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/,
-    '<link rel="stylesheet" href="tailwind.css">'
-  );
-  await saveFileToFolder(folderHandle, 'index.html', indexHtml);
-  statusCallback('✅ Cópia offline concluída! Abra o index.html da pasta selecionada.');
-}
+        function hideError() {
+            errorContainer.classList.add('hidden');
+        }
 
-async function requestOfflineFolder() {
-  if (!window.showDirectoryPicker) {
-    alert('Seu navegador não suporta a API File System Access. Use Chrome, Edge ou Opera recentes.');
-    return null;
-  }
-  try {
-    const folderHandle = await window.showDirectoryPicker();
-    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-    if (permission === 'granted') {
-      await saveFolderHandle(folderHandle);
-      return folderHandle;
-    } else {
-      alert('Permissão negada.');
-      return null;
-    }
-  } catch (err) {
-    console.error('Erro ao selecionar pasta:', err);
-    alert('Falha ao selecionar a pasta.');
-    return null;
-  }
-}
+        function showInfo(msg) {
+            infoContainer.classList.remove('hidden');
+            infoText.innerText = msg;
+            hideError();
+        }
 
-async function createOfflineCopy() {
-  let folderHandle = await getFolderHandle();
-  if (!folderHandle) {
-    folderHandle = await requestOfflineFolder();
-    if (!folderHandle) return;
-  } else {
-    try {
-      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-      if (permission !== 'granted') {
-        folderHandle = await requestOfflineFolder();
-        if (!folderHandle) return;
-      }
-    } catch(e) {
-      folderHandle = await requestOfflineFolder();
-      if (!folderHandle) return;
-    }
-  }
-  const statusDiv = $('#offlineStatus');
-  await copyAppToLocalFolder(folderHandle, (msg) => { statusDiv.innerHTML = msg; });
-}
+        function hideInfo() {
+            infoContainer.classList.add('hidden');
+        }
 
-async function saveBackupToFolder() {
-  const folderHandle = await getFolderHandle();
-  if (!folderHandle) {
-    alert('Nenhuma pasta offline configurada. Clique em "Criar versão offline" primeiro.');
-    return;
-  }
-  const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-  if (permission !== 'granted') {
-    alert('Permissão negada. Reconfigure a pasta offline clicando em "Criar versão offline".');
-    await saveFolderHandle(null);
-    return;
-  }
-  try {
-    const backupDir = await folderHandle.getDirectoryHandle('backup', { create: true });
-    const localStorageData = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      const value = localStorage.getItem(key);
-      localStorageData[key] = value;
-    }
-    if (Object.keys(localStorageData).length === 0) {
-      alert('Não há dados no localStorage para fazer backup.');
-      return;
-    }
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
-    const fileName = `backup_${timestamp}.json`;
-    const content = JSON.stringify(localStorageData, null, 2);
-    await saveFileToFolder(backupDir, fileName, content);
-    $('#offlineStatus').innerHTML = `✅ Backup salvo em: backup/${fileName} (${content.length} bytes)`;
-    alert(`Backup salvo com sucesso!\nTamanho: ${content.length} bytes`);
-  } catch (err) {
-    console.error('Erro ao salvar backup:', err);
-    $('#offlineStatus').innerHTML = '❌ Erro ao salvar backup. Veja o console.';
-    alert('Falha ao salvar backup: ' + err.message);
-  }
-}
+        function setStatus(msg) {
+            statusEl.innerText = msg;
+        }
 
-async function restoreBackupFromFolder() {
-  const folderHandle = await getFolderHandle();
-  if (!folderHandle) {
-    alert('Nenhuma pasta offline configurada. Clique em "Criar versão offline" primeiro.');
-    return;
-  }
-  const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-  if (permission !== 'granted') {
-    alert('Permissão negada. Reconfigure a pasta offline.');
-    await saveFolderHandle(null);
-    return;
-  }
-  try {
-    const backupDir = await folderHandle.getDirectoryHandle('backup', { create: false });
-    const files = [];
-    for await (const entry of backupDir.values()) {
-      if (entry.kind === 'file' && entry.name.endsWith('.json')) files.push(entry);
-    }
-    if (files.length === 0) {
-      alert('Nenhum arquivo de backup encontrado na pasta backup.');
-      return;
-    }
-    files.sort((a,b) => b.name.localeCompare(a.name));
-    const fileNames = files.map(f => f.name);
-    const selectedName = prompt(`Escolha um backup para restaurar:\n${fileNames.map((n,i)=>`${i+1} - ${n}`).join('\n')}`, '1');
-    if (!selectedName) return;
-    const idx = parseInt(selectedName) - 1;
-    if (isNaN(idx) || idx < 0 || idx >= files.length) {
-      alert('Seleção inválida.');
-      return;
-    }
-    const fileHandle = await backupDir.getFileHandle(files[idx].name);
-    const blob = await fileHandle.getFile();
-    const text = await blob.text();
-    const backupData = JSON.parse(text);
-    for (const [key, value] of Object.entries(backupData)) {
-      localStorage.setItem(key, value);
-    }
-    const saved = localStorage.getItem('mag_labels_cfg');
-    if (saved) Object.assign(state.cfg, JSON.parse(saved));
-    render();
-    $('#offlineStatus').innerHTML = `✅ Backup restaurado de: ${files[idx].name}`;
-    alert(`Backup restaurado com sucesso!\nAs configurações foram recarregadas.`);
-    $('#cfgModal').classList.remove('active');
-  } catch (err) {
-    console.error('Erro ao restaurar backup:', err);
-    $('#offlineStatus').innerHTML = '❌ Erro ao restaurar backup. Veja o console.';
-    alert('Falha ao restaurar backup.');
-  }
-}
+        // ===== Upload e conversão =====
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('zpl-input').value = e.target.result;
+                    currentTsplContent = '';
+                    document.getElementById('empty-tspl').classList.remove('hidden');
+                    document.getElementById('content-tspl').classList.add('hidden');
+                    hideError();
+                    hideInfo();
+                    setStatus('');
+                    printBtn.classList.add('hidden');
+                    if (serialPort || usbDevice) disconnect();
+                };
+                reader.readAsText(file);
+            }
+        }
 
-// ---------- INICIALIZAÇÃO E EVENTOS ----------
-document.addEventListener('DOMContentLoaded', ()=>{
-  // Carregar configurações
-  const saved = localStorage.getItem('mag_labels_cfg'); 
-  if (saved) {
-    const savedCfg = JSON.parse(saved);
-    Object.assign(state.cfg, savedCfg);
-    // Valores padrão para as novas propriedades
-    if (typeof savedCfg.labelWidth === 'undefined') state.cfg.labelWidth = 6;
-    if (typeof savedCfg.labelHeight === 'undefined') state.cfg.labelHeight = 4;
-    if (typeof savedCfg.colsPerPage === 'undefined') state.cfg.colsPerPage = 3;
-    if (typeof savedCfg.rowsPerPage === 'undefined') state.cfg.rowsPerPage = 0;
-    if (typeof savedCfg.unit === 'undefined') state.cfg.unit = 'cm';
-    if (typeof savedCfg.orientation === 'undefined') state.cfg.orientation = 'portrait';
-    if (typeof savedCfg.printErrors === 'undefined') state.cfg.printErrors = false;
-    if (typeof savedCfg.showErrors === 'undefined') state.cfg.showErrors = true;
-    if (typeof savedCfg.sortOrder === 'undefined') state.cfg.sortOrder = 'nNF-asc';
-    if (typeof savedCfg.highlightField === 'undefined') state.cfg.highlightField = 'nNF';
-    if (typeof savedCfg.highlightFieldRule === 'undefined') state.cfg.highlightFieldRule = 'qCom';
-    if (typeof savedCfg.ruleCondition === 'undefined') state.cfg.ruleCondition = 'qtyGreaterThan1';
-    if (typeof savedCfg.customRule === 'undefined') state.cfg.customRule = '';
-    if (typeof savedCfg.termHighlights === 'undefined') state.cfg.termHighlights = [];
-    if (typeof savedCfg.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
-    // Ajusta orientação caso necessário
-    applyOrientation();
-  }
+        function convertToTSPL() {
+            const zplInput = document.getElementById('zpl-input').value;
 
-  // Botões principais
-  $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
-  $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
+            if (!zplInput.trim()) {
+                showError("O código ZPL não pode estar vazio.");
+                return;
+            }
 
-  const drop = document.getElementById('drop');
-  ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
-  ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
-  drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
+            hideError();
+            hideInfo();
+            setStatus('');
+            printBtn.classList.add('hidden');
 
-  $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; state.availableDates=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; updateDateFilters(); });
-  $('#btnPrint').addEventListener('click', handlePrint);
-  $('#btnPreview').addEventListener('click', renderPrintPreview);
-  $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
-  $('#printFromPreview').addEventListener('click', handlePrint);
-  $('#applyDateFilter').addEventListener('click', applyDateFilter);
-  $('#clearDateFilter').addEventListener('click', clearDateFilter);
+            let tspl = "SIZE 4,6\nGAP 0,0\nDIRECTION 1\nCLS\n";
+            let currentX = 0;
+            let currentY = 0;
+            let currentFontHeight = 30;
+            let elementType = 'TEXT';
+            let barcodeHeight = 50;
 
-  $('#cfgRuleCondition').addEventListener('change', function() {
-    $('#customRuleConfig').classList.toggle('hidden', this.value !== 'custom');
-  });
+            const lines = zplInput.replace(/\n/g, '').split('^');
 
-  // Ao mudar orientação, ajustar largura/altura
-  $('#cfgOrientation').addEventListener('change', function() {
-    const orient = this.value;
-    let w = parseFloat($('#cfgLabelWidth').value) || 6;
-    let h = parseFloat($('#cfgLabelHeight').value) || 4;
-    if (orient === 'portrait' && w > h) {
-      $('#cfgLabelWidth').value = h;
-      $('#cfgLabelHeight').value = w;
-    } else if (orient === 'landscape' && h > w) {
-      $('#cfgLabelWidth').value = h;
-      $('#cfgLabelHeight').value = w;
-    }
-  });
+            try {
+                for (let cmd of lines) {
+                    cmd = cmd.trim();
+                    if (!cmd) continue;
 
-  // Modal configurações
-  function openCfg(){
-    $('#cfgLogo').value = state.cfg.logo || '';
-    $('#cfgFracRule').value = state.cfg.fracRule || 'none';
-    $('#cfgFracN').value = state.cfg.fracN || 1;
-    $('#cfgLabelWidth').value = state.cfg.labelWidth || 6;
-    $('#cfgLabelHeight').value = state.cfg.labelHeight || 4;
-    $('#cfgColsPerPage').value = state.cfg.colsPerPage || 3;
-    $('#cfgRowsPerPage').value = state.cfg.rowsPerPage || 0;
-    $('#cfgUnit').value = state.cfg.unit || 'cm';
-    $('#cfgOrientation').value = state.cfg.orientation || 'portrait';
-    
-    $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
-    $('#cfgShowErrors').checked = state.cfg.showErrors;
-    $('#cfgPrintErrors').checked = state.cfg.printErrors;
-    $('#cfgMaskPrintErrors').checked = state.cfg.maskPrintErrors;
-    $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc';
-    $('#cfgHighlightField').value = state.cfg.highlightField || 'nNF';
-    $('#cfgHighlightFieldRule').value = state.cfg.highlightFieldRule || 'qCom';
-    $('#cfgRuleCondition').value = state.cfg.ruleCondition || 'qtyGreaterThan1';
-    $('#cfgCustomRule').value = state.cfg.customRule || '';
-    $('#customRuleConfig').classList.toggle('hidden', state.cfg.ruleCondition !== 'custom');
-    if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
-      $('#logoPreview').src = state.cfg.logo;
-      $('#logoPreview').style.display = 'block';
-      updateLogoButtonState(true);
-    } else {
-      $('#logoPreview').style.display = 'none';
-      updateLogoButtonState(false);
-    }
-    populateTermHighlights();
-    $('#cfgModal').classList.add('active');
-  }
-  function closeCfg(){ $('#cfgModal').classList.remove('active'); }
-  $('#cnfPrint').addEventListener('click', openCfg);
-  $('#cfgCancel').addEventListener('click', closeCfg);
-  $('#cfgSave').addEventListener('click', ()=>{
-    state.cfg.logo = $('#cfgLogo').value.trim();
-    state.cfg.fracRule = $('#cfgFracRule').value;
-    state.cfg.fracN = num($('#cfgFracN').value,1);
-    state.cfg.fields = $$('.cfgField').filter(n=>n.checked).map(n=>n.value);
-    state.cfg.showErrors = $('#cfgShowErrors').checked;
-    state.cfg.printErrors = $('#cfgPrintErrors').checked;
-    state.cfg.maskPrintErrors = $('#cfgMaskPrintErrors').checked;
-    state.cfg.sortOrder = $('#cfgSortOrder').value;
-    state.cfg.highlightField = $('#cfgHighlightField').value;
-    state.cfg.highlightFieldRule = $('#cfgHighlightFieldRule').value;
-    state.cfg.ruleCondition = $('#cfgRuleCondition').value;
-    state.cfg.customRule = $('#cfgCustomRule').value;
-    state.cfg.termHighlights = collectTermHighlights();
-    state.cfg.labelWidth = parseFloat($('#cfgLabelWidth').value) || 6;
-    state.cfg.labelHeight = parseFloat($('#cfgLabelHeight').value) || 4;
-    state.cfg.colsPerPage = parseInt($('#cfgColsPerPage').value) || 3;
-    state.cfg.rowsPerPage = parseInt($('#cfgRowsPerPage').value) || 0;
-    state.cfg.unit = $('#cfgUnit').value;
-    state.cfg.orientation = $('#cfgOrientation').value;
-    // Aplica orientação (troca se necessário)
-    applyOrientation();
-    
-    localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
-    closeCfg(); 
-    render();
-  });
+                    if (cmd.startsWith('FO')) {
+                        const parts = cmd.substring(2).split(',');
+                        currentX = parseInt(parts[0] || 0);
+                        currentY = parseInt(parts[1] || 0);
+                    } else if (cmd.startsWith('A0') || cmd.startsWith('A@')) {
+                        const parts = cmd.substring(2).split(',');
+                        currentFontHeight = parseInt(parts[1] || parts[0].replace(/\D/g, '') || 30);
+                        elementType = 'TEXT';
+                    } else if (cmd.startsWith('BC')) {
+                        elementType = 'BARCODE_128';
+                    } else if (cmd.startsWith('B3')) {
+                        elementType = 'BARCODE_39';
+                    } else if (cmd.startsWith('BQ')) {
+                        elementType = 'QRCODE';
+                    } else if (cmd.startsWith('BY')) {
+                        const parts = cmd.substring(2).split(',');
+                        if (parts[2]) barcodeHeight = parseInt(parts[2]);
+                        else if (parts[1]) barcodeHeight = parseInt(parts[1]);
+                    } else if (cmd.startsWith('GB')) {
+                        const parts = cmd.substring(2).split(',');
+                        const w = parseInt(parts[0] || 0);
+                        const h = parseInt(parts[1] || 0);
+                        const t = parseInt(parts[2] || 1);
+                        tspl += `BOX ${currentX},${currentY},${currentX + w},${currentY + h},${t}\n`;
+                    } else if (cmd.startsWith('FD')) {
+                        let data = cmd.substring(2).replace(/FS$/, '').trim();
 
-  $('#addTermHighlight').addEventListener('click', () => {
-    $('#termHighlightContainer').appendChild(createTermHighlightRow());
-  });
+                        if (elementType === 'TEXT') {
+                            let multiplier = Math.max(1, Math.min(10, Math.floor(currentFontHeight / 20)));
+                            tspl += `TEXT ${currentX},${currentY},"3",0,${multiplier},${multiplier},"${data}"\n`;
+                        } else if (elementType === 'BARCODE_128') {
+                            tspl += `BARCODE ${currentX},${currentY},"128",${barcodeHeight},1,0,2,2,"${data}"\n`;
+                        } else if (elementType === 'BARCODE_39') {
+                            tspl += `BARCODE ${currentX},${currentY},"39",${barcodeHeight},1,0,2,2,"${data}"\n`;
+                        } else if (elementType === 'QRCODE') {
+                            tspl += `QRCODE ${currentX},${currentY},H,4,A,0,"${data}"\n`;
+                        }
+                    }
+                }
 
-  $('#logoUploadButton').addEventListener('click', function() {
-    if (this.getAttribute('data-state') === 'upload') $('#logoUpload').click();
-    else removeLogo();
-  });
-  $('#logoUpload').addEventListener('change', handleLogoUpload);
+                tspl += "PRINT 1,1\n";
+                currentTsplContent = tspl;
 
-  $('#showXmlExample').addEventListener('click', (e) => { e.preventDefault(); $('#xmlExampleModal').style.display = 'block'; });
-  $('#closeXmlExample').addEventListener('click', () => { $('#xmlExampleModal').style.display = 'none'; });
-  window.addEventListener('click', (e) => {
-    if (e.target === $('#xmlExampleModal')) $('#xmlExampleModal').style.display = 'none';
-    if (e.target === $('#cfgModal') || e.target.classList.contains('modal-backdrop')) closeCfg();
-  });
-  $('#cfgModal').addEventListener('click', (e) => {
-    if (e.target === this || e.target.classList.contains('modal-backdrop')) closeCfg();
-  });
+                document.getElementById('tspl-output').value = tspl;
+                document.getElementById('empty-tspl').classList.add('hidden');
+                document.getElementById('content-tspl').classList.remove('hidden');
 
-  // Botões offline e backup
-  $('#createOfflineCopy').addEventListener('click', createOfflineCopy);
-  $('#backupSettings').addEventListener('click', saveBackupToFolder);
-  $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
+                // Se já estiver conectado, mostra botão de imprimir
+                if (serialPort || usbDevice) {
+                    printBtn.classList.remove('hidden');
+                }
 
-  render();
-});
+            } catch (err) {
+                showError("Erro ao converter para TSPL: Verifique a sintaxe do ZPL.");
+            }
+        }
 
-// Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { scope: '/Gerador-de-etiqueta-pwa/' })
-      .then(reg => console.log('ServiceWorker registrado:', reg.scope))
-      .catch(err => console.log('Falha no ServiceWorker:', err));
-  });
-}
-  </script>
+        function downloadTSPL() {
+            if (!currentTsplContent) return;
+            const blob = new Blob([currentTsplContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'etiqueta.tspl';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== Gerenciamento de conexão =====
+        async function toggleConnection() {
+            if (serialPort || usbDevice) {
+                await disconnect();
+                return;
+            }
+
+            const method = methodSelect.value;
+            if (method === 'serial') {
+                await connectSerial();
+            } else {
+                await connectUSB();
+            }
+        }
+
+        // ----- Serial (COM) -----
+        async function connectSerial() {
+            if (!('serial' in navigator)) {
+                showError("Web Serial API não suportada neste navegador.");
+                return;
+            }
+
+            try {
+                const port = await navigator.serial.requestPort();
+                if (!port) return; // usuário cancelou
+
+                const baudRate = parseInt(document.getElementById('baud-rate').value);
+                await port.open({ baudRate });
+
+                serialPort = port;
+                connectionType = 'serial';
+                setStatus(`✅ Conectado (Serial) - ${baudRate} bps`);
+                connectBtn.innerHTML = `<i data-lucide="usb" class="w-[18px] h-[18px]"></i> Desconectar`;
+                connectBtn.className = "flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer";
+                lucide.createIcons();
+
+                // Cria writer
+                const textEncoder = new TextEncoderStream();
+                textEncoder.readable.pipeTo(port.writable);
+                writer = textEncoder.writable.getWriter();
+
+                // Leitura opcional
+                const textDecoder = new TextDecoderStream();
+                port.readable.pipeTo(textDecoder.writable);
+                reader = textDecoder.readable.getReader();
+
+                // Listener de desconexão
+                port.addEventListener('disconnect', () => {
+                    if (serialPort === port) disconnect(true);
+                });
+
+                if (currentTsplContent) printBtn.classList.remove('hidden');
+                showInfo('Porta serial conectada. Pronto para imprimir.');
+
+            } catch (err) {
+                showError('Erro na conexão serial: ' + (err.message || err));
+                setStatus('❌ Falha na conexão');
+            }
+        }
+
+        // ----- USB Direto (WebUSB) -----
+        async function connectUSB() {
+            if (!('usb' in navigator)) {
+                showError("WebUSB API não suportada neste navegador.");
+                return;
+            }
+
+            try {
+                const device = await navigator.usb.requestDevice({ filters: [] });
+                if (!device) return;
+
+                await device.open();
+                usbDevice = device;
+                connectionType = 'usb';
+
+                // Encontra o endpoint de bulk out
+                let foundEndpoint = null;
+                let ifaceNum = 0;
+                for (const config of device.configurations) {
+                    for (const iface of config.interfaces) {
+                        for (const alt of iface.alternates) {
+                            const outEp = alt.endpoints.find(ep => ep.direction === 'out' && ep.type === 'bulk');
+                            if (outEp) {
+                                ifaceNum = iface.interfaceNumber;
+                                foundEndpoint = outEp;
+                                break;
+                            }
+                        }
+                        if (foundEndpoint) break;
+                    }
+                    if (foundEndpoint) break;
+                }
+
+                if (!foundEndpoint) {
+                    await device.close();
+                    throw new Error("Nenhum endpoint de saída (bulk out) encontrado.");
+                }
+
+                usbInterfaceNumber = ifaceNum;
+                usbEndpoint = foundEndpoint;
+
+                await device.claimInterface(ifaceNum);
+                setStatus(`✅ Conectado (USB) - ${device.productName || 'dispositivo'}`);
+                connectBtn.innerHTML = `<i data-lucide="usb" class="w-[18px] h-[18px]"></i> Desconectar`;
+                connectBtn.className = "flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer";
+                lucide.createIcons();
+
+                // Listener de desconexão
+                device.addEventListener('disconnect', () => {
+                    if (usbDevice === device) disconnect(true);
+                });
+
+                if (currentTsplContent) printBtn.classList.remove('hidden');
+                showInfo('Dispositivo USB conectado. Pronto para imprimir.');
+
+            } catch (err) {
+                showError('Erro na conexão USB: ' + (err.message || err));
+                setStatus('❌ Falha na conexão USB');
+            }
+        }
+
+        // ----- Desconectar (ambos) -----
+        async function disconnect(disconnected = false) {
+            if (connectionType === 'serial' && serialPort) {
+                try {
+                    if (writer) { await writer.close(); writer = null; }
+                    if (reader) { await reader.cancel(); reader = null; }
+                    await serialPort.close();
+                } catch (e) { console.warn('Erro ao fechar serial:', e); }
+                serialPort = null;
+                setStatus(disconnected ? '❌ Desconectado (dispositivo removido)' : '🔌 Desconectado');
+            } else if (connectionType === 'usb' && usbDevice) {
+                try {
+                    if (usbDevice.opened) {
+                        await usbDevice.releaseInterface(usbInterfaceNumber);
+                        await usbDevice.close();
+                    }
+                } catch (e) { console.warn('Erro ao fechar USB:', e); }
+                usbDevice = null;
+                usbEndpoint = null;
+                setStatus(disconnected ? '❌ Desconectado (dispositivo removido)' : '🔌 Desconectado');
+            } else {
+                return;
+            }
+
+            connectionType = null;
+            connectBtn.innerHTML = `<i data-lucide="usb" class="w-[18px] h-[18px]"></i> Conectar`;
+            connectBtn.className = "flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer";
+            lucide.createIcons();
+            printBtn.classList.add('hidden');
+            hideInfo();
+        }
+
+        // ===== Envio de impressão =====
+        async function sendPrint() {
+            if (!currentTsplContent) {
+                showError("Nenhum código TSPL disponível. Converta um ZPL primeiro.");
+                return;
+            }
+
+            if (!serialPort && !usbDevice) {
+                showError("Conecte-se ao dispositivo primeiro.");
+                return;
+            }
+
+            hideError();
+            hideInfo();
+
+            try {
+                setStatus('📤 Enviando dados...');
+
+                if (connectionType === 'serial') {
+                    // Serial
+                    await writer.write(currentTsplContent);
+                } else if (connectionType === 'usb') {
+                    // USB
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(currentTsplContent);
+                    const chunkSize = 512;
+                    for (let i = 0; i < data.length; i += chunkSize) {
+                        const chunk = data.slice(i, i + chunkSize);
+                        await usbDevice.transferOut(usbEndpoint.endpointNumber, chunk);
+                    }
+                }
+
+                // Pequena pausa
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                setStatus('✅ Dados enviados com sucesso!');
+                showInfo('Comando TSPL enviado para a impressora.');
+
+            } catch (err) {
+                console.error(err);
+                showError('Erro ao imprimir: ' + (err.message || err));
+                setStatus('❌ Falha no envio');
+            }
+        }
+
+        // Limpeza ao recarregar
+        window.addEventListener('beforeunload', async () => {
+            if (serialPort || usbDevice) await disconnect();
+        });
+
+        // Registro do Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('SW registrado'))
+                .catch(err => console.error('Erro no SW:', err));
+        }
+    </script>
 </body>
 </html>
