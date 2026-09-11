@@ -27,6 +27,7 @@
 
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="lib/jspdf.umd.min.js"></script>
 
   <style>
     /* Estilos base com variáveis CSS */
@@ -173,6 +174,7 @@
       }
       
       .label-page-break {
+        grid-column: 1 / -1; /* ocupa a linha inteira do grid, não uma célula */
         page-break-after: always;
         break-after: page;
         width: 100%;
@@ -484,6 +486,7 @@
       <div class="ml-auto flex items-center gap-2">
         <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
         <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
+        <button id="btnDownloadPdf" class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50" title="Gera um PDF com o tamanho físico exato configurado (recomendado)">Baixar PDF (medida exata)</button>
         <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
       </div>
     </div>
@@ -814,6 +817,7 @@
                 <p class="text-xs text-slate-500 mt-1">0 = automático</p>
               </label>
             </div>
+            <p id="colsRowsFitHint" class="text-xs text-slate-500 mt-2"></p>
           </div>
 
           <div class="compact-field">
@@ -999,6 +1003,59 @@ function formatCNPJ(s){
   return s || '-';
 }
 
+// ===== Conversão de unidades de medida =====
+// Toda medida é convertida para centímetros (unidade canônica) antes de
+// virar CSS. Isso garante que a etiqueta impressa tenha o tamanho real
+// configurado, não importa qual unidade o usuário escolheu na tela.
+const CM_PER_UNIT = {
+  cm: 1,
+  mm: 0.1,
+  in: 2.54,
+  px: 2.54 / 96 // 96px = 1 polegada é o padrão usado por CSS/impressão
+};
+
+// Área útil de impressão em cm (folha A4 21x29.7cm menos as margens de
+// 1cm de cada lado definidas em @page). Usada como referência fixa para
+// a unidade "%", em vez de depender do tamanho variável de um container.
+const PRINT_AREA_CM = { width: 19, height: 27.7 };
+
+function roundTo(n, decimals) {
+  const f = Math.pow(10, decimals);
+  return Math.round(n * f) / f;
+}
+
+// Converte um valor entre duas unidades físicas (cm/mm/in/px).
+// Retorna null se cm/mm/in/px não puderem representar "%" (não é física).
+function convertPhysicalUnit(value, fromUnit, toUnit) {
+  if (fromUnit === toUnit) return value;
+  if (!(fromUnit in CM_PER_UNIT) || !(toUnit in CM_PER_UNIT)) return null;
+  const cm = value * CM_PER_UNIT[fromUnit];
+  return cm / CM_PER_UNIT[toUnit];
+}
+
+// Converte a largura/altura configuradas (em QUALQUER unidade, incluindo %)
+// para centímetros reais. Esta é a ÚNICA função que deve gerar o tamanho
+// físico da etiqueta — tanto para tela, preview quanto impressão.
+function getLabelSizeCm(cfg) {
+  const w = cfg.labelWidth || 0;
+  const h = cfg.labelHeight || 0;
+  if (cfg.unit === '%') {
+    // "%" é sempre relativo à área útil da página, fixa — nunca ao
+    // container do momento (isso evitava que o tamanho "flutuasse"
+    // entre tela / preview / impressão).
+    return {
+      wCm: (w / 100) * PRINT_AREA_CM.width,
+      hCm: (h / 100) * PRINT_AREA_CM.height
+    };
+  }
+  const factor = CM_PER_UNIT[cfg.unit] ?? 1;
+  return { wCm: w * factor, hCm: h * factor };
+}
+
+function cmToCss(cm) {
+  return `${roundTo(cm, 3)}cm`;
+}
+
 function findFirstByLocalName(root, localName) {
   if (!root) return null;
   const all = root.getElementsByTagName('*');
@@ -1168,6 +1225,220 @@ function escapeRegex(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// ===== Geração de PDF com medidas absolutas =====
+// Diferente da impressão via window.print() (que depende do driver/diálogo
+// de impressão do sistema operacional para respeitar as medidas em CSS),
+// aqui desenhamos cada etiqueta em coordenadas físicas (cm) dentro de um
+// PDF real. Ao imprimir esse PDF escolhendo "Tamanho real / 100%" (nunca
+// "Ajustar à página"), o tamanho sai exatamente como configurado,
+// independente de navegador, sistema operacional ou impressora.
+
+function ptFromPx(px) { return px * 0.75; } // 1px = 0.75pt (96px = 72pt = 1in)
+
+function loadImageInfo(src) {
+  return new Promise((resolve) => {
+    if (!src) { resolve(null); return; }
+    const img = new Image();
+    img.onload = () => {
+      const format = src.startsWith('data:image/png') ? 'PNG'
+        : src.startsWith('data:image/webp') ? 'WEBP' : 'JPEG';
+      resolve({ src, w: img.naturalWidth || 1, h: img.naturalHeight || 1, format });
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
+  const pad = 0.18; // cm — equivalente aos 6px de padding usado na tela
+
+  // Moldura da etiqueta
+  if (isErr) {
+    doc.setDrawColor(248, 113, 113); // vermelho (mesmo tom do CSS .problem)
+    doc.setFillColor(254, 242, 242);
+    doc.setLineDashPattern([0.15, 0.1], 0);
+  } else {
+    doc.setDrawColor(203, 213, 225);
+    doc.setFillColor(255, 255, 255);
+    doc.setLineDashPattern([], 0);
+  }
+  doc.setLineWidth(0.02);
+  doc.roundedRect(x, y, w, h, 0.15, 0.15, 'FD');
+  doc.setLineDashPattern([], 0);
+
+  let cursorY = y + pad;
+  const innerW = w - 2 * pad;
+
+  // Logo
+  if (logoInfo) {
+    const maxLogoH = 0.9;
+    const ratio = logoInfo.w / logoInfo.h;
+    let logoH = maxLogoH;
+    let logoW = logoH * ratio;
+    if (logoW > innerW) { logoW = innerW; logoH = logoW / ratio; }
+    const logoX = x + (w - logoW) / 2;
+    try { doc.addImage(logoInfo.src, logoInfo.format, logoX, cursorY, logoW, logoH); } catch (e) { /* ignora imagem inválida */ }
+    cursorY += logoH + 0.08;
+  }
+
+  // Nome do produto
+  if (state.cfg.fields.includes('xProd')) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    const nameLines = doc.splitTextToSize(data.xProd || '(Sem nome)', innerW);
+    const maxNameLines = 2;
+    const shown = nameLines.slice(0, maxNameLines);
+    shown.forEach((line, i) => {
+      doc.text(line, x + pad, cursorY + 0.32 + i * 0.36);
+    });
+    cursorY += 0.32 + shown.length * 0.36 + 0.06;
+  }
+
+  // Campos (EAN, código, NF, qtd, unidade, preço, emitente, destinatário)
+  const fieldDefs = [
+    ['cEAN', 'EAN', data.cEAN || '-'],
+    ['cProd', 'Código', data.cProd || '-'],
+    ['nNF', 'NF', data.nNF || '-'],
+    ['qCom', 'Qtd', Number.isFinite(data.qCom) ? data.qCom : (data.qComStr || '-')],
+    ['uCom', 'Un', data.uCom || '-'],
+    ['vUnCom', 'Preço', data.vUnCom ? ('R$ ' + data.vUnCom) : '-'],
+    ['emit', 'Emitente', data.emit || '-'],
+    ['dest', 'Dest', data.dest || '-']
+  ].filter(([field]) => state.cfg.fields.includes(field));
+
+  const colGap = 0.2;
+  const colW = (innerW - colGap) / 2;
+  const rowH = 0.34;
+  doc.setFontSize(7);
+
+  fieldDefs.forEach(([field, label, value], i) => {
+    const colIdx = i % 2;
+    const rowIdx = Math.floor(i / 2);
+    const fx = x + pad + colIdx * (colW + colGap);
+    const fy = cursorY + rowIdx * rowH;
+    const text = `${label}: ${value}`;
+
+    const isFixedHighlight = state.cfg.highlightField === field;
+    const isRuleHighlight = checkRuleCondition(field, value);
+
+    if (isFixedHighlight || isRuleHighlight) {
+      const boxColor = isRuleHighlight ? [239, 68, 68] : [0, 0, 0]; // vermelho (regra) ou preto (fixo)
+      doc.setFillColor(...boxColor);
+      const textW = doc.getTextWidth(text) + 0.12;
+      doc.roundedRect(fx, fy - 0.24, Math.min(textW, colW), 0.3, 0.05, 0.05, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+    } else {
+      doc.setTextColor(51, 65, 85);
+      doc.setFont('helvetica', 'normal');
+    }
+    const clipped = doc.splitTextToSize(text, colW - 0.06)[0] || text;
+    doc.text(clipped, fx + 0.06, fy - 0.04);
+  });
+
+  const fieldsBottom = cursorY + Math.ceil(fieldDefs.length / 2) * rowH;
+
+  // Rodapé
+  const footerY = y + h - pad - 0.05;
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineDashPattern([0.05, 0.05], 0);
+  doc.line(x + pad, footerY - 0.12, x + w - pad, footerY - 0.12);
+  doc.setLineDashPattern([], 0);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6);
+  let footerText;
+  if (isErr) {
+    doc.setTextColor(185, 28, 28);
+    footerText = 'ERRO: ' + errs.join('; ');
+  } else {
+    doc.setTextColor(100, 116, 139);
+    const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
+    footerText = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
+  }
+  const footerLine = doc.splitTextToSize(footerText, innerW)[0] || footerText;
+  doc.text(footerLine, x + w / 2, footerY, { align: 'center' });
+}
+
+async function generateLabelsPDF() {
+  if (typeof window.jspdf === 'undefined') {
+    alert('A biblioteca de geração de PDF ainda está carregando. Aguarde alguns segundos e tente novamente (é necessário estar online para essa etapa carregar).');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+
+  const { wCm, hCm } = getLabelSizeCm(state.cfg);
+  if (!(wCm > 0) || !(hCm > 0)) {
+    alert('Configure uma largura e altura de etiqueta válidas antes de gerar o PDF.');
+    return;
+  }
+
+  const marginCm = 1; // igual ao @page usado na impressão HTML
+  const gap = 0.35; // cm — igual ao --gap usado na tela
+
+  const doc = new jsPDF({ unit: 'cm', format: 'a4', orientation: 'portrait' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+  const maxColsFit = Math.max(1, Math.floor((pageW - 2 * marginCm + gap) / (wCm + gap)));
+  const maxRowsFit = Math.max(1, Math.floor((pageH - 2 * marginCm + gap) / (hCm + gap)));
+  const cols = Math.min(state.cfg.colsPerPage || 1, maxColsFit);
+  const rows = state.cfg.rowsPerPage > 0 ? Math.min(state.cfg.rowsPerPage, maxRowsFit) : maxRowsFit;
+
+  if ((state.cfg.colsPerPage || 1) > maxColsFit || (state.cfg.rowsPerPage > 0 && state.cfg.rowsPerPage > maxRowsFit)) {
+    const proceed = confirm(
+      `Aviso: com ${roundTo(wCm,2)}×${roundTo(hCm,2)}cm por etiqueta, a folha A4 só comporta ${maxColsFit} coluna(s) e ${maxRowsFit} linha(s) por página.\n` +
+      `O PDF será gerado respeitando esse limite físico real (em vez do valor configurado). Continuar?`
+    );
+    if (!proceed) return;
+  }
+
+  let sortedLabels = sortLabels(state.labels);
+  let labelsToRender = sortedLabels;
+  if (state.dateFilter.startDate && state.dateFilter.endDate) {
+    labelsToRender = sortedLabels.filter(item => {
+      if (!item.dataEmissao) return false;
+      const itemDateTime = new Date(item.dataEmissao + 'T' + (item.horaEmissao || '00:00:00'));
+      const filterStartDateTime = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
+      const filterEndDateTime = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
+      return itemDateTime >= filterStartDateTime && itemDateTime <= filterEndDateTime;
+    });
+  }
+
+  const items = [];
+  for (const data of labelsToRender) {
+    const errs = validateLabel(data);
+    const isErr = errs.length > 0;
+    if (isErr && !state.cfg.showErrors) continue;
+    items.push({ data, errs, isErr });
+  }
+
+  if (items.length === 0) {
+    alert('Nenhuma etiqueta para gerar com os filtros atuais.');
+    return;
+  }
+
+  const logoInfo = await loadImageInfo(state.cfg.logo);
+
+  const perPage = cols * rows;
+  let col = 0, row = 0;
+
+  items.forEach((item, idx) => {
+    if (idx > 0 && idx % perPage === 0) {
+      doc.addPage();
+      col = 0; row = 0;
+    }
+    const x = marginCm + col * (wCm + gap);
+    const y = marginCm + row * (hCm + gap);
+    drawLabelInPdf(doc, x, y, wCm, hCm, item.data, item.errs, item.isErr, logoInfo);
+
+    col++;
+    if (col >= cols) { col = 0; row++; }
+  });
+
+  doc.save(`etiquetas-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
 function highlightTerms(text, highlights) {
   if (!highlights || highlights.length === 0) return text;
   const sorted = [...highlights].sort((a,b) => b.term.length - a.term.length);
@@ -1294,14 +1565,20 @@ function applyOrientation() {
 function updateBadge() {
   const badge = document.getElementById('sizeBadge');
   if (badge) {
-    badge.textContent = `${state.cfg.labelWidth}×${state.cfg.labelHeight} ${state.cfg.unit}`;
+    const { wCm, hCm } = getLabelSizeCm(state.cfg);
+    if (state.cfg.unit === 'cm') {
+      badge.textContent = `${state.cfg.labelWidth}×${state.cfg.labelHeight} cm`;
+    } else {
+      badge.textContent = `${state.cfg.labelWidth}×${state.cfg.labelHeight} ${state.cfg.unit} (${roundTo(wCm,2)}×${roundTo(hCm,2)} cm)`;
+    }
   }
 }
 
 function render() {
   const mount = $('#labels');
-  const widthVal = state.cfg.labelWidth + state.cfg.unit;
-  const heightVal = state.cfg.labelHeight + state.cfg.unit;
+  const { wCm, hCm } = getLabelSizeCm(state.cfg);
+  const widthVal = cmToCss(wCm);
+  const heightVal = cmToCss(hCm);
   mount.style.setProperty('--label-width', widthVal);
   mount.style.setProperty('--label-height', heightVal);
   mount.style.setProperty('--cols', state.cfg.colsPerPage);
@@ -1443,8 +1720,9 @@ function renderPrintPreview() {
   const labelsContainer = $('#labels');
   const children = labelsContainer.children;
   
-  const widthVal = state.cfg.labelWidth + state.cfg.unit;
-  const heightVal = state.cfg.labelHeight + state.cfg.unit;
+  const { wCm, hCm } = getLabelSizeCm(state.cfg);
+  const widthVal = cmToCss(wCm);
+  const heightVal = cmToCss(hCm);
   
   previewMount.style.setProperty('--label-width', widthVal);
   previewMount.style.setProperty('--label-height', heightVal);
@@ -1985,6 +2263,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; state.availableDates=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; updateDateFilters(); });
   $('#btnPrint').addEventListener('click', handlePrint);
+  $('#btnDownloadPdf').addEventListener('click', async () => {
+    const btn = $('#btnDownloadPdf');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Gerando PDF...';
+    try {
+      await generateLabelsPDF();
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      alert('Ocorreu um erro ao gerar o PDF. Veja o console para detalhes.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
   $('#btnPreview').addEventListener('click', renderPrintPreview);
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
   $('#printFromPreview').addEventListener('click', handlePrint);
@@ -2007,7 +2300,74 @@ document.addEventListener('DOMContentLoaded', ()=>{
       $('#cfgLabelWidth').value = h;
       $('#cfgLabelHeight').value = w;
     }
+    updateColsRowsFitHint();
   });
+
+  // Ao mudar a unidade, converte os valores já digitados para que o
+  // tamanho FÍSICO da etiqueta não mude — só a unidade exibida.
+  // (Bug corrigido: antes o número era mantido e só a unidade mudava,
+  // fazendo "6 cm" virar "6 mm" ao trocar o seletor.)
+  $('#cfgUnit').addEventListener('change', function() {
+    const newUnit = this.value;
+    const oldUnit = this.dataset.prevUnit || 'cm';
+    const wInput = $('#cfgLabelWidth');
+    const hInput = $('#cfgLabelHeight');
+    const w = parseFloat(wInput.value) || 0;
+    const h = parseFloat(hInput.value) || 0;
+
+    // "%" não é uma unidade física — não dá para converter de/para ela
+    // com precisão, então nesse caso só avisamos o usuário e deixamos
+    // os números como estão para ele reconferir.
+    if (oldUnit !== '%' && newUnit !== '%') {
+      const newW = convertPhysicalUnit(w, oldUnit, newUnit);
+      const newH = convertPhysicalUnit(h, oldUnit, newUnit);
+      if (newW !== null) wInput.value = roundTo(newW, 3);
+      if (newH !== null) hInput.value = roundTo(newH, 3);
+    }
+    this.dataset.prevUnit = newUnit;
+    updateColsRowsFitHint();
+  });
+
+  ['#cfgLabelWidth', '#cfgLabelHeight', '#cfgColsPerPage', '#cfgRowsPerPage'].forEach(sel => {
+    $(sel).addEventListener('input', updateColsRowsFitHint);
+  });
+
+  // Mostra o tamanho real (em cm) e avisa se as colunas/linhas configuradas
+  // não cabem na área útil da folha A4 (19 x 27.7cm após margens de 1cm).
+  function updateColsRowsFitHint() {
+    const hintEl = $('#colsRowsFitHint');
+    if (!hintEl) return;
+    const unit = $('#cfgUnit').value;
+    const w = parseFloat($('#cfgLabelWidth').value) || 0;
+    const h = parseFloat($('#cfgLabelHeight').value) || 0;
+    const cols = parseInt($('#cfgColsPerPage').value) || 1;
+    const rows = parseInt($('#cfgRowsPerPage').value) || 0;
+    const gap = 0.35;
+
+    const { wCm, hCm } = getLabelSizeCm({ labelWidth: w, labelHeight: h, unit });
+    if (wCm <= 0 || hCm <= 0) { hintEl.textContent = ''; return; }
+
+    const maxCols = Math.max(1, Math.floor((PRINT_AREA_CM.width + gap) / (wCm + gap)));
+    const maxRows = Math.max(1, Math.floor((PRINT_AREA_CM.height + gap) / (hCm + gap)));
+    const totalW = cols * wCm + (cols - 1) * gap;
+    const totalH = rows > 0 ? rows * hCm + (rows - 1) * gap : 0;
+
+    let msg = `Tamanho real: ${roundTo(wCm, 2)}×${roundTo(hCm, 2)} cm — cabem até ${maxCols} coluna(s) e ${maxRows} linha(s) por folha A4.`;
+    let overflow = false;
+
+    if (totalW > PRINT_AREA_CM.width + 0.05) {
+      msg = `⚠️ ${cols} coluna(s) de ${roundTo(wCm, 2)}cm não cabem na largura útil (${PRINT_AREA_CM.width}cm). Máximo: ${maxCols}.`;
+      overflow = true;
+    }
+    if (rows > 0 && totalH > PRINT_AREA_CM.height + 0.05) {
+      msg += ` ⚠️ ${rows} linha(s) de ${roundTo(hCm, 2)}cm não cabem na altura útil (${PRINT_AREA_CM.height}cm). Máximo: ${maxRows}.`;
+      overflow = true;
+    }
+
+    hintEl.textContent = msg;
+    hintEl.classList.toggle('text-red-600', overflow);
+    hintEl.classList.toggle('text-slate-500', !overflow);
+  }
 
   // Modal configurações
   function openCfg(){
@@ -2019,6 +2379,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $('#cfgColsPerPage').value = state.cfg.colsPerPage || 3;
     $('#cfgRowsPerPage').value = state.cfg.rowsPerPage || 0;
     $('#cfgUnit').value = state.cfg.unit || 'cm';
+    $('#cfgUnit').dataset.prevUnit = state.cfg.unit || 'cm';
     $('#cfgOrientation').value = state.cfg.orientation || 'portrait';
     
     $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
@@ -2040,6 +2401,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       updateLogoButtonState(false);
     }
     populateTermHighlights();
+    updateColsRowsFitHint();
     $('#cfgModal').classList.add('active');
   }
   function closeCfg(){ $('#cfgModal').classList.remove('active'); }
