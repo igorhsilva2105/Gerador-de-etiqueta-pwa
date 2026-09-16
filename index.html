@@ -95,6 +95,40 @@
       font-size: 20px;
     }
 
+    /* ===== Abas (NF-e / Shopee) ===== */
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #64748b;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+    .tab-btn:hover { color: #334155; background: #f1f5f9; }
+    .tab-btn.active { color: #0f172a; border-bottom-color: #0f172a; font-weight: 600; }
+    .tab-panel.hidden { display: none; }
+
+    /* Card de preview Shopee */
+    .shopee-preview {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 6px;
+      background: #fafafa;
+      text-align: center;
+    }
+    .shopee-preview img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: contain;
+      background: white;
+      border-radius: 6px;
+    }
+    .shopee-preview .cap { font-size: 11px; color: #64748b; margin-top: 4px; }
+
     /* Estilos para impressão */
     @media print {
       * {
@@ -128,11 +162,27 @@
         align-items: center;
       }
       
-      main > *:not(section) {
+      main > *:not(#tab-nfe) {
+        display: none !important;
+      }
+
+      #tab-shopee { display: none !important; }
+      .tab-btn { display: none !important; }
+      nav[role="tablist"] { display: none !important; }
+
+      #tab-nfe {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      
+      #tab-nfe > *:not(section) {
         display: none !important;
       }
       
-      section {
+      #tab-nfe section {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -140,13 +190,16 @@
         border: none !important;
         box-shadow: none !important;
         background: white !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
       }
       
-      section > *:not(.md\:col-span-2) {
+      #tab-nfe section > *:not(.md\:col-span-2) {
         display: none !important;
       }
       
-      .md\:col-span-2 {
+      #tab-nfe .md\:col-span-2 {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -154,9 +207,10 @@
         border: none !important;
         box-shadow: none !important;
         background: white !important;
+        grid-column: 1 / -1 !important;
       }
       
-      .md\:col-span-2 > *:first-child {
+      #tab-nfe .md\:col-span-2 > *:first-child {
         display: none !important;
       }
       
@@ -174,7 +228,7 @@
       }
       
       .label-page-break {
-        grid-column: 1 / -1; /* ocupa a linha inteira do grid, não uma célula */
+        grid-column: 1 / -1;
         page-break-after: always;
         break-after: page;
         width: 100%;
@@ -480,87 +534,163 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
   <header id="toolbar" class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
-    <div class="max-w-6xl mx-auto p-4 flex items-center gap-3">
-      <div class="text-xl font-bold">🖨 Automatizador de Etiquetas</div>
-      <span id="sizeBadge" class="badge">6×4 cm</span>
-      <div class="ml-auto flex items-center gap-2">
-        <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
-        <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
-        <button id="btnDownloadPdf" class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50" title="Gera um PDF com o tamanho físico exato configurado (recomendado)">Baixar PDF (medida exata)</button>
-        <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
+    <div class="max-w-6xl mx-auto p-4">
+      <div class="flex items-center gap-3">
+        <div class="text-xl font-bold">🖨 Automatizador de Etiquetas</div>
+        <span id="sizeBadge" class="badge">6×4 cm</span>
+        <div class="ml-auto flex items-center gap-2" id="nfeActions">
+          <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
+          <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
+          <button id="btnDownloadPdf" class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50" title="Gera um PDF com o tamanho físico exato configurado (recomendado)">Baixar PDF (medida exata)</button>
+          <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
+        </div>
       </div>
+
+      <!-- 🔽 ABAS -->
+      <nav class="flex gap-1 mt-3 -mb-px" role="tablist">
+        <button class="tab-btn active" data-tab="nfe" role="tab">📄 Notas Fiscais (XML)</button>
+        <button class="tab-btn" data-tab="shopee" role="tab">🛍️ Etiquetas Shopee (PDF)</button>
+      </nav>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto p-4 space-y-6">
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
-          <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
-          <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
-        </div>
-        <div class="ml-auto flex items-center gap-2">
-          <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
-          <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar XMLs…</button>
-          <button id="btnClear" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Limpar</button>
-        </div>
-      </div>
-      <div id="drop" class="mt-2 flex items-center justify-center w-full">
-        <label for="xmlInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-          <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"></path></svg>
-            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-            <p id="file-name" class="text-xs text-gray-500">Nenhum arquivo selecionado</p>
-          </div>
-        </label>
-      </div>
 
-      <!-- Filtros de data -->
-      <div id="dateFilters" class="date-filters hidden">
-        <h3 class="font-medium mb-2">Filtrar por data e hora de emissão</h3>
-        <div class="date-filter-row">
-          <label>
-            <span class="block text-sm text-slate-600 mb-1">Data inicial</span>
-            <input type="date" id="filterStartDate" class="block w-full rounded-md border border-slate-300 p-2">
-            <div class="time-input">
-              <label for="filterStartTime" class="block text-sm text-slate-600 mb-1">Hora inicial</label>
-              <input type="time" id="filterStartTime" value="00:00" class="block w-full rounded-md border border-slate-300 p-2">
-            </div>
-          </label>
-          <label>
-            <span class="block text-sm text-slate-600 mb-1">Data final</span>
-            <input type="date" id="filterEndDate" class="block w-full rounded-md border border-slate-300 p-2">
-            <div class="time-input">
-              <label for="filterEndTime" class="block text-sm text-slate-600 mb-1">Hora final</label>
-              <input type="time" id="filterEndTime" value="23:59" class="block w-full rounded-md border border-slate-300 p-2">
-            </div>
-          </label>
-          <div style="display: flex; flex-direction: column; justify-content: flex-end;">
-            <button id="applyDateFilter" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm h-[42px] mb-2">Aplicar</button>
-            <button id="clearDateFilter" class="px-4 py-2 rounded-md border border-slate-300 text-sm h-[42px]">Limpar</button>
+    <!-- ==================== ABA NF-e ==================== -->
+    <div id="tab-nfe" class="tab-panel space-y-6">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div>
+            <h1 class="text-lg font-semibold">Carregar XMLs das NF-e</h1>
+            <p class="text-sm text-slate-600">Arraste e solte os arquivos XML das notas fiscais do dia, ou clique no botão para selecionar vários arquivos.</p>
+            <p class="text-xs text-slate-500 mt-1">Compatível com XML padrão NF-e. <a href="#" id="showXmlExample" class="text-blue-500 underline">Ver exemplo de XML válido</a></p>
+          </div>
+          <div class="ml-auto flex items-center gap-2">
+            <input id="xmlInput" type="file" multiple accept=".xml" class="hidden" />
+            <button id="btnSelect" class="px-4 py-2 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200">Selecionar XMLs…</button>
+            <button id="btnClear" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Limpar</button>
           </div>
         </div>
-        <div class="date-summary" id="dateRangeSummary">Nenhum filtro aplicado</div>
-        <div class="date-range-tags" id="dateRangeTags"></div>
-      </div>
-    </section>
-
-    <section class="grid md:grid-cols-3 gap-4">
-      <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-semibold">Etiquetas geradas</h2>
-          <div class="text-sm text-slate-500"><span id="countLabels">0</span> etiquetas</div>
+        <div id="drop" class="mt-2 flex items-center justify-center w-full">
+          <label for="xmlInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"></path></svg>
+              <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p>
+              <p id="file-name" class="text-xs text-gray-500">Nenhum arquivo selecionado</p>
+            </div>
+          </label>
         </div>
-        <div id="labels" class="labels-grid"></div>
-      </div>
-      <aside class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" id="erroPanel">
-        <h2 class="font-semibold mb-2">Avisos / Itens com pendências</h2>
-        <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1">
-          <li class="no-issues">Sem erros</li>
-        </ul>
-      </aside>
-    </section>
+
+        <!-- Filtros de data -->
+        <div id="dateFilters" class="date-filters hidden">
+          <h3 class="font-medium mb-2">Filtrar por data e hora de emissão</h3>
+          <div class="date-filter-row">
+            <label>
+              <span class="block text-sm text-slate-600 mb-1">Data inicial</span>
+              <input type="date" id="filterStartDate" class="block w-full rounded-md border border-slate-300 p-2">
+              <div class="time-input">
+                <label for="filterStartTime" class="block text-sm text-slate-600 mb-1">Hora inicial</label>
+                <input type="time" id="filterStartTime" value="00:00" class="block w-full rounded-md border border-slate-300 p-2">
+              </div>
+            </label>
+            <label>
+              <span class="block text-sm text-slate-600 mb-1">Data final</span>
+              <input type="date" id="filterEndDate" class="block w-full rounded-md border border-slate-300 p-2">
+              <div class="time-input">
+                <label for="filterEndTime" class="block text-sm text-slate-600 mb-1">Hora final</label>
+                <input type="time" id="filterEndTime" value="23:59" class="block w-full rounded-md border border-slate-300 p-2">
+              </div>
+            </label>
+            <div style="display: flex; flex-direction: column; justify-content: flex-end;">
+              <button id="applyDateFilter" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm h-[42px] mb-2">Aplicar</button>
+              <button id="clearDateFilter" class="px-4 py-2 rounded-md border border-slate-300 text-sm h-[42px]">Limpar</button>
+            </div>
+          </div>
+          <div class="date-summary" id="dateRangeSummary">Nenhum filtro aplicado</div>
+          <div class="date-range-tags" id="dateRangeTags"></div>
+        </div>
+      </section>
+
+      <section class="grid md:grid-cols-3 gap-4">
+        <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-semibold">Etiquetas geradas</h2>
+            <div class="text-sm text-slate-500"><span id="countLabels">0</span> etiquetas</div>
+          </div>
+          <div id="labels" class="labels-grid"></div>
+        </div>
+        <aside class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" id="erroPanel">
+          <h2 class="font-semibold mb-2">Avisos / Itens com pendências</h2>
+          <ul id="issues" class="list-disc list-inside text-sm text-slate-700 space-y-1">
+            <li class="no-issues">Sem erros</li>
+          </ul>
+        </aside>
+      </section>
+    </div>
+    <!-- ==================== FIM ABA NF-e ==================== -->
+
+    <!-- ==================== ABA SHOPEE ==================== -->
+    <div id="tab-shopee" class="tab-panel hidden space-y-6">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <h2 class="text-lg font-semibold">Preparador de Etiquetas Shopee</h2>
+        <p class="text-sm text-slate-600 mt-1">
+          Converta o PDF de etiquetas Shopee (A4, várias etiquetas por página) em etiquetas <b>10 × 15 cm</b>
+          prontas para impressão na <b>Tomate MDK-2074A</b>. Funciona 100% no navegador — o PDF não sai do seu computador.
+        </p>
+
+        <div id="shopeeDrop"
+             class="mt-4 flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors text-center">
+          <strong class="text-sm text-slate-700">Arraste aqui o PDF da Shopee</strong>
+          <span class="text-xs text-slate-500 mt-1">ou clique para selecionar o arquivo</span>
+          <input id="shopeeFile" type="file" accept="application/pdf" hidden>
+        </div>
+
+        <div class="flex gap-3 flex-wrap items-end mt-4">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-slate-600">Largura (mm)</span>
+            <input id="shopeeW" type="number" value="100"
+                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-slate-600">Altura (mm)</span>
+            <input id="shopeeH" type="number" value="150"
+                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
+          </label>
+          <button id="shopeePrepare" disabled
+                  class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Preparar etiquetas
+          </button>
+          <button id="shopeePrint" disabled
+                  class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Imprimir
+          </button>
+          <button id="shopeeDownload" disabled
+                  class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Baixar PDF 10×15
+          </button>
+          <button id="shopeeClear"
+                  class="px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 text-sm">
+            Limpar
+          </button>
+        </div>
+
+        <div id="shopeeStatus"
+             class="mt-4 p-3 rounded-lg bg-slate-100 text-sm text-slate-600">
+          Nenhum PDF selecionado.
+        </div>
+
+        <div id="shopeePreviews"
+             class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"></div>
+
+        <div class="mt-4 p-3 rounded-lg bg-amber-50 text-amber-900 text-xs leading-relaxed">
+          <b>Configuração da Tomate:</b> ao imprimir o PDF gerado, selecione papel/etiqueta personalizado de
+          <b>100 × 150 mm</b>, escala <b>100%</b> (ou "tamanho real") e <b>desative "Ajustar à página"</b>.
+          Se o driver oferecer "largura da mídia", use 100 mm.
+        </div>
+      </section>
+    </div>
+    <!-- ==================== FIM ABA SHOPEE ==================== -->
+
   </main>
 
   <!-- Modal de visualização de impressão -->
@@ -1004,19 +1134,13 @@ function formatCNPJ(s){
 }
 
 // ===== Conversão de unidades de medida =====
-// Toda medida é convertida para centímetros (unidade canônica) antes de
-// virar CSS. Isso garante que a etiqueta impressa tenha o tamanho real
-// configurado, não importa qual unidade o usuário escolheu na tela.
 const CM_PER_UNIT = {
   cm: 1,
   mm: 0.1,
   in: 2.54,
-  px: 2.54 / 96 // 96px = 1 polegada é o padrão usado por CSS/impressão
+  px: 2.54 / 96
 };
 
-// Área útil de impressão em cm (folha A4 21x29.7cm menos as margens de
-// 1cm de cada lado definidas em @page). Usada como referência fixa para
-// a unidade "%", em vez de depender do tamanho variável de um container.
 const PRINT_AREA_CM = { width: 19, height: 27.7 };
 
 function roundTo(n, decimals) {
@@ -1024,8 +1148,6 @@ function roundTo(n, decimals) {
   return Math.round(n * f) / f;
 }
 
-// Converte um valor entre duas unidades físicas (cm/mm/in/px).
-// Retorna null se cm/mm/in/px não puderem representar "%" (não é física).
 function convertPhysicalUnit(value, fromUnit, toUnit) {
   if (fromUnit === toUnit) return value;
   if (!(fromUnit in CM_PER_UNIT) || !(toUnit in CM_PER_UNIT)) return null;
@@ -1033,16 +1155,10 @@ function convertPhysicalUnit(value, fromUnit, toUnit) {
   return cm / CM_PER_UNIT[toUnit];
 }
 
-// Converte a largura/altura configuradas (em QUALQUER unidade, incluindo %)
-// para centímetros reais. Esta é a ÚNICA função que deve gerar o tamanho
-// físico da etiqueta — tanto para tela, preview quanto impressão.
 function getLabelSizeCm(cfg) {
   const w = cfg.labelWidth || 0;
   const h = cfg.labelHeight || 0;
   if (cfg.unit === '%') {
-    // "%" é sempre relativo à área útil da página, fixa — nunca ao
-    // container do momento (isso evitava que o tamanho "flutuasse"
-    // entre tela / preview / impressão).
     return {
       wCm: (w / 100) * PRINT_AREA_CM.width,
       hCm: (h / 100) * PRINT_AREA_CM.height
@@ -1225,15 +1341,7 @@ function escapeRegex(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// ===== Geração de PDF com medidas absolutas =====
-// Diferente da impressão via window.print() (que depende do driver/diálogo
-// de impressão do sistema operacional para respeitar as medidas em CSS),
-// aqui desenhamos cada etiqueta em coordenadas físicas (cm) dentro de um
-// PDF real. Ao imprimir esse PDF escolhendo "Tamanho real / 100%" (nunca
-// "Ajustar à página"), o tamanho sai exatamente como configurado,
-// independente de navegador, sistema operacional ou impressora.
-
-function ptFromPx(px) { return px * 0.75; } // 1px = 0.75pt (96px = 72pt = 1in)
+function ptFromPx(px) { return px * 0.75; }
 
 function loadImageInfo(src) {
   return new Promise((resolve) => {
@@ -1250,11 +1358,10 @@ function loadImageInfo(src) {
 }
 
 function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
-  const pad = 0.18; // cm — equivalente aos 6px de padding usado na tela
+  const pad = 0.18;
 
-  // Moldura da etiqueta
   if (isErr) {
-    doc.setDrawColor(248, 113, 113); // vermelho (mesmo tom do CSS .problem)
+    doc.setDrawColor(248, 113, 113);
     doc.setFillColor(254, 242, 242);
     doc.setLineDashPattern([0.15, 0.1], 0);
   } else {
@@ -1269,7 +1376,6 @@ function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
   let cursorY = y + pad;
   const innerW = w - 2 * pad;
 
-  // Logo
   if (logoInfo) {
     const maxLogoH = 0.9;
     const ratio = logoInfo.w / logoInfo.h;
@@ -1277,11 +1383,10 @@ function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
     let logoW = logoH * ratio;
     if (logoW > innerW) { logoW = innerW; logoH = logoW / ratio; }
     const logoX = x + (w - logoW) / 2;
-    try { doc.addImage(logoInfo.src, logoInfo.format, logoX, cursorY, logoW, logoH); } catch (e) { /* ignora imagem inválida */ }
+    try { doc.addImage(logoInfo.src, logoInfo.format, logoX, cursorY, logoW, logoH); } catch (e) { }
     cursorY += logoH + 0.08;
   }
 
-  // Nome do produto
   if (state.cfg.fields.includes('xProd')) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
@@ -1295,7 +1400,6 @@ function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
     cursorY += 0.32 + shown.length * 0.36 + 0.06;
   }
 
-  // Campos (EAN, código, NF, qtd, unidade, preço, emitente, destinatário)
   const fieldDefs = [
     ['cEAN', 'EAN', data.cEAN || '-'],
     ['cProd', 'Código', data.cProd || '-'],
@@ -1323,7 +1427,7 @@ function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
     const isRuleHighlight = checkRuleCondition(field, value);
 
     if (isFixedHighlight || isRuleHighlight) {
-      const boxColor = isRuleHighlight ? [239, 68, 68] : [0, 0, 0]; // vermelho (regra) ou preto (fixo)
+      const boxColor = isRuleHighlight ? [239, 68, 68] : [0, 0, 0];
       doc.setFillColor(...boxColor);
       const textW = doc.getTextWidth(text) + 0.12;
       doc.roundedRect(fx, fy - 0.24, Math.min(textW, colW), 0.3, 0.05, 0.05, 'F');
@@ -1339,7 +1443,6 @@ function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
 
   const fieldsBottom = cursorY + Math.ceil(fieldDefs.length / 2) * rowH;
 
-  // Rodapé
   const footerY = y + h - pad - 0.05;
   doc.setDrawColor(226, 232, 240);
   doc.setLineDashPattern([0.05, 0.05], 0);
@@ -1373,8 +1476,8 @@ async function generateLabelsPDF() {
     return;
   }
 
-  const marginCm = 1; // igual ao @page usado na impressão HTML
-  const gap = 0.35; // cm — igual ao --gap usado na tela
+  const marginCm = 1;
+  const gap = 0.35;
 
   const doc = new jsPDF({ unit: 'cm', format: 'a4', orientation: 'portrait' });
   const pageW = doc.internal.pageSize.getWidth();
@@ -1548,7 +1651,6 @@ function clearDateFilter() {
   updateDateFilterSummary();
 }
 
-// Ajusta orientação (troca largura/altura se necessário)
 function applyOrientation() {
   const orient = state.cfg.orientation;
   let w = state.cfg.labelWidth;
@@ -1585,7 +1687,6 @@ function render() {
   mount.style.setProperty('--rows', state.cfg.rowsPerPage);
   mount.style.setProperty('--gap', '0.35cm');
 
-  // Atualiza o badge
   updateBadge();
 
   mount.innerHTML = '';
@@ -2232,7 +2333,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (saved) {
     const savedCfg = JSON.parse(saved);
     Object.assign(state.cfg, savedCfg);
-    // Valores padrão para as novas propriedades
     if (typeof savedCfg.labelWidth === 'undefined') state.cfg.labelWidth = 6;
     if (typeof savedCfg.labelHeight === 'undefined') state.cfg.labelHeight = 4;
     if (typeof savedCfg.colsPerPage === 'undefined') state.cfg.colsPerPage = 3;
@@ -2248,7 +2348,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof savedCfg.customRule === 'undefined') state.cfg.customRule = '';
     if (typeof savedCfg.termHighlights === 'undefined') state.cfg.termHighlights = [];
     if (typeof savedCfg.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
-    // Ajusta orientação caso necessário
     applyOrientation();
   }
 
@@ -2288,7 +2387,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $('#customRuleConfig').classList.toggle('hidden', this.value !== 'custom');
   });
 
-  // Ao mudar orientação, ajustar largura/altura
   $('#cfgOrientation').addEventListener('change', function() {
     const orient = this.value;
     let w = parseFloat($('#cfgLabelWidth').value) || 6;
@@ -2303,10 +2401,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     updateColsRowsFitHint();
   });
 
-  // Ao mudar a unidade, converte os valores já digitados para que o
-  // tamanho FÍSICO da etiqueta não mude — só a unidade exibida.
-  // (Bug corrigido: antes o número era mantido e só a unidade mudava,
-  // fazendo "6 cm" virar "6 mm" ao trocar o seletor.)
   $('#cfgUnit').addEventListener('change', function() {
     const newUnit = this.value;
     const oldUnit = this.dataset.prevUnit || 'cm';
@@ -2315,9 +2409,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const w = parseFloat(wInput.value) || 0;
     const h = parseFloat(hInput.value) || 0;
 
-    // "%" não é uma unidade física — não dá para converter de/para ela
-    // com precisão, então nesse caso só avisamos o usuário e deixamos
-    // os números como estão para ele reconferir.
     if (oldUnit !== '%' && newUnit !== '%') {
       const newW = convertPhysicalUnit(w, oldUnit, newUnit);
       const newH = convertPhysicalUnit(h, oldUnit, newUnit);
@@ -2332,8 +2423,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $(sel).addEventListener('input', updateColsRowsFitHint);
   });
 
-  // Mostra o tamanho real (em cm) e avisa se as colunas/linhas configuradas
-  // não cabem na área útil da folha A4 (19 x 27.7cm após margens de 1cm).
   function updateColsRowsFitHint() {
     const hintEl = $('#colsRowsFitHint');
     if (!hintEl) return;
@@ -2369,7 +2458,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     hintEl.classList.toggle('text-slate-500', !overflow);
   }
 
-  // Modal configurações
   function openCfg(){
     $('#cfgLogo').value = state.cfg.logo || '';
     $('#cfgFracRule').value = state.cfg.fracRule || 'none';
@@ -2427,7 +2515,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.rowsPerPage = parseInt($('#cfgRowsPerPage').value) || 0;
     state.cfg.unit = $('#cfgUnit').value;
     state.cfg.orientation = $('#cfgOrientation').value;
-    // Aplica orientação (troca se necessário)
     applyOrientation();
     
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
@@ -2455,7 +2542,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (e.target === this || e.target.classList.contains('modal-backdrop')) closeCfg();
   });
 
-  // Botões offline e backup
   $('#createOfflineCopy').addEventListener('click', createOfflineCopy);
   $('#backupSettings').addEventListener('click', saveBackupToFolder);
   $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
@@ -2471,6 +2557,263 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('Falha no ServiceWorker:', err));
   });
 }
+
+/* ============================================================
+   ABAS — alterna entre "Notas Fiscais (XML)" e "Shopee (PDF)"
+   ============================================================ */
+(function initTabs() {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  const nfeActions = document.getElementById('nfeActions');
+  const sizeBadge = document.getElementById('sizeBadge');
+
+  function switchTab(name) {
+    tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    panels.forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + name));
+    if (nfeActions) nfeActions.style.display = (name === 'nfe') ? '' : 'none';
+    if (sizeBadge) sizeBadge.style.display = (name === 'nfe') ? '' : 'none';
+  }
+
+  tabs.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+  switchTab('nfe');
+})();
+
+
+/* ============================================================
+   PREPARADOR DE ETIQUETAS SHOPEE
+   - Lê PDF A4 da Shopee
+   - Detecta grid de etiquetas (2x2, 1x2, etc.)
+   - Recorta, faz trim de margem branca
+   - Imprime ou gera PDF 10x15 (usa jsPDF LOCAL já carregado)
+   ============================================================ */
+const shopeeState = {
+  selected: null,
+  pages: [],
+  pdfjsModule: null
+};
+
+const $shopee = (id) => document.getElementById(id);
+
+async function loadPdfJsModule() {
+  if (shopeeState.pdfjsModule) return shopeeState.pdfjsModule;
+  const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+  shopeeState.pdfjsModule = pdfjs;
+  return pdfjs;
+}
+
+function shopeeSelectFile(f) {
+  if (!f || f.type !== 'application/pdf') {
+    $shopee('shopeeStatus').textContent = 'Selecione um arquivo PDF.';
+    return;
+  }
+  shopeeState.selected = f;
+  shopeeState.pages = [];
+  $shopee('shopeePrepare').disabled = false;
+  $shopee('shopeePrint').disabled = true;
+  $shopee('shopeeDownload').disabled = true;
+  $shopee('shopeePreviews').innerHTML = '';
+  $shopee('shopeeStatus').textContent = `PDF selecionado: ${f.name}`;
+}
+
+function shopeeCropBox(c, x, y, cols, rows) {
+  return {
+    x: Math.floor(c.width * x / cols),
+    y: Math.floor(c.height * y / rows),
+    w: Math.floor(c.width * (x + 1) / cols) - Math.floor(c.width * x / cols),
+    h: Math.floor(c.height * (y + 1) / rows) - Math.floor(c.height * y / rows)
+  };
+}
+
+function shopeeTrimWhite(src, b, make = true) {
+  const ctx = src.getContext('2d');
+  const d = ctx.getImageData(b.x, b.y, b.w, b.h).data;
+  let minX = b.w, minY = b.h, maxX = -1, maxY = -1, ink = 0;
+  for (let y = 0; y < b.h; y++) {
+    for (let x = 0; x < b.w; x++) {
+      const k = (y * b.w + x) * 4;
+      const v = (d[k] + d[k + 1] + d[k + 2]) / 3;
+      if (v < 245) {
+        ink++;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  const ratio = ink / (b.w * b.h);
+  if (maxX < 0) return null;
+  const pad = Math.max(4, Math.round(Math.min(b.w, b.h) * 0.012));
+  minX = Math.max(0, minX - pad);
+  minY = Math.max(0, minY - pad);
+  maxX = Math.min(b.w - 1, maxX + pad);
+  maxY = Math.min(b.h - 1, maxY + pad);
+  const out = document.createElement('canvas');
+  out.width = maxX - minX + 1;
+  out.height = maxY - minY + 1;
+  out.getContext('2d').drawImage(
+    src, b.x + minX, b.y + minY, out.width, out.height, 0, 0, out.width, out.height
+  );
+  return { canvas: out, ink: ratio };
+}
+
+function shopeeDetectGrid(canvas) {
+  const tests = [
+    { cols: 2, rows: 2 }, { cols: 1, rows: 2 },
+    { cols: 2, rows: 1 }, { cols: 1, rows: 1 }
+  ];
+  let best = tests[0], score = -1;
+  for (const t of tests) {
+    let s = 0;
+    for (let r = 0; r < t.rows; r++) {
+      for (let c = 0; c < t.cols; c++) {
+        const b = shopeeCropBox(canvas, c, r, t.cols, t.rows);
+        const q = shopeeTrimWhite(canvas, b, false);
+        s += q ? Math.min(q.ink, 0.2) : 0;
+      }
+    }
+    if (s > score) { score = s; best = t; }
+  }
+  return best;
+}
+
+async function shopeePrepare() {
+  if (!shopeeState.selected) return;
+  const btn = $shopee('shopeePrepare');
+  btn.disabled = true;
+  $shopee('shopeeStatus').textContent = 'Lendo o PDF e identificando as etiquetas…';
+
+  try {
+    const pdfjs = await loadPdfJsModule();
+    const data = await shopeeState.selected.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data }).promise;
+
+    const renderedPages = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const p = await pdf.getPage(i);
+      const vp = p.getViewport({ scale: 2.5 });
+      const c = document.createElement('canvas');
+      c.width = Math.ceil(vp.width);
+      c.height = Math.ceil(vp.height);
+      await p.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      renderedPages.push(c);
+    }
+
+    const crops = [];
+    for (const canvas of renderedPages) {
+      const detected = shopeeDetectGrid(canvas);
+      for (let r = 0; r < detected.rows; r++) {
+        for (let c = 0; c < detected.cols; c++) {
+          const box = shopeeCropBox(canvas, c, r, detected.cols, detected.rows);
+          const crop = shopeeTrimWhite(canvas, box);
+          if (crop && crop.ink > 0.012) crops.push(crop.canvas);
+        }
+      }
+    }
+
+    if (!crops.length) throw new Error('Não encontrei áreas de etiqueta no PDF.');
+
+    const previews = $shopee('shopeePreviews');
+    previews.innerHTML = '';
+    crops.forEach((c, i) => {
+      const div = document.createElement('div');
+      div.className = 'shopee-preview';
+      div.innerHTML = `<img src="${c.toDataURL('image/png')}" alt="Etiqueta ${i + 1}">
+                       <div class="cap">Etiqueta ${i + 1}</div>`;
+      previews.appendChild(div);
+    });
+
+    shopeeState.pages = crops;
+    $shopee('shopeeStatus').textContent = `Pronto: ${crops.length} etiqueta(s) encontrada(s).`;
+    $shopee('shopeePrint').disabled = false;
+    $shopee('shopeeDownload').disabled = false;
+  } catch (e) {
+    console.error(e);
+    $shopee('shopeeStatus').textContent = 'Erro: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function shopeePrint() {
+  const w = Number($shopee('shopeeW').value);
+  const h = Number($shopee('shopeeH').value);
+  const win = window.open('', '_blank');
+  if (!win) { alert('Permita pop-ups para imprimir.'); return; }
+  win.document.write(
+    `<html><head><title>Etiquetas Shopee</title>
+     <style>
+       @page{size:${w}mm ${h}mm;margin:0}
+       html,body{margin:0;padding:0}
+       img{width:${w}mm;height:${h}mm;display:block;object-fit:fill;page-break-after:always}
+     </style></head><body></body></html>`
+  );
+  shopeeState.pages.forEach(c => {
+    const img = win.document.createElement('img');
+    img.src = c.toDataURL('image/png');
+    win.document.body.appendChild(img);
+  });
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 500);
+}
+
+function shopeeDownload() {
+  if (typeof window.jspdf === 'undefined') {
+    alert('A biblioteca jsPDF ainda está carregando. Aguarde alguns segundos e tente novamente.');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const w = Number($shopee('shopeeW').value);
+  const h = Number($shopee('shopeeH').value);
+  const orient = h >= w ? 'portrait' : 'landscape';
+
+  const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [w, h], compress: true });
+  shopeeState.pages.forEach((c, i) => {
+    if (i) doc.addPage([w, h], orient);
+    doc.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
+  });
+  doc.save('etiquetas_shopee_10x15.pdf');
+}
+
+function shopeeClear() {
+  shopeeState.selected = null;
+  shopeeState.pages = [];
+  $shopee('shopeePreviews').innerHTML = '';
+  $shopee('shopeeFile').value = '';
+  $shopee('shopeePrepare').disabled = true;
+  $shopee('shopeePrint').disabled = true;
+  $shopee('shopeeDownload').disabled = true;
+  $shopee('shopeeStatus').textContent = 'Nenhum PDF selecionado.';
+}
+
+(function initShopee() {
+  const drop = $shopee('shopeeDrop');
+  const file = $shopee('shopeeFile');
+  if (!drop || !file) return;
+
+  drop.addEventListener('click', () => file.click());
+  file.addEventListener('change', () => file.files[0] && shopeeSelectFile(file.files[0]));
+
+  ['dragenter', 'dragover'].forEach(evt =>
+    drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.add('bg-slate-200'); })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.remove('bg-slate-200'); })
+  );
+  drop.addEventListener('drop', e => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (f) shopeeSelectFile(f);
+  });
+
+  $shopee('shopeePrepare').addEventListener('click', shopeePrepare);
+  $shopee('shopeePrint').addEventListener('click', shopeePrint);
+  $shopee('shopeeDownload').addEventListener('click', shopeeDownload);
+  $shopee('shopeeClear').addEventListener('click', shopeeClear);
+})();
   </script>
 </body>
 </html>
