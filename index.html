@@ -5,32 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Automatizador de Etiquetas</title>
   <link rel="icon" type="image/png" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
-  <!-- PWA configs -->
   <link rel="manifest" href="/Gerador-de-etiqueta-pwa/manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Etiquetadora">
 
-  <!-- Ícones PWA -->
   <link rel="icon" type="image/png" sizes="32x32" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-16.png">
   <link rel="shortcut icon" href="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-32.png">
   <link rel="apple-touch-icon" href="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
 
-  <!-- Para Windows/PC -->
   <meta name="msapplication-TileImage" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
   <meta name="msapplication-square70x70logo" content="/Gerador-de-etiqueta-pwa/windows11/Square44x44Logo.targetsize-64.png">
   <meta name="msapplication-square150x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Square150x150Logo.scale-100.png">
   <meta name="msapplication-wide310x150logo" content="/Gerador-de-etiqueta-pwa/windows11/Wide310x150Logo.scale-100.png">
   <meta name="msapplication-square310x310logo" content="/Gerador-de-etiqueta-pwa/windows11/LargeTile.scale-100.png">
 
-  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="lib/jspdf.umd.min.js"></script>
 
   <style>
-    /* Estilos base com variáveis CSS */
+    /* ============================================================
+       ESTILOS ORIGINAIS (NF-e + Shopee) — inalterados
+       ============================================================ */
     :root {
       --label-width: 6cm;
       --label-height: 4cm;
@@ -39,13 +37,8 @@
       --gap: 0.35cm;
     }
 
-    /* Área de impressão */
-    @page { 
-      size: A4; 
-      margin: 1cm;
-    }
+    @page { size: A4; margin: 1cm; }
 
-    /* Grade de etiquetas em tela */
     #labels {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(var(--label-width), 1fr));
@@ -95,7 +88,7 @@
       font-size: 20px;
     }
 
-    /* ===== Abas (NF-e / Shopee) ===== */
+    /* ===== Abas ===== */
     .tab-btn {
       padding: 0.5rem 1rem;
       font-size: 0.875rem;
@@ -107,12 +100,12 @@
       cursor: pointer;
       transition: color .15s, border-color .15s, background .15s;
       border-radius: 0.5rem 0.5rem 0 0;
+      white-space: nowrap;
     }
     .tab-btn:hover { color: #334155; background: #f1f5f9; }
     .tab-btn.active { color: #0f172a; border-bottom-color: #0f172a; font-weight: 600; }
     .tab-panel.hidden { display: none; }
 
-    /* Card de preview Shopee */
     .shopee-preview {
       border: 1px solid #e2e8f0;
       border-radius: 10px;
@@ -129,116 +122,152 @@
     }
     .shopee-preview .cap { font-size: 11px; color: #64748b; margin-top: 4px; }
 
-    /* Estilos para impressão */
-    @media print {
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-      }
-      
-      body > *:not(main) {
-        display: none !important;
-      }
-      
-      main {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      
-      main > *:not(#tab-nfe) {
-        display: none !important;
-      }
+    /* ============================================================
+       ESTILOS DO UNIFICADOR (escopados em #tab-unificador)
+       ============================================================ */
+    #tab-unificador {
+      --uni-bg:#f4f6fb; --uni-surface:#fff; --uni-border:#e2e6ef;
+      --uni-text:#1a2233; --uni-muted:#6b7688;
+      --uni-accent:#2f6bff; --uni-accent-soft:#e8efff;
+      --uni-ok:#128a5a; --uni-ok-soft:#e5f6ee;
+      --uni-err:#c0392b; --uni-err-soft:#fdecea;
+      --uni-radius:14px;
+      --uni-shadow:0 1px 2px rgba(20,30,60,.05),0 8px 24px rgba(20,30,60,.06);
+      color:var(--uni-text);
+    }
+    #tab-unificador .uni-card{
+      background:var(--uni-surface); border:1px solid var(--uni-border);
+      border-radius:var(--uni-radius); box-shadow:var(--uni-shadow); padding:18px;
+    }
+    #tab-unificador .uni-dropzone{
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+      padding:40px 20px; border:1.8px dashed #c8d2e6; border-radius:12px; background:#fafbff;
+      cursor:pointer; text-align:center; transition:border-color .18s,background .18s,transform .18s;
+    }
+    #tab-unificador .uni-dropzone:hover,
+    #tab-unificador .uni-dropzone.is-over{ border-color:var(--uni-accent); background:var(--uni-accent-soft); }
+    #tab-unificador .uni-dz-icon{ width:34px; height:34px; color:var(--uni-accent); margin-bottom:4px; }
+    #tab-unificador .uni-dropzone strong{ font-size:15.5px; font-weight:620; }
+    #tab-unificador .uni-dropzone span{ color:var(--uni-muted); font-size:13px; }
 
-      #tab-shopee { display: none !important; }
+    #tab-unificador .uni-options{
+      margin-top:16px; padding-top:14px; border-top:1px solid var(--uni-border);
+      display:flex; gap:18px; flex-wrap:wrap;
+    }
+    #tab-unificador .uni-switch{
+      display:inline-flex; align-items:center; gap:10px; cursor:pointer; font-size:13.5px; user-select:none;
+    }
+    #tab-unificador .uni-switch input{ position:absolute; opacity:0; pointer-events:none; }
+    #tab-unificador .uni-switch .uni-track{
+      position:relative; width:38px; height:22px; border-radius:999px; background:#cfd7e6;
+      transition:background .18s; flex:0 0 auto;
+    }
+    #tab-unificador .uni-switch .uni-thumb{
+      position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%;
+      background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .18s;
+    }
+    #tab-unificador .uni-switch input:checked + .uni-track{ background:var(--uni-accent); }
+    #tab-unificador .uni-switch input:checked + .uni-track .uni-thumb{ transform:translateX(16px); }
+
+    #tab-unificador .uni-results{ display:grid; gap:14px; }
+    #tab-unificador .uni-result-card{
+      background:var(--uni-surface); border:1px solid var(--uni-border);
+      border-radius:var(--uni-radius); box-shadow:var(--uni-shadow);
+      padding:16px 18px; display:grid; gap:12px;
+    }
+    #tab-unificador .uni-result-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    #tab-unificador .uni-result-name{
+      font-weight:600; font-size:14.5px; word-break:break-all; flex:1 1 240px; min-width:0;
+    }
+    #tab-unificador .uni-badge{
+      font-size:11.5px; font-weight:650; text-transform:uppercase; padding:3px 9px;
+      border-radius:999px; white-space:nowrap;
+    }
+    #tab-unificador .uni-badge.busy{ background:var(--uni-accent-soft); color:var(--uni-accent); }
+    #tab-unificador .uni-badge.ok{ background:var(--uni-ok-soft); color:var(--uni-ok); }
+    #tab-unificador .uni-badge.err{ background:var(--uni-err-soft); color:var(--uni-err); }
+
+    #tab-unificador .uni-result-meta{ display:grid; gap:6px; font-size:13px; color:var(--uni-muted); }
+    #tab-unificador .uni-result-meta .uni-row{ display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; }
+    #tab-unificador .uni-result-meta .uni-k{ color:var(--uni-muted); min-width:118px; flex:0 0 auto; }
+    #tab-unificador .uni-result-meta .uni-v{
+      color:var(--uni-text); font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-size:12.5px; word-break:break-all;
+    }
+    #tab-unificador .uni-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+    #tab-unificador .uni-btn{
+      appearance:none; border:1px solid transparent; border-radius:9px; padding:9px 16px;
+      font-size:13.5px; font-weight:600; cursor:pointer; text-decoration:none;
+      display:inline-flex; align-items:center; gap:8px; transition:.15s;
+    }
+    #tab-unificador .uni-btn.primary{ background:var(--uni-accent); color:#fff; }
+    #tab-unificador .uni-btn.primary:hover{ background:#2458d8; }
+    #tab-unificador .uni-btn.ghost{ background:#fff; border-color:var(--uni-border); color:var(--uni-text); }
+    #tab-unificador .uni-btn.ghost:hover{ border-color:#c3ccdd; background:#fafbff; }
+    #tab-unificador .uni-btn:disabled{ opacity:.45; cursor:not-allowed; }
+    #tab-unificador .uni-spinner{
+      width:14px; height:14px; border:2px solid rgba(47,107,255,.25);
+      border-top-color:var(--uni-accent); border-radius:50%;
+      animation:uni-spin .7s linear infinite;
+    }
+    @keyframes uni-spin{ to{ transform:rotate(360deg); } }
+
+    /* ===== Estilos para impressão ===== */
+    @media print {
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        width: 100% !important; height: 100% !important;
+        margin: 0 !important; padding: 0 !important;
+        background: white !important;
+        display: flex; justify-content: center; align-items: flex-start;
+      }
+      body > *:not(main) { display: none !important; }
+      main {
+        width: 100% !important; max-width: 100% !important;
+        margin: 0 !important; padding: 0 !important;
+        display: flex; justify-content: center; align-items: center;
+      }
+      main > *:not(#tab-nfe) { display: none !important; }
+      #tab-shopee, #tab-unificador { display: none !important; }
       .tab-btn { display: none !important; }
       nav[role="tablist"] { display: none !important; }
 
       #tab-nfe {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        width: 100% !important; max-width: 100% !important;
+        margin: 0 !important; padding: 0 !important;
         display: block !important;
       }
-      
-      #tab-nfe > *:not(section) {
-        display: none !important;
-      }
-      
+      #tab-nfe > *:not(section) { display: none !important; }
       #tab-nfe section {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
+        width: 100% !important; max-width: 100% !important;
+        margin: 0 !important; padding: 0 !important;
+        border: none !important; box-shadow: none !important;
         background: white !important;
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 0 !important;
+        display: grid !important; grid-template-columns: 1fr !important; gap: 0 !important;
       }
-      
-      #tab-nfe section > *:not(.md\:col-span-2) {
-        display: none !important;
-      }
-      
+      #tab-nfe section > *:not(.md\:col-span-2) { display: none !important; }
       #tab-nfe .md\:col-span-2 {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
+        width: 100% !important; max-width: 100% !important;
+        margin: 0 !important; padding: 0 !important;
+        border: none !important; box-shadow: none !important;
         background: white !important;
         grid-column: 1 / -1 !important;
       }
-      
-      #tab-nfe .md\:col-span-2 > *:first-child {
-        display: none !important;
-      }
-      
+      #tab-nfe .md\:col-span-2 > *:first-child { display: none !important; }
+
       #labels {
         display: grid !important;
         grid-template-columns: repeat(var(--cols), var(--label-width)) !important;
-        gap: var(--gap) !important;
-        justify-content: center;
+        gap: var(--gap) !important; justify-content: center;
         width: 100%;
         max-width: calc(var(--cols) * var(--label-width) + (var(--cols) - 1) * var(--gap) + 2cm);
-        margin: 1cm auto !important;
-        padding: 0 !important;
-        page-break-before: avoid;
-        page-break-after: avoid;
+        margin: 1cm auto !important; padding: 0 !important;
+        page-break-before: avoid; page-break-after: avoid;
       }
-      
       .label-page-break {
-        grid-column: 1 / -1;
-        page-break-after: always;
-        break-after: page;
-        width: 100%;
-        height: 0;
-        margin: 0;
-        padding: 0;
-        border: none;
-        visibility: hidden;
+        grid-column: 1 / -1; page-break-after: always; break-after: page;
+        width: 100%; height: 0; margin: 0; padding: 0; border: none; visibility: hidden;
       }
-
       .label {
         width: var(--label-width) !important;
         height: var(--label-height) !important;
@@ -246,118 +275,56 @@
         border-radius: 10px !important;
         padding: 6px !important;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        break-inside: avoid; page-break-inside: avoid;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
         overflow: hidden !important;
       }
-      
-      .label.problem {
-        display: none !important;
-      }
-      
-      body.print-errors .label.problem {
-        display: flex !important;
-      }
-
+      .label.problem { display: none !important; }
+      body.print-errors .label.problem { display: flex !important; }
       body.mask-print-errors .label.problem {
-        border: 1px solid #cbd5e1 !important;
-        background-color: white !important;
+        border: 1px solid #cbd5e1 !important; background-color: white !important;
       }
-
       .label .meta .highlighted,
       .label .meta .highlighted-rule {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
     }
 
-    /* Demais estilos (modais, etc.) */
+    /* Modais / preview / XML exemplo (inalterado) */
     #printPreviewModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      overflow: auto;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8); z-index: 100; overflow: auto;
     }
-    
     #printPreviewContent {
-      width: 21cm;
-      min-height: 29.7cm;
-      margin: 20px auto;
-      padding: 1cm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
+      width: 21cm; min-height: 29.7cm; margin: 20px auto; padding: 1cm;
+      background: white; box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); border-radius: 5px;
     }
-    
     .print-preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      border-bottom: 1px solid #e2e8f0;
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #e2e8f0;
+      background: white; position: sticky; top: 0; z-index: 10;
     }
-    
-    .print-preview-controls {
-      display: flex;
-      gap: 10px;
-    }
-    
+    .print-preview-controls { display: flex; gap: 10px; }
+
     #xmlExampleModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      overflow: auto;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8); z-index: 100; overflow: auto;
     }
-    
     #xmlExampleContent {
-      width: 80%;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-      max-height: 80vh;
-      overflow-y: auto;
+      width: 80%; max-width: 800px; margin: 40px auto; padding: 20px;
+      background: white; box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      border-radius: 5px; max-height: 80vh; overflow-y: auto;
     }
-    
     .xml-example-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;
     }
-    
+
     pre {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 12px;
-      line-height: 1.4;
+      background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto;
+      white-space: pre-wrap; font-family: monospace; font-size: 12px; line-height: 1.4;
     }
-    
+
     .no-issues { color: #059669; font-style: italic; }
     .logo-preview { max-width: 100px; max-height: 60px; margin-top: 8px; display: none; }
     .logo-input-container { display: flex; gap: 8px; }
@@ -365,106 +332,51 @@
     .btn-remove { background-color: #ef4444 !important; color: white !important; }
     .btn-remove:hover { background-color: #dc2626 !important; }
 
-    .date-filters {
-      background-color: #f8fafc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-    .date-filter-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: end;
-      margin-bottom: 0.5rem;
-    }
+    .date-filters { background-color: #f8fafc; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+    .date-filter-row { display: flex; gap: 0.5rem; align-items: end; margin-bottom: 0.5rem; }
     .date-filter-row label { flex: 1; }
     .date-summary { font-size: 0.875rem; color: #64748b; margin-top: 0.5rem; }
     .date-range-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
     .date-tag {
-      background-color: #e2e8f0;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      cursor: pointer;
+      background-color: #e2e8f0; padding: 0.25rem 0.5rem; border-radius: 0.25rem;
+      font-size: 0.75rem; cursor: pointer;
     }
     .date-tag:hover { background-color: #cbd5e1; }
     .date-tag.active { background-color: #3b82f6; color: white; }
     .time-input { margin-top: 0.5rem; }
-    .time-input label {
-      display: block;
-      margin-bottom: 0.25rem;
-      font-size: 0.875rem;
-      color: #64748b;
-    }
-    .time-input input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.375rem;
-    }
-    .rule-config {
-      background-color: #f8fafc;
-      border-radius: 0.375rem;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-    }
+    .time-input label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #64748b; }
+    .time-input input { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 0.375rem; }
+
+    .rule-config { background-color: #f8fafc; border-radius: 0.375rem; padding: 0.75rem; margin-top: 0.5rem; }
     .rule-config.hidden { display: none; }
 
-    /* Modal de configurações com backdrop suave */
     #cfgModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 50;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 50; align-items: center; justify-content: center;
     }
     #cfgModal.active { display: flex; }
     #cfgModal .modal-backdrop {
-      background: rgba(0, 0, 0, 0.25);
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 51;
+      background: rgba(0, 0, 0, 0.25); position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; z-index: 51;
     }
     #cfgModal .config-container {
-      width: 420px;
-      max-width: 85vw;
-      max-height: 75vh;
-      display: flex;
-      flex-direction: column;
-      background: white;
-      border-radius: 0.75rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      overflow: hidden;
-      z-index: 60;
-      position: relative;
+      width: 420px; max-width: 85vw; max-height: 75vh;
+      display: flex; flex-direction: column; background: white;
+      border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      overflow: hidden; z-index: 60; position: relative;
     }
     #cfgModal .config-header {
-      padding: 1rem 1.25rem 0.5rem;
-      border-bottom: 1px solid #e2e8f0;
-      background: white;
-      flex-shrink: 0;
+      padding: 1rem 1.25rem 0.5rem; border-bottom: 1px solid #e2e8f0;
+      background: white; flex-shrink: 0;
     }
     #cfgModal .config-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0.75rem 1.25rem;
+      flex: 1; overflow-y: auto; padding: 0.75rem 1.25rem;
       max-height: calc(75vh - 120px);
     }
     #cfgModal .config-footer {
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid #e2e8f0;
-      background: #f8fafc;
-      flex-shrink: 0;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
+      padding: 0.75rem 1.25rem; border-top: 1px solid #e2e8f0;
+      background: #f8fafc; flex-shrink: 0; display: flex;
+      justify-content: flex-end; gap: 0.75rem;
     }
     #cfgModal .config-content::-webkit-scrollbar { width: 6px; }
     #cfgModal .config-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
@@ -473,62 +385,31 @@
 
     .compact-field { margin-bottom: 0.75rem; }
     .compact-field legend { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
-    .compact-checkbox-group {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-    }
-    .compact-checkbox-group label {
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
+    .compact-checkbox-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .compact-checkbox-group label { font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem; }
     .compact-checkbox-group input[type="checkbox"] { width: 1rem; height: 1rem; }
 
-    .term-highlight-row {
-      display: flex;
-      gap: 0.25rem;
-      align-items: center;
-      margin-bottom: 0.25rem;
-    }
+    .term-highlight-row { display: flex; gap: 0.25rem; align-items: center; margin-bottom: 0.25rem; }
     .term-highlight-row input {
-      padding: 0.25rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.25rem;
-      font-size: 0.8rem;
+      padding: 0.25rem; border: 1px solid #cbd5e1; border-radius: 0.25rem; font-size: 0.8rem;
     }
     .term-highlight-row input[type="text"] { flex: 1; }
     .term-highlight-row input[type="color"] { width: 2rem; height: 1.75rem; padding: 0; }
     .term-highlight-row .btn-remove-term {
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 0 0.25rem;
+      background: none; border: none; color: #ef4444; font-size: 1rem;
+      cursor: pointer; padding: 0 0.25rem;
     }
     .mask-print-errors .label.problem {
-      border: 1px solid #cbd5e1 !important;
-      background-color: white !important;
+      border: 1px solid #cbd5e1 !important; background-color: white !important;
     }
     .offline-status {
-      font-size: 0.75rem;
-      word-break: break-all;
-      margin-top: 0.5rem;
-      padding: 0.25rem;
-      background: #f1f5f9;
-      border-radius: 0.25rem;
+      font-size: 0.75rem; word-break: break-all; margin-top: 0.5rem;
+      padding: 0.25rem; background: #f1f5f9; border-radius: 0.25rem;
     }
 
-    /* badge atualizável */
     #sizeBadge {
-      font-size: 0.75rem;
-      background: #e2e8f0;
-      padding: 0.15rem 0.6rem;
-      border-radius: 9999px;
-      font-weight: 500;
-      color: #1e293b;
+      font-size: 0.75rem; background: #e2e8f0; padding: 0.15rem 0.6rem;
+      border-radius: 9999px; font-weight: 500; color: #1e293b;
     }
   </style>
 </head>
@@ -547,9 +428,10 @@
       </div>
 
       <!-- 🔽 ABAS -->
-      <nav class="flex gap-1 mt-3 -mb-px" role="tablist">
+      <nav class="flex gap-1 mt-3 -mb-px overflow-x-auto" role="tablist">
         <button class="tab-btn active" data-tab="nfe" role="tab">📄 Notas Fiscais (XML)</button>
         <button class="tab-btn" data-tab="shopee" role="tab">🛍️ Etiquetas Shopee (PDF)</button>
+        <button class="tab-btn" data-tab="unificador" role="tab">🔗 Unificador de Etiquetas</button>
       </nav>
     </div>
   </header>
@@ -581,7 +463,6 @@
           </label>
         </div>
 
-        <!-- Filtros de data -->
         <div id="dateFilters" class="date-filters hidden">
           <h3 class="font-medium mb-2">Filtrar por data e hora de emissão</h3>
           <div class="date-filter-row">
@@ -627,7 +508,6 @@
         </aside>
       </section>
     </div>
-    <!-- ==================== FIM ABA NF-e ==================== -->
 
     <!-- ==================== ABA SHOPEE ==================== -->
     <div id="tab-shopee" class="tab-panel hidden space-y-6">
@@ -689,7 +569,52 @@
         </div>
       </section>
     </div>
-    <!-- ==================== FIM ABA SHOPEE ==================== -->
+
+    <!-- ==================== ABA UNIFICADOR ==================== -->
+    <div id="tab-unificador" class="tab-panel hidden">
+      <section class="uni-card">
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px">
+          <div style="flex:0 0 auto;width:42px;height:42px;border-radius:12px;background:#2f6bff;color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px">NF</div>
+          <div>
+            <h2 style="margin:0;font-size:19px;font-weight:650;color:var(--uni-text)">Unificador de Etiquetas</h2>
+            <p style="margin:4px 0 0;color:var(--uni-muted);font-size:13.5px;max-width:720px">
+              Junta etiqueta + DANFE de cada venda em uma única página e imprime
+              <strong>cabeçalho, número da nota, emissão e código de barras</strong> da chave de acesso.
+            </p>
+          </div>
+        </div>
+
+        <label id="uniDropzone" class="uni-dropzone" for="uniFileInput">
+          <input id="uniFileInput" type="file" accept="application/pdf" multiple hidden />
+          <svg class="uni-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 16V4m0 0L7 9m5-5 5 5"/>
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+          </svg>
+          <strong>Arraste os PDFs aqui</strong>
+          <span>ou clique para selecionar — pode enviar vários arquivos de uma vez</span>
+        </label>
+
+        <div class="uni-options">
+          <label class="uni-switch">
+            <input type="checkbox" id="uniKeepSecond" />
+            <span class="uni-track"><span class="uni-thumb"></span></span>
+            <span>Manter a 2ª página (DANFE) no PDF final</span>
+          </label>
+        </div>
+
+        <div id="uniLoadingLibs" style="display:none;margin-top:12px;font-size:13px;color:var(--uni-muted);display:flex;align-items:center;gap:8px">
+          <span class="uni-spinner"></span>
+          <span>Carregando bibliotecas (só na 1ª vez)…</span>
+        </div>
+      </section>
+
+      <section id="uniResults" class="uni-results" aria-live="polite" style="margin-top:20px"></section>
+
+      <div style="text-align:center;color:var(--uni-muted);font-size:12.5px;padding:0 24px 20px">
+        Todo o processamento acontece no seu navegador. Nenhum arquivo é enviado a servidores.
+      </div>
+    </div>
 
   </main>
 
@@ -707,176 +632,35 @@
     </div>
   </div>
 
-  <!-- Modal de exemplo de XML -->
+  <!-- Modal exemplo XML -->
   <div id="xmlExampleModal">
     <div id="xmlExampleContent">
       <div class="xml-example-header">
         <h2 class="text-xl font-bold">Exemplo de XML Válido</h2>
         <button id="closeXmlExample" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Fechar</button>
       </div>
-      <p class="mb-4 text-sm text-slate-600">Abaixo está um exemplo de XML no formato NF-e que é compatível com esta ferramenta:</p>
-      <pre>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <p class="mb-4 text-sm text-slate-600">Exemplo de XML no formato NF-e compatível:</p>
+      <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"&gt;
-  &lt;NFe xmlns="http://www.portalfiscal.inf.br/nfe"&gt;
-    &lt;infNFe Id="NFe35210600000000000125550010000000011234567890" versao="4.00"&gt;
-      &lt;ide&gt;
-        &lt;cUF&gt;35&lt;/cUF&gt;
-        &lt;cNF&gt;12345678&lt;/cNF&gt;
-        &lt;natOp&gt;Venda de mercadoria&lt;/natOp&gt;
-        &lt;mod&gt;55&lt;/mod&gt;
-        &lt;serie&gt;1&lt;/serie&gt;
-        &lt;nNF&gt;123456&lt;/nNF&gt;
-        &lt;dhEmi&gt;2021-06-01T10:00:00-03:00&lt;/dhEmi&gt;
-        &lt;tpNF&gt;1&lt;/tpNF&gt;
-        &lt;idDest&gt;1&lt;/idDest&gt;
-        &lt;cMunFG&gt;3550308&lt;/cMunFG&gt;
-        &lt;tpImp&gt;1&lt;/tpImp&gt;
-        &lt;tpEmis&gt;1&lt;/tpEmis&gt;
-        &lt;cDV&gt;0&lt;/cDV&gt;
-        &lt;tpAmb&gt;2&lt;/tpAmb&gt;
-        &lt;finNFe&gt;1&lt;/finNFe&gt;
-        &lt;indFinal&gt;1&lt;/indFinal&gt;
-        &lt;indPres&gt;1&lt;/indPres&gt;
-        &lt;procEmi&gt;0&lt;/procEmi&gt;
-        &lt;verProc&gt;1.0.0&lt;/verProc&gt;
-      &lt;/ide&gt;
-      &lt;emit&gt;
-        &lt;CNPJ&gt;00000000000100&lt;/CNPJ&gt;
-        &lt;xNome&gt;Empresa Exemplo Ltda&lt;/xNome&gt;
-        &lt;xFant&gt;Exemplo Comercio&lt;/xFant&gt;
-        &lt;enderEmit&gt;
-          &lt;xLgr&gt;Rua Exemplo&lt;/xLgr&gt;
-          &lt;nro&gt;123&lt;/nro&gt;
-          &lt;xBairro&gt;Centro&lt;/xBairro&gt;
-          &lt;cMun&gt;3550308&lt;/cMun&gt;
-          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
-          &lt;UF&gt;SP&lt;/UF&gt;
-          &lt;CEP&gt;01001000&lt;/CEP&gt;
-          &lt;cPais&gt;1058&lt;/cPais&gt;
-          &lt;xPais&gt;Brasil&lt;/xPais&gt;
-          &lt;fone&gt;1133334444&lt;/fone&gt;
-        &lt;/enderEmit&gt;
-        &lt;IE&gt;111222333444&lt;/IE&gt;
-        &lt;CRT&gt;1&lt;/CRT&gt;
-      &lt;/emit&gt;
-      &lt;dest&gt;
-        &lt;CNPJ&gt;99999999000199&lt;/CNPJ&gt;
-        &lt;xNome&gt;Cliente Exemplo SA&lt;/xNome&gt;
-        &lt;enderDest&gt;
-          &lt;xLgr&gt;Avenida Teste&lt;/xLgr&gt;
-          &lt;nro&gt;456&lt;/nro&gt;
-          &lt;xBairro&gt;Jardim Exemplo&lt;/xBairro&gt;
-          &lt;cMun&gt;3550308&lt;/cMun&gt;
-          &lt;xMun&gt;São Paulo&lt;/xMun&gt;
-          &lt;UF&gt;SP&lt;/UF&gt;
-          &lt;CEP&gt;01002000&lt;/CEP&gt;
-          &lt;cPais&gt;1058&lt;/cPais&gt;
-          &lt;xPais&gt;Brasil&lt;/xPais&gt;
-        &lt;/enderDest&gt;
-        &lt;indIEDest&gt;9&lt;/indIEDest&gt;
-      &lt;/dest&gt;
-      &lt;det nItem="1"&gt;
-        &lt;prod&gt;
-          &lt;cProd&gt;PROD001&lt;/cProd&gt;
-          &lt;cEAN&gt;7891234567890&lt;/cEAN&gt;
-          &lt;xProd&gt;Produto Exemplo A&lt;/xProd&gt;
-          &lt;NCM&gt;84716052&lt;/NCM&gt;
-          &lt;CFOP&gt;5102&lt;/CFOP&gt;
-          &lt;uCom&gt;UN&lt;/uCom&gt;
-          &lt;qCom&gt;10.0000&lt;/qCom&gt;
-          &lt;vUnCom&gt;100.00&lt;/vUnCom&gt;
-          &lt;vProd&gt;1000.00&lt;/vProd&gt;
-          &lt;cEANTrib&gt;7891234567890&lt;/cEANTrib&gt;
-          &lt;uTrib&gt;UN&lt;/uTrib&gt;
-          &lt;qTrib&gt;10.0000&lt;/qTrib&gt;
-          &lt;vUnTrib&gt;100.00&lt;/vUnTrib&gt;
-          &lt;indTot&gt;1&lt;/indTot&gt;
-        &lt;/prod&gt;
-        &lt;imposto&gt;
-          &lt;ICMS&gt;
-            &lt;ICMS00&gt;
-              &lt;orig&gt;0&lt;/orig&gt;
-              &lt;CST&gt;00&lt;/CST&gt;
-              &lt;modBC&gt;3&lt;/modBC&gt;
-              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
-              &lt;vBC&gt;1000.00&lt;/vBC&gt;
-              &lt;vICMS&gt;180.00&lt;/vICMS&gt;
-            &lt;/ICMS00&gt;
-          &lt;/ICMS&gt;
-        &lt;/imposto&gt;
-      &lt;/det&gt;
-      &lt;det nItem="2"&gt;
-        &lt;prod&gt;
-          &lt;cProd&gt;PROD002&lt;/cProd&gt;
-          &lt;cEAN&gt;7899876543210&lt;/cEAN&gt;
-          &lt;xProd&gt;Produto Exemplo B&lt;/xProd&gt;
-          &lt;NCM&gt;85171210&lt;/NCM&gt;
-          &lt;CFOP&gt;5102&lt;/CFOP&gt;
-          &lt;uCom&gt;UN&lt;/uCom&gt;
-          &lt;qCom&gt;5.0000&lt;/qCom&gt;
-          &lt;vUnCom&gt;250.00&lt;/vUnCom&gt;
-          &lt;vProd&gt;1250.00&lt;/vProd&gt;
-          &lt;cEANTrib&gt;7899876543210&lt;/cEANTrib&gt;
-          &lt;uTrib&gt;UN&lt;/uTrib&gt;
-          &lt;qTrib&gt;5.0000&lt;/qTrib&gt;
-          &lt;vUnTrib&gt;250.00&lt;/vUnTrib&gt;
-          &lt;indTot&gt;1&lt;/indTot&gt;
-        &lt;/prod&gt;
-        &lt;imposto&gt;
-          &lt;ICMS&gt;
-            &lt;ICMS00&gt;
-              &lt;orig&gt;0&lt;/orig&gt;
-              &lt;CST&gt;00&lt;/CST&gt;
-              &lt;modBC&gt;3&lt;/modBC&gt;
-              &lt;pICMS&gt;18.0000&lt;/pICMS&gt;
-              &lt;vBC&gt;1250.00&lt;/vBC&gt;
-              &lt;vICMS&gt;225.00&lt;/vICMS&gt;
-            &lt;/ICMS00&gt;
-          &lt;/ICMS&gt;
-        &lt;/imposto&gt;
-      &lt;/det&gt;
-      &lt;total&gt;
-        &lt;ICMSTot&gt;
-          &lt;vBC&gt;2250.00&lt;/vBC&gt;
-          &lt;vICMS&gt;405.00&lt;/vICMS&gt;
-          &lt;vProd&gt;2250.00&lt;/vProd&gt;
-          &lt;vNF&gt;2250.00&lt;/vNF&gt;
-        &lt;/ICMSTot&gt;
-      &lt;/total&gt;
-      &lt;transp&gt;
-        &lt;modFrete&gt;0&lt;/modFrete&gt;
-      &lt;/transp&gt;
-      &lt;cobr&gt;
-        &lt;fat&gt;
-          &lt;nFat&gt;123456&lt;/nFat&gt;
-          &lt;vOrig&gt;2250.00&lt;/vOrig&gt;
-          &lt;vLiq&gt;2250.00&lt;/vLiq&gt;
-        &lt;/fat&gt;
-        &lt;dup&gt;
-          &lt;nDup&gt;001&lt;/nDup&gt;
-          &lt;dVenc&gt;2021-06-30&lt;/dVenc&gt;
-          &lt;vDup&gt;2250.00&lt;/vDup&gt;
-        &lt;/dup&gt;
-      &lt;/cobr&gt;
-      &lt;infAdic&gt;
-        &lt;infCpl&gt;Pagamento a vista.&lt;/infCpl&gt;
-      &lt;/infAdic&gt;
-    &lt;/infNFe&gt;
-  &lt;/NFe&gt;
-&lt;/nfeProc&gt;
-      </pre>
+  &lt;NFe&gt;&lt;infNFe Id="NFe35210600000000000125550010000000011234567890"&gt;
+    &lt;ide&gt;&lt;nNF&gt;123456&lt;/nNF&gt;&lt;dhEmi&gt;2021-06-01T10:00:00-03:00&lt;/dhEmi&gt;&lt;/ide&gt;
+    &lt;emit&gt;&lt;CNPJ&gt;00000000000100&lt;/CNPJ&gt;&lt;xNome&gt;Empresa Exemplo Ltda&lt;/xNome&gt;&lt;/emit&gt;
+    &lt;dest&gt;&lt;xNome&gt;Cliente Exemplo SA&lt;/xNome&gt;&lt;/dest&gt;
+    &lt;det nItem="1"&gt;&lt;prod&gt;&lt;cProd&gt;PROD001&lt;/cProd&gt;&lt;cEAN&gt;7891234567890&lt;/cEAN&gt;
+      &lt;xProd&gt;Produto Exemplo A&lt;/xProd&gt;&lt;uCom&gt;UN&lt;/uCom&gt;&lt;qCom&gt;10.0000&lt;/qCom&gt;
+      &lt;vUnCom&gt;100.00&lt;/vUnCom&gt;&lt;/prod&gt;&lt;/det&gt;
+  &lt;/infNFe&gt;&lt;/NFe&gt;
+&lt;/nfeProc&gt;</pre>
     </div>
   </div>
 
-  <!-- Config modal com novos campos: unidade e orientação -->
+  <!-- Config modal -->
   <div id="cfgModal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
       <div class="config-header">
         <h3 class="text-lg font-semibold">Configurações de geração</h3>
       </div>
-      
       <div class="config-content">
         <div class="space-y-3">
           <div class="compact-field">
@@ -888,8 +672,7 @@
             </div>
             <img id="logoPreview" class="logo-preview mt-2" alt="Preview da logo">
           </div>
-          
-          <!-- Unidade de medida e orientação -->
+
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Unidade de medida</legend>
@@ -910,11 +693,9 @@
                 <option value="portrait">Retrato (altura ≥ largura)</option>
                 <option value="landscape">Paisagem (largura ≥ altura)</option>
               </select>
-              <p class="text-xs text-slate-500 mt-1">Ao mudar, largura e altura serão trocadas automaticamente se necessário.</p>
             </fieldset>
           </div>
 
-          <!-- Dimensões -->
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
@@ -966,7 +747,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Campos exibidos</legend>
@@ -983,7 +764,7 @@
               </div>
             </fieldset>
           </div>
-          
+
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Configurações de erros</legend>
@@ -994,7 +775,7 @@
               </div>
             </fieldset>
           </div>
-          
+
           <div class="compact-field">
             <label class="block text-sm font-medium text-slate-700 mb-1">Ordenar etiquetas por</label>
             <select id="cfgSortOrder" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
@@ -1004,7 +785,7 @@
               <option value="date-desc">Data de Emissão (Mais Recente)</option>
             </select>
           </div>
-          
+
           <div class="compact-field">
             <label class="block text-sm font-medium text-slate-700 mb-1">Destacar campo</label>
             <select id="cfgHighlightField" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
@@ -1020,7 +801,7 @@
               <option value="dest">Destinatário</option>
             </select>
           </div>
-          
+
           <div class="compact-field">
             <label class="block text-sm font-medium text-slate-700 mb-1">Destacar campo (regra específica)</label>
             <select id="cfgHighlightFieldRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
@@ -1036,7 +817,7 @@
               <option value="dest">Destinatário</option>
             </select>
           </div>
-          
+
           <div id="ruleConfig" class="rule-config compact-field">
             <label class="block text-sm font-medium text-slate-700 mb-1">Condição para destacar</label>
             <select id="cfgRuleCondition" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
@@ -1076,7 +857,6 @@
           </div>
         </div>
       </div>
-      
       <div class="config-footer">
         <button id="cfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
         <button id="cfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
@@ -1085,46 +865,27 @@
   </div>
 
   <script>
-// --------- Estado e utilitários ---------
+/* ============================================================
+   PARTE 1 — Estado, utilidades e toda a lógica original (NF-e)
+   ============================================================ */
 const state = {
   labels: [],
   availableDates: [],
-  dateFilter: {
-    startDate: null,
-    endDate: null,
-    startTime: "00:00",
-    endTime: "23:59"
-  },
+  dateFilter: { startDate:null, endDate:null, startTime:"00:00", endTime:"23:59" },
   cfg: {
-    logo: "",
-    density: 60,
-    fields: ["xProd","qCom","uCom","nNF"],
-    showErrors: true,
-    printErrors: false,
-    maskPrintErrors: false,
-    fracRule: "none",
-    fracN: 1,
-    sortOrder: "nNF-asc",
-    highlightField: "nNF",
-    highlightFieldRule: "qCom",
-    ruleCondition: "qtyGreaterThan1",
-    customRule: "",
-    termHighlights: [],
-    labelWidth: 6,
-    labelHeight: 4,
-    colsPerPage: 3,
-    rowsPerPage: 0,
-    unit: "cm",
-    orientation: "portrait"
+    logo:"", density:60, fields:["xProd","qCom","uCom","nNF"],
+    showErrors:true, printErrors:false, maskPrintErrors:false,
+    fracRule:"none", fracN:1, sortOrder:"nNF-asc",
+    highlightField:"nNF", highlightFieldRule:"qCom",
+    ruleCondition:"qtyGreaterThan1", customRule:"", termHighlights:[],
+    labelWidth:6, labelHeight:4, colsPerPage:3, rowsPerPage:0,
+    unit:"cm", orientation:"portrait"
   }
 };
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-function num(v, fallback = 0) { 
-  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',','.')); 
-  return Number.isFinite(n) ? n : fallback; 
-}
+function num(v, fallback = 0){ const n = typeof v==='number'?v:parseFloat(String(v).replace(',','.')); return Number.isFinite(n)?n:fallback; }
 function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
 function formatCNPJ(s){
   const d = onlyDigits(s);
@@ -1133,145 +894,106 @@ function formatCNPJ(s){
   return s || '-';
 }
 
-// ===== Conversão de unidades de medida =====
-const CM_PER_UNIT = {
-  cm: 1,
-  mm: 0.1,
-  in: 2.54,
-  px: 2.54 / 96
-};
-
-const PRINT_AREA_CM = { width: 19, height: 27.7 };
-
-function roundTo(n, decimals) {
-  const f = Math.pow(10, decimals);
-  return Math.round(n * f) / f;
+const CM_PER_UNIT = { cm:1, mm:0.1, in:2.54, px:2.54/96 };
+const PRINT_AREA_CM = { width:19, height:27.7 };
+function roundTo(n,d){ const f=Math.pow(10,d); return Math.round(n*f)/f; }
+function convertPhysicalUnit(v,from,to){
+  if (from===to) return v;
+  if (!(from in CM_PER_UNIT)||!(to in CM_PER_UNIT)) return null;
+  const cm = v * CM_PER_UNIT[from];
+  return cm / CM_PER_UNIT[to];
 }
-
-function convertPhysicalUnit(value, fromUnit, toUnit) {
-  if (fromUnit === toUnit) return value;
-  if (!(fromUnit in CM_PER_UNIT) || !(toUnit in CM_PER_UNIT)) return null;
-  const cm = value * CM_PER_UNIT[fromUnit];
-  return cm / CM_PER_UNIT[toUnit];
+function getLabelSizeCm(cfg){
+  const w = cfg.labelWidth||0, h = cfg.labelHeight||0;
+  if (cfg.unit === '%') return { wCm:(w/100)*PRINT_AREA_CM.width, hCm:(h/100)*PRINT_AREA_CM.height };
+  const f = CM_PER_UNIT[cfg.unit] ?? 1;
+  return { wCm: w*f, hCm: h*f };
 }
+function cmToCss(cm){ return `${roundTo(cm,3)}cm`; }
 
-function getLabelSizeCm(cfg) {
-  const w = cfg.labelWidth || 0;
-  const h = cfg.labelHeight || 0;
-  if (cfg.unit === '%') {
-    return {
-      wCm: (w / 100) * PRINT_AREA_CM.width,
-      hCm: (h / 100) * PRINT_AREA_CM.height
-    };
-  }
-  const factor = CM_PER_UNIT[cfg.unit] ?? 1;
-  return { wCm: w * factor, hCm: h * factor };
-}
-
-function cmToCss(cm) {
-  return `${roundTo(cm, 3)}cm`;
-}
-
-function findFirstByLocalName(root, localName) {
+function findFirstByLocalName(root, name){
   if (!root) return null;
   const all = root.getElementsByTagName('*');
-  for (let i=0;i<all.length;i++) if (all[i].localName === localName) return all[i];
+  for (let i=0;i<all.length;i++) if (all[i].localName===name) return all[i];
   return null;
 }
-function findAllByLocalName(root, localName) {
+function findAllByLocalName(root, name){
   const out=[]; if (!root) return out;
   const all = root.getElementsByTagName('*');
-  for (let i=0;i<all.length;i++) if (all[i].localName===localName) out.push(all[i]);
+  for (let i=0;i<all.length;i++) if (all[i].localName===name) out.push(all[i]);
   return out;
 }
-function findTextInsensitive(root, tagName){
+function findTextInsensitive(root, tag){
   if (!root) return '';
-  const all = root.getElementsByTagName('*');
-  const low = tagName.toLowerCase();
+  const all = root.getElementsByTagName('*'), low = tag.toLowerCase();
   for (let i=0;i<all.length;i++){
-    const ln = (all[i].localName || '').toLowerCase();
+    const ln = (all[i].localName||'').toLowerCase();
     if (ln === low) return (all[i].textContent||'').trim();
   }
   return '';
 }
 function text(el){ return el ? (el.textContent||'').trim() : ''; }
 
-function parseXml(textXml) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(textXml, 'application/xml');
-  const parserError = doc.getElementsByTagName('parsererror')[0];
-  if (parserError) throw new Error('XML inválido');
+function parseXml(xml){
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  if (doc.getElementsByTagName('parsererror')[0]) throw new Error('XML inválido');
   return doc;
 }
 
-function extractFromDoc(doc) {
-  const emit = findFirstByLocalName(doc, 'emit');
-  const dest = findFirstByLocalName(doc, 'dest');
-  const ide = findFirstByLocalName(doc, 'ide') || doc;
+function extractFromDoc(doc){
+  const emit = findFirstByLocalName(doc,'emit');
+  const dest = findFirstByLocalName(doc,'dest');
+  const ide = findFirstByLocalName(doc,'ide') || doc;
   const emitName = text(findFirstByLocalName(emit||doc,'xNome'));
-  let emitCnpj = findTextInsensitive(emit||doc, 'CNPJ') || findTextInsensitive(emit||doc, 'cnpj') || findTextInsensitive(emit||doc, 'CPF') || '';
-  if (!emitCnpj) {
+  let emitCnpj = findTextInsensitive(emit||doc,'CNPJ') || findTextInsensitive(emit||doc,'cnpj') || findTextInsensitive(emit||doc,'CPF') || '';
+  if (!emitCnpj){
     try {
-      const serialized = (new XMLSerializer()).serializeToString(doc);
-      const re = /<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i;
-      const m = serialized.match(re);
+      const s = (new XMLSerializer()).serializeToString(doc);
+      const m = s.match(/<\s*(?:CNPJ|cnpj|CPF|cpf)\b[^>]*>([\d\.\-\/\s]*)<\/\s*(?:CNPJ|cnpj|CPF|cpf)\s*>/i);
       if (m && m[1]) emitCnpj = (m[1]||'').replace(/\D/g,'');
     } catch(e){}
   }
   const destName = text(findFirstByLocalName(dest||doc,'xNome'));
   const nNF = text(findFirstByLocalName(ide,'nNF') || findFirstByLocalName(doc,'nNF'));
-  
-  let dataEmissao = '';
-  let horaEmissao = '';
-  const dhEmi = text(findFirstByLocalName(ide, 'dhEmi'));
-  if (dhEmi) {
-    const dateTimePart = dhEmi.split('T');
-    if (dateTimePart.length > 0) dataEmissao = dateTimePart[0];
-    if (dateTimePart.length > 1) {
-      const timePart = dateTimePart[1].split('-')[0].split('+')[0];
-      horaEmissao = timePart.substring(0, 8);
-    }
+  let dataEmissao='', horaEmissao='';
+  const dhEmi = text(findFirstByLocalName(ide,'dhEmi'));
+  if (dhEmi){
+    const p = dhEmi.split('T');
+    if (p.length>0) dataEmissao = p[0];
+    if (p.length>1) horaEmissao = p[1].split('-')[0].split('+')[0].substring(0,8);
   }
-  
-  const dets = findAllByLocalName(doc, 'det');
-  const items = dets.map((det)=>{
+  const items = findAllByLocalName(doc,'det').map(det=>{
     const prod = findFirstByLocalName(det,'prod')||det;
-    const xProd = text(findFirstByLocalName(prod,'xProd'));
-    const cEAN = text(findFirstByLocalName(prod,'cEAN'));
-    const cProd = text(findFirstByLocalName(prod,'cProd'));
     const qComStr = text(findFirstByLocalName(prod,'qCom'));
-    const uCom = text(findFirstByLocalName(prod,'uCom'));
-    const vUnCom = text(findFirstByLocalName(prod,'vUnCom'));
-    const qCom = num(qComStr, NaN);
-    return { 
-      xProd, cEAN, cProd, qCom, qComStr, uCom, vUnCom,
-      emit: emitName, emitCnpj,
-      dest: destName, nNF, dataEmissao, horaEmissao 
+    return {
+      xProd: text(findFirstByLocalName(prod,'xProd')),
+      cEAN: text(findFirstByLocalName(prod,'cEAN')),
+      cProd: text(findFirstByLocalName(prod,'cProd')),
+      qCom: num(qComStr,NaN), qComStr,
+      uCom: text(findFirstByLocalName(prod,'uCom')),
+      vUnCom: text(findFirstByLocalName(prod,'vUnCom')),
+      emit: emitName, emitCnpj, dest: destName, nNF, dataEmissao, horaEmissao
     };
   });
   return { emitName, emitCnpj, destName, nNF, dataEmissao, horaEmissao, items };
 }
 
-function expandByFracionamento(item) {
-  const rule = state.cfg.fracRule;
-  if (rule === 'fixed') {
+function expandByFracionamento(item){
+  const r = state.cfg.fracRule;
+  if (r === 'fixed'){
     const n = Math.max(1, Math.floor(state.cfg.fracN||1));
     return Array.from({length:n},()=>({...item}));
   }
-  if (rule === 'perQty') {
-    const qty = Number.isFinite(item.qCom) ? Math.max(1, Math.round(item.qCom)) : 1;
-    return Array.from({length:qty},(_,i)=>({...item, fracIndex:i+1, fracTotal:qty}));
+  if (r === 'perQty'){
+    const q = Number.isFinite(item.qCom) ? Math.max(1, Math.round(item.qCom)) : 1;
+    return Array.from({length:q},(_,i)=>({...item, fracIndex:i+1, fracTotal:q}));
   }
   return [{...item}];
 }
 
-function validateLabel(data) {
+function validateLabel(data){
   const errs=[];
-  if (data._fatalError) {
-    errs.push('Erro no processamento do arquivo');
-    return errs;
-  }
-  
+  if (data._fatalError) return ['Erro no processamento do arquivo'];
   if (!data.xProd || data.xProd.includes('(Erro no arquivo')) errs.push('Produto sem nome');
   if (!Number.isFinite(data.qCom) && !data.qComStr) errs.push('Quantidade ausente');
   if (Number.isFinite(data.qCom) && data.qCom<=0) errs.push('Quantidade inválida');
@@ -1279,1214 +1001,791 @@ function validateLabel(data) {
   return errs;
 }
 
-function checkRuleCondition(field, value) {
-  if (!state.cfg.highlightFieldRule || state.cfg.highlightFieldRule === '') {
-    return false;
-  }
-  
-  if (field !== state.cfg.highlightFieldRule) {
-    return false;
-  }
-  
-  const condition = state.cfg.ruleCondition;
-  const numValue = num(value, 0);
-  
-  switch (condition) {
-    case 'qtyGreaterThan1':
-      return numValue > 1;
-    case 'qtyGreaterThan10':
-      return numValue > 10;
-    case 'qtyGreaterThan100':
-      return numValue > 100;
+function checkRuleCondition(field, value){
+  if (!state.cfg.highlightFieldRule || state.cfg.highlightFieldRule === '') return false;
+  if (field !== state.cfg.highlightFieldRule) return false;
+  const c = state.cfg.ruleCondition, nv = num(value,0);
+  switch (c){
+    case 'qtyGreaterThan1':   return nv > 1;
+    case 'qtyGreaterThan10':  return nv > 10;
+    case 'qtyGreaterThan100': return nv > 100;
     case 'custom':
-      if (state.cfg.customRule) {
-        try {
-          const func = new Function('value', `return ${state.cfg.customRule}`);
-          return func(numValue);
-        } catch (e) {
-          console.error('Erro na regra personalizada:', e);
-          return false;
-        }
+      if (state.cfg.customRule){
+        try { return (new Function('value', `return ${state.cfg.customRule}`))(nv); }
+        catch(e){ console.error(e); return false; }
       }
       return false;
-    default:
-      return false;
+    default: return false;
   }
 }
 
-function sortLabels(labels) {
-  const sortOrder = state.cfg.sortOrder || 'nNF-asc';
-  
-  return [...labels].sort((a, b) => {
-    switch (sortOrder) {
-      case 'nNF-asc':
-        return num(a.nNF) - num(b.nNF);
-      case 'nNF-desc':
-        return num(b.nNF) - num(a.nNF);
-      case 'date-asc':
-        const dateA = new Date(a.dataEmissao + 'T' + (a.horaEmissao || '00:00:00'));
-        const dateB = new Date(b.dataEmissao + 'T' + (b.horaEmissao || '00:00:00'));
-        return dateA - dateB;
-      case 'date-desc':
-        const dateC = new Date(a.dataEmissao + 'T' + (a.horaEmissao || '00:00:00'));
-        const dateD = new Date(b.dataEmissao + 'T' + (b.horaEmissao || '00:00:00'));
-        return dateD - dateC;
-      default:
-        return 0;
+function sortLabels(labels){
+  const s = state.cfg.sortOrder || 'nNF-asc';
+  return [...labels].sort((a,b)=>{
+    switch(s){
+      case 'nNF-asc':   return num(a.nNF) - num(b.nNF);
+      case 'nNF-desc':  return num(b.nNF) - num(a.nNF);
+      case 'date-asc':  return new Date(a.dataEmissao+'T'+(a.horaEmissao||'00:00:00')) - new Date(b.dataEmissao+'T'+(b.horaEmissao||'00:00:00'));
+      case 'date-desc': return new Date(b.dataEmissao+'T'+(b.horaEmissao||'00:00:00')) - new Date(a.dataEmissao+'T'+(a.horaEmissao||'00:00:00'));
+      default: return 0;
     }
   });
 }
 
-function escapeRegex(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
-function ptFromPx(px) { return px * 0.75; }
-
-function loadImageInfo(src) {
-  return new Promise((resolve) => {
-    if (!src) { resolve(null); return; }
+function loadImageInfo(src){
+  return new Promise((resolve)=>{
+    if (!src){ resolve(null); return; }
     const img = new Image();
-    img.onload = () => {
+    img.onload = ()=>{
       const format = src.startsWith('data:image/png') ? 'PNG'
         : src.startsWith('data:image/webp') ? 'WEBP' : 'JPEG';
-      resolve({ src, w: img.naturalWidth || 1, h: img.naturalHeight || 1, format });
+      resolve({ src, w: img.naturalWidth||1, h: img.naturalHeight||1, format });
     };
-    img.onerror = () => resolve(null);
+    img.onerror = ()=> resolve(null);
     img.src = src;
   });
 }
 
-function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo) {
+function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo){
   const pad = 0.18;
-
-  if (isErr) {
-    doc.setDrawColor(248, 113, 113);
-    doc.setFillColor(254, 242, 242);
-    doc.setLineDashPattern([0.15, 0.1], 0);
+  if (isErr){
+    doc.setDrawColor(248,113,113); doc.setFillColor(254,242,242);
+    doc.setLineDashPattern([0.15,0.1],0);
   } else {
-    doc.setDrawColor(203, 213, 225);
-    doc.setFillColor(255, 255, 255);
-    doc.setLineDashPattern([], 0);
+    doc.setDrawColor(203,213,225); doc.setFillColor(255,255,255);
+    doc.setLineDashPattern([],0);
   }
   doc.setLineWidth(0.02);
-  doc.roundedRect(x, y, w, h, 0.15, 0.15, 'FD');
-  doc.setLineDashPattern([], 0);
+  doc.roundedRect(x,y,w,h,0.15,0.15,'FD');
+  doc.setLineDashPattern([],0);
 
   let cursorY = y + pad;
-  const innerW = w - 2 * pad;
+  const innerW = w - 2*pad;
 
-  if (logoInfo) {
-    const maxLogoH = 0.9;
-    const ratio = logoInfo.w / logoInfo.h;
-    let logoH = maxLogoH;
-    let logoW = logoH * ratio;
-    if (logoW > innerW) { logoW = innerW; logoH = logoW / ratio; }
-    const logoX = x + (w - logoW) / 2;
-    try { doc.addImage(logoInfo.src, logoInfo.format, logoX, cursorY, logoW, logoH); } catch (e) { }
-    cursorY += logoH + 0.08;
+  if (logoInfo){
+    const maxH = 0.9, r = logoInfo.w/logoInfo.h;
+    let lh = maxH, lw = lh*r;
+    if (lw > innerW){ lw = innerW; lh = lw/r; }
+    try { doc.addImage(logoInfo.src, logoInfo.format, x+(w-lw)/2, cursorY, lw, lh); } catch(e){}
+    cursorY += lh + 0.08;
+  }
+  if (state.cfg.fields.includes('xProd')){
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(15,23,42);
+    const lines = doc.splitTextToSize(data.xProd||'(Sem nome)', innerW).slice(0,2);
+    lines.forEach((l,i)=> doc.text(l, x+pad, cursorY+0.32+i*0.36));
+    cursorY += 0.32 + lines.length*0.36 + 0.06;
   }
 
-  if (state.cfg.fields.includes('xProd')) {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    const nameLines = doc.splitTextToSize(data.xProd || '(Sem nome)', innerW);
-    const maxNameLines = 2;
-    const shown = nameLines.slice(0, maxNameLines);
-    shown.forEach((line, i) => {
-      doc.text(line, x + pad, cursorY + 0.32 + i * 0.36);
-    });
-    cursorY += 0.32 + shown.length * 0.36 + 0.06;
-  }
+  const defs = [
+    ['cEAN','EAN',data.cEAN||'-'],
+    ['cProd','Código',data.cProd||'-'],
+    ['nNF','NF',data.nNF||'-'],
+    ['qCom','Qtd',Number.isFinite(data.qCom)?data.qCom:(data.qComStr||'-')],
+    ['uCom','Un',data.uCom||'-'],
+    ['vUnCom','Preço',data.vUnCom?('R$ '+data.vUnCom):'-'],
+    ['emit','Emitente',data.emit||'-'],
+    ['dest','Dest',data.dest||'-']
+  ].filter(([f])=>state.cfg.fields.includes(f));
 
-  const fieldDefs = [
-    ['cEAN', 'EAN', data.cEAN || '-'],
-    ['cProd', 'Código', data.cProd || '-'],
-    ['nNF', 'NF', data.nNF || '-'],
-    ['qCom', 'Qtd', Number.isFinite(data.qCom) ? data.qCom : (data.qComStr || '-')],
-    ['uCom', 'Un', data.uCom || '-'],
-    ['vUnCom', 'Preço', data.vUnCom ? ('R$ ' + data.vUnCom) : '-'],
-    ['emit', 'Emitente', data.emit || '-'],
-    ['dest', 'Dest', data.dest || '-']
-  ].filter(([field]) => state.cfg.fields.includes(field));
-
-  const colGap = 0.2;
-  const colW = (innerW - colGap) / 2;
-  const rowH = 0.34;
+  const colGap=0.2, colW=(innerW-colGap)/2, rowH=0.34;
   doc.setFontSize(7);
-
-  fieldDefs.forEach(([field, label, value], i) => {
-    const colIdx = i % 2;
-    const rowIdx = Math.floor(i / 2);
-    const fx = x + pad + colIdx * (colW + colGap);
-    const fy = cursorY + rowIdx * rowH;
-    const text = `${label}: ${value}`;
-
-    const isFixedHighlight = state.cfg.highlightField === field;
-    const isRuleHighlight = checkRuleCondition(field, value);
-
-    if (isFixedHighlight || isRuleHighlight) {
-      const boxColor = isRuleHighlight ? [239, 68, 68] : [0, 0, 0];
-      doc.setFillColor(...boxColor);
-      const textW = doc.getTextWidth(text) + 0.12;
-      doc.roundedRect(fx, fy - 0.24, Math.min(textW, colW), 0.3, 0.05, 0.05, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
+  defs.forEach(([f,label,val], i)=>{
+    const fx = x+pad+(i%2)*(colW+colGap);
+    const fy = cursorY+Math.floor(i/2)*rowH;
+    const t = `${label}: ${val}`;
+    const fixH = state.cfg.highlightField === f;
+    const ruleH = checkRuleCondition(f, val);
+    if (fixH || ruleH){
+      const c = ruleH ? [239,68,68] : [0,0,0];
+      doc.setFillColor(...c);
+      const tw = doc.getTextWidth(t)+0.12;
+      doc.roundedRect(fx, fy-0.24, Math.min(tw,colW), 0.3, 0.05,0.05, 'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
     } else {
-      doc.setTextColor(51, 65, 85);
-      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(51,65,85); doc.setFont('helvetica','normal');
     }
-    const clipped = doc.splitTextToSize(text, colW - 0.06)[0] || text;
-    doc.text(clipped, fx + 0.06, fy - 0.04);
+    const clipped = doc.splitTextToSize(t, colW-0.06)[0]||t;
+    doc.text(clipped, fx+0.06, fy-0.04);
   });
 
-  const fieldsBottom = cursorY + Math.ceil(fieldDefs.length / 2) * rowH;
-
-  const footerY = y + h - pad - 0.05;
-  doc.setDrawColor(226, 232, 240);
-  doc.setLineDashPattern([0.05, 0.05], 0);
-  doc.line(x + pad, footerY - 0.12, x + w - pad, footerY - 0.12);
-  doc.setLineDashPattern([], 0);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6);
-  let footerText;
-  if (isErr) {
-    doc.setTextColor(185, 28, 28);
-    footerText = 'ERRO: ' + errs.join('; ');
-  } else {
-    doc.setTextColor(100, 116, 139);
-    const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
-    footerText = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
+  const footerY = y+h-pad-0.05;
+  doc.setDrawColor(226,232,240);
+  doc.setLineDashPattern([0.05,0.05],0);
+  doc.line(x+pad, footerY-0.12, x+w-pad, footerY-0.12);
+  doc.setLineDashPattern([],0);
+  doc.setFont('helvetica','normal'); doc.setFontSize(6);
+  let ft;
+  if (isErr){ doc.setTextColor(185,28,28); ft = 'ERRO: '+errs.join('; '); }
+  else {
+    doc.setTextColor(100,116,139);
+    ft = `produto original • fracionado pelo CNPJ: ${data.emitCnpj?formatCNPJ(data.emitCnpj):'-'}`;
   }
-  const footerLine = doc.splitTextToSize(footerText, innerW)[0] || footerText;
-  doc.text(footerLine, x + w / 2, footerY, { align: 'center' });
+  doc.text(doc.splitTextToSize(ft, innerW)[0]||ft, x+w/2, footerY, { align:'center' });
 }
 
-async function generateLabelsPDF() {
-  if (typeof window.jspdf === 'undefined') {
-    alert('A biblioteca de geração de PDF ainda está carregando. Aguarde alguns segundos e tente novamente (é necessário estar online para essa etapa carregar).');
-    return;
-  }
+async function generateLabelsPDF(){
+  if (typeof window.jspdf === 'undefined'){ alert('jsPDF ainda carregando.'); return; }
   const { jsPDF } = window.jspdf;
-
   const { wCm, hCm } = getLabelSizeCm(state.cfg);
-  if (!(wCm > 0) || !(hCm > 0)) {
-    alert('Configure uma largura e altura de etiqueta válidas antes de gerar o PDF.');
-    return;
-  }
+  if (!(wCm>0) || !(hCm>0)){ alert('Configure dimensões válidas.'); return; }
 
-  const marginCm = 1;
-  const gap = 0.35;
-
-  const doc = new jsPDF({ unit: 'cm', format: 'a4', orientation: 'portrait' });
+  const m = 1, gap = 0.35;
+  const doc = new jsPDF({ unit:'cm', format:'a4', orientation:'portrait' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
+  const maxC = Math.max(1, Math.floor((pageW - 2*m + gap)/(wCm + gap)));
+  const maxR = Math.max(1, Math.floor((pageH - 2*m + gap)/(hCm + gap)));
+  const cols = Math.min(state.cfg.colsPerPage||1, maxC);
+  const rows = state.cfg.rowsPerPage>0 ? Math.min(state.cfg.rowsPerPage, maxR) : maxR;
 
-  const maxColsFit = Math.max(1, Math.floor((pageW - 2 * marginCm + gap) / (wCm + gap)));
-  const maxRowsFit = Math.max(1, Math.floor((pageH - 2 * marginCm + gap) / (hCm + gap)));
-  const cols = Math.min(state.cfg.colsPerPage || 1, maxColsFit);
-  const rows = state.cfg.rowsPerPage > 0 ? Math.min(state.cfg.rowsPerPage, maxRowsFit) : maxRowsFit;
-
-  if ((state.cfg.colsPerPage || 1) > maxColsFit || (state.cfg.rowsPerPage > 0 && state.cfg.rowsPerPage > maxRowsFit)) {
-    const proceed = confirm(
-      `Aviso: com ${roundTo(wCm,2)}×${roundTo(hCm,2)}cm por etiqueta, a folha A4 só comporta ${maxColsFit} coluna(s) e ${maxRowsFit} linha(s) por página.\n` +
-      `O PDF será gerado respeitando esse limite físico real (em vez do valor configurado). Continuar?`
-    );
-    if (!proceed) return;
+  if ((state.cfg.colsPerPage||1)>maxC || (state.cfg.rowsPerPage>0 && state.cfg.rowsPerPage>maxR)){
+    if (!confirm(`Aviso: cabem até ${maxC} coluna(s) e ${maxR} linha(s) por página A4. Continuar?`)) return;
   }
 
-  let sortedLabels = sortLabels(state.labels);
-  let labelsToRender = sortedLabels;
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    labelsToRender = sortedLabels.filter(item => {
-      if (!item.dataEmissao) return false;
-      const itemDateTime = new Date(item.dataEmissao + 'T' + (item.horaEmissao || '00:00:00'));
-      const filterStartDateTime = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
-      const filterEndDateTime = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
-      return itemDateTime >= filterStartDateTime && itemDateTime <= filterEndDateTime;
+  let arr = sortLabels(state.labels);
+  if (state.dateFilter.startDate && state.dateFilter.endDate){
+    arr = arr.filter(it=>{
+      if (!it.dataEmissao) return false;
+      const dt = new Date(it.dataEmissao+'T'+(it.horaEmissao||'00:00:00'));
+      const a = new Date(state.dateFilter.startDate+'T'+state.dateFilter.startTime);
+      const b = new Date(state.dateFilter.endDate+'T'+state.dateFilter.endTime);
+      return dt>=a && dt<=b;
     });
   }
-
   const items = [];
-  for (const data of labelsToRender) {
-    const errs = validateLabel(data);
-    const isErr = errs.length > 0;
+  for (const data of arr){
+    const errs = validateLabel(data), isErr = errs.length>0;
     if (isErr && !state.cfg.showErrors) continue;
     items.push({ data, errs, isErr });
   }
-
-  if (items.length === 0) {
-    alert('Nenhuma etiqueta para gerar com os filtros atuais.');
-    return;
-  }
+  if (!items.length){ alert('Nenhuma etiqueta.'); return; }
 
   const logoInfo = await loadImageInfo(state.cfg.logo);
-
-  const perPage = cols * rows;
-  let col = 0, row = 0;
-
-  items.forEach((item, idx) => {
-    if (idx > 0 && idx % perPage === 0) {
-      doc.addPage();
-      col = 0; row = 0;
-    }
-    const x = marginCm + col * (wCm + gap);
-    const y = marginCm + row * (hCm + gap);
-    drawLabelInPdf(doc, x, y, wCm, hCm, item.data, item.errs, item.isErr, logoInfo);
-
+  const perPage = cols*rows;
+  let col=0, row=0;
+  items.forEach((it, idx)=>{
+    if (idx>0 && idx%perPage===0){ doc.addPage(); col=0; row=0; }
+    const x = m + col*(wCm+gap);
+    const y = m + row*(hCm+gap);
+    drawLabelInPdf(doc, x, y, wCm, hCm, it.data, it.errs, it.isErr, logoInfo);
     col++;
-    if (col >= cols) { col = 0; row++; }
+    if (col>=cols){ col=0; row++; }
   });
-
-  doc.save(`etiquetas-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`etiquetas-${new Date().toISOString().slice(0,10)}.pdf`);
 }
 
-function highlightTerms(text, highlights) {
-  if (!highlights || highlights.length === 0) return text;
-  const sorted = [...highlights].sort((a,b) => b.term.length - a.term.length);
-  let result = text;
-  for (const h of sorted) {
+function highlightTerms(txt, hs){
+  if (!hs || !hs.length) return txt;
+  const sorted = [...hs].sort((a,b)=>b.term.length-a.term.length);
+  let out = txt;
+  for (const h of sorted){
     if (!h.term) continue;
-    const regex = new RegExp(`(${escapeRegex(h.term)})`, 'gi');
-    result = result.replace(regex, `<span style="color:${h.color};">$1</span>`);
+    const rx = new RegExp(`(${escapeRegex(h.term)})`,'gi');
+    out = out.replace(rx, `<span style="color:${h.color};">$1</span>`);
   }
-  return result;
+  return out;
 }
 
-function updateDateFilters() {
-  const dateFilters = $('#dateFilters');
-  if (state.availableDates.length > 0) {
-    dateFilters.classList.remove('hidden');
-    updateDateRangeTags();
-  } else {
-    dateFilters.classList.add('hidden');
-  }
+function updateDateFilters(){
+  const df = $('#dateFilters');
+  if (state.availableDates.length>0){ df.classList.remove('hidden'); updateDateRangeTags(); }
+  else df.classList.add('hidden');
   updateDateFilterSummary();
 }
-
-function updateDateRangeTags() {
-  const container = $('#dateRangeTags');
-  container.innerHTML = '';
-  
-  const dateGroups = {};
-  state.availableDates.forEach(date => {
-    const [year, month] = date.split('-');
-    const key = `${year}-${month}`;
-    if (!dateGroups[key]) {
-      dateGroups[key] = [];
-    }
-    dateGroups[key].push(date);
+function updateDateRangeTags(){
+  const c = $('#dateRangeTags'); c.innerHTML = '';
+  const groups = {};
+  state.availableDates.forEach(d=>{
+    const k = d.slice(0,7);
+    (groups[k] = groups[k] || []).push(d);
   });
-  
-  Object.keys(dateGroups).sort().reverse().forEach(key => {
-    const [year, month] = key.split('-');
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  Object.keys(groups).sort().reverse().forEach(k=>{
+    const [y,mo] = k.split('-');
+    const names = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     const tag = document.createElement('div');
     tag.className = 'date-tag';
-    tag.textContent = `${monthNames[parseInt(month)-1]}/${year}`;
-    tag.dataset.start = dateGroups[key][0];
-    tag.dataset.end = dateGroups[key][dateGroups[key].length - 1];
-    
-    tag.addEventListener('click', () => {
+    tag.textContent = `${names[parseInt(mo)-1]}/${y}`;
+    tag.dataset.start = groups[k][0];
+    tag.dataset.end = groups[k][groups[k].length-1];
+    tag.addEventListener('click', ()=>{
       $('#filterStartDate').value = tag.dataset.start;
       $('#filterEndDate').value = tag.dataset.end;
-      $('#filterStartTime').value = "00:00";
-      $('#filterEndTime').value = "23:59";
+      $('#filterStartTime').value = '00:00';
+      $('#filterEndTime').value = '23:59';
       applyDateFilter();
     });
-    
-    container.appendChild(tag);
+    c.appendChild(tag);
   });
 }
-
-function updateDateFilterSummary() {
-  const summary = $('#dateRangeSummary');
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    const start = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
-    const end = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
-    const options = { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    summary.textContent = `Filtrando de ${start.toLocaleDateString('pt-BR', options)} até ${end.toLocaleDateString('pt-BR', options)}`;
-  } else {
-    summary.textContent = 'Nenhum filtro aplicado';
-  }
+function updateDateFilterSummary(){
+  const s = $('#dateRangeSummary');
+  if (state.dateFilter.startDate && state.dateFilter.endDate){
+    const a = new Date(state.dateFilter.startDate+'T'+state.dateFilter.startTime);
+    const b = new Date(state.dateFilter.endDate+'T'+state.dateFilter.endTime);
+    const o = { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' };
+    s.textContent = `Filtrando de ${a.toLocaleDateString('pt-BR',o)} até ${b.toLocaleDateString('pt-BR',o)}`;
+  } else s.textContent = 'Nenhum filtro aplicado';
+}
+function applyDateFilter(){
+  const sd = $('#filterStartDate').value, ed = $('#filterEndDate').value;
+  const st = $('#filterStartTime').value, et = $('#filterEndTime').value;
+  if (sd && ed && sd>ed){ alert('Data inicial maior que final.'); return; }
+  state.dateFilter = { startDate:sd||null, endDate:ed||null, startTime:st, endTime:et };
+  render(); updateDateFilterSummary();
+}
+function clearDateFilter(){
+  $('#filterStartDate').value=''; $('#filterEndDate').value='';
+  $('#filterStartTime').value='00:00'; $('#filterEndTime').value='23:59';
+  state.dateFilter = { startDate:null, endDate:null, startTime:'00:00', endTime:'23:59' };
+  render(); updateDateFilterSummary();
 }
 
-function applyDateFilter() {
-  const startDate = $('#filterStartDate').value;
-  const endDate = $('#filterEndDate').value;
-  const startTime = $('#filterStartTime').value;
-  const endTime = $('#filterEndTime').value;
-  
-  if (startDate && endDate && startDate > endDate) {
-    alert('A data inicial não pode ser maior que a data final');
-    return;
-  }
-  
-  state.dateFilter.startDate = startDate;
-  state.dateFilter.endDate = endDate;
-  state.dateFilter.startTime = startTime;
-  state.dateFilter.endTime = endTime;
-  
-  render();
-  updateDateFilterSummary();
+function applyOrientation(){
+  const o = state.cfg.orientation;
+  let w = state.cfg.labelWidth, h = state.cfg.labelHeight;
+  if (o==='portrait' && w>h){ state.cfg.labelWidth=h; state.cfg.labelHeight=w; }
+  else if (o==='landscape' && h>w){ state.cfg.labelWidth=h; state.cfg.labelHeight=w; }
+}
+function updateBadge(){
+  const b = document.getElementById('sizeBadge');
+  if (!b) return;
+  const { wCm, hCm } = getLabelSizeCm(state.cfg);
+  b.textContent = state.cfg.unit==='cm'
+    ? `${state.cfg.labelWidth}×${state.cfg.labelHeight} cm`
+    : `${state.cfg.labelWidth}×${state.cfg.labelHeight} ${state.cfg.unit} (${roundTo(wCm,2)}×${roundTo(hCm,2)} cm)`;
 }
 
-function clearDateFilter() {
-  $('#filterStartDate').value = '';
-  $('#filterEndDate').value = '';
-  $('#filterStartTime').value = '00:00';
-  $('#filterEndTime').value = '23:59';
-  state.dateFilter.startDate = null;
-  state.dateFilter.endDate = null;
-  state.dateFilter.startTime = '00:00';
-  state.dateFilter.endTime = '23:59';
-  render();
-  updateDateFilterSummary();
-}
-
-function applyOrientation() {
-  const orient = state.cfg.orientation;
-  let w = state.cfg.labelWidth;
-  let h = state.cfg.labelHeight;
-  if (orient === 'portrait' && w > h) {
-    state.cfg.labelWidth = h;
-    state.cfg.labelHeight = w;
-  } else if (orient === 'landscape' && h > w) {
-    state.cfg.labelWidth = h;
-    state.cfg.labelHeight = w;
-  }
-}
-
-function updateBadge() {
-  const badge = document.getElementById('sizeBadge');
-  if (badge) {
-    const { wCm, hCm } = getLabelSizeCm(state.cfg);
-    if (state.cfg.unit === 'cm') {
-      badge.textContent = `${state.cfg.labelWidth}×${state.cfg.labelHeight} cm`;
-    } else {
-      badge.textContent = `${state.cfg.labelWidth}×${state.cfg.labelHeight} ${state.cfg.unit} (${roundTo(wCm,2)}×${roundTo(hCm,2)} cm)`;
-    }
-  }
-}
-
-function render() {
+function render(){
   const mount = $('#labels');
   const { wCm, hCm } = getLabelSizeCm(state.cfg);
-  const widthVal = cmToCss(wCm);
-  const heightVal = cmToCss(hCm);
-  mount.style.setProperty('--label-width', widthVal);
-  mount.style.setProperty('--label-height', heightVal);
+  const W = cmToCss(wCm), H = cmToCss(hCm);
+  mount.style.setProperty('--label-width', W);
+  mount.style.setProperty('--label-height', H);
   mount.style.setProperty('--cols', state.cfg.colsPerPage);
   mount.style.setProperty('--rows', state.cfg.rowsPerPage);
   mount.style.setProperty('--gap', '0.35cm');
-
   updateBadge();
 
   mount.innerHTML = '';
   const issues = [];
-  let valid = 0, invalid = 0;
-  
-  let sortedLabels = sortLabels(state.labels);
-  
-  let labelsToRender = sortedLabels;
-  if (state.dateFilter.startDate && state.dateFilter.endDate) {
-    labelsToRender = sortedLabels.filter(item => {
-      if (!item.dataEmissao) return false;
-      const itemDateTime = new Date(item.dataEmissao + 'T' + (item.horaEmissao || '00:00:00'));
-      const filterStartDateTime = new Date(state.dateFilter.startDate + 'T' + state.dateFilter.startTime);
-      const filterEndDateTime = new Date(state.dateFilter.endDate + 'T' + state.dateFilter.endTime);
-      return itemDateTime >= filterStartDateTime && itemDateTime <= filterEndDateTime;
+  let sorted = sortLabels(state.labels);
+  let arr = sorted;
+  if (state.dateFilter.startDate && state.dateFilter.endDate){
+    arr = sorted.filter(it=>{
+      if (!it.dataEmissao) return false;
+      const dt = new Date(it.dataEmissao+'T'+(it.horaEmissao||'00:00:00'));
+      const a = new Date(state.dateFilter.startDate+'T'+state.dateFilter.startTime);
+      const b = new Date(state.dateFilter.endDate+'T'+state.dateFilter.endTime);
+      return dt>=a && dt<=b;
     });
   }
-  
-  const rows = state.cfg.rowsPerPage || 0;
-  const cols = state.cfg.colsPerPage || 3;
-  const itemsPerPage = rows > 0 ? rows * cols : Infinity;
-  
-  for (let i = 0; i < labelsToRender.length; i++) {
-    const data = labelsToRender[i];
+  const rows = state.cfg.rowsPerPage||0;
+  const cols = state.cfg.colsPerPage||3;
+  const perPage = rows>0 ? rows*cols : Infinity;
+
+  for (let i=0;i<arr.length;i++){
+    const data = arr[i];
     const errs = validateLabel(data);
     const isErr = errs.length>0;
-    if (isErr) invalid++; else valid++;
     if (isErr && !state.cfg.showErrors) continue;
-    
+
     const card = document.createElement('div');
-    card.className = 'label' + (isErr? ' problem':'');
-    card.style.width = widthVal;
-    card.style.height = heightVal;
-    
-    const headerDiv = document.createElement('div'); headerDiv.className = 'label-header';
-    if (state.cfg.logo) {
-      const himg = document.createElement('img');
-      himg.src = state.cfg.logo;
-      himg.alt = '';
-      himg.style.maxHeight = '34px';
-      himg.style.width = '100%';
-      himg.style.objectFit = 'contain';
-      himg.onerror = function(){ this.style.display='none'; };
-      headerDiv.appendChild(himg);
+    card.className = 'label'+(isErr?' problem':'');
+    card.style.width = W; card.style.height = H;
+
+    const hd = document.createElement('div'); hd.className = 'label-header';
+    if (state.cfg.logo){
+      const im = document.createElement('img');
+      im.src = state.cfg.logo; im.alt = '';
+      im.style.maxHeight='34px'; im.style.width='100%'; im.style.objectFit='contain';
+      im.onerror = function(){ this.style.display='none'; };
+      hd.appendChild(im);
     }
-    card.appendChild(headerDiv);
-    
-    if (state.cfg.fields.includes('xProd')) {
+    card.appendChild(hd);
+
+    if (state.cfg.fields.includes('xProd')){
       const h3 = document.createElement('h3');
-      const rawName = data.xProd || '(Sem nome)';
-      if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
-        h3.innerHTML = highlightTerms(rawName, state.cfg.termHighlights);
-      } else {
-        h3.textContent = rawName;
-      }
+      const raw = data.xProd || '(Sem nome)';
+      if (state.cfg.termHighlights && state.cfg.termHighlights.length>0) h3.innerHTML = highlightTerms(raw, state.cfg.termHighlights);
+      else h3.textContent = raw;
       card.appendChild(h3);
     }
-    
-    const meta = document.createElement('div'); meta.className = 'meta';
-    
-    function addLine(field, label, value) { 
-      if (!state.cfg.fields.includes(field)) return; 
-      const d = document.createElement('div'); 
-      d.textContent = label + ': ' + (value ?? '-');
-      if (state.cfg.highlightField === field) d.classList.add('highlighted');
-      if (checkRuleCondition(field, value)) d.classList.add('highlighted-rule');
-      meta.appendChild(d); 
+
+    const meta = document.createElement('div'); meta.className='meta';
+    function addLine(f, label, v){
+      if (!state.cfg.fields.includes(f)) return;
+      const d = document.createElement('div');
+      d.textContent = label+': '+(v??'-');
+      if (state.cfg.highlightField === f) d.classList.add('highlighted');
+      if (checkRuleCondition(f, v)) d.classList.add('highlighted-rule');
+      meta.appendChild(d);
     }
-    
-    addLine('cEAN', 'EAN', data.cEAN || '-');
-    addLine('cProd', 'Código', data.cProd || '-');
-    addLine('nNF', 'NF', data.nNF || '-');
-    addLine('qCom', 'Qtd', Number.isFinite(data.qCom) ? data.qCom : data.qComStr || '-');
-    addLine('uCom', 'Un', data.uCom || '-');
-    addLine('vUnCom', 'Preço', data.vUnCom ? ('R$ ' + data.vUnCom) : '-');
-    addLine('emit', 'Emitente', data.emit || '-');
-    addLine('dest', 'Dest', data.dest || '-');
-    
+    addLine('cEAN','EAN',data.cEAN||'-');
+    addLine('cProd','Código',data.cProd||'-');
+    addLine('nNF','NF',data.nNF||'-');
+    addLine('qCom','Qtd', Number.isFinite(data.qCom)?data.qCom:(data.qComStr||'-'));
+    addLine('uCom','Un',data.uCom||'-');
+    addLine('vUnCom','Preço', data.vUnCom?('R$ '+data.vUnCom):'-');
+    addLine('emit','Emitente',data.emit||'-');
+    addLine('dest','Dest',data.dest||'-');
     card.appendChild(meta);
-    
-    const footer = document.createElement('div'); footer.className='footer';
-    if (isErr) {
-      footer.textContent = 'ERRO: '+ errs.join('; ');
-    } else {
-      const displayCNPJ = data.emitCnpj ? formatCNPJ(data.emitCnpj) : '-';
-      footer.textContent = `produto original • fracionado pelo CNPJ: ${displayCNPJ}`;
-    }
-    card.appendChild(footer);
-    
+
+    const ft = document.createElement('div'); ft.className='footer';
+    if (isErr) ft.textContent = 'ERRO: '+errs.join('; ');
+    else ft.textContent = `produto original • fracionado pelo CNPJ: ${data.emitCnpj?formatCNPJ(data.emitCnpj):'-'}`;
+    card.appendChild(ft);
     mount.appendChild(card);
-    if (isErr) issues.push({title: data.xProd||'(sem nome)', errs});
-    
-    if (rows > 0 && (i + 1) % itemsPerPage === 0 && i < labelsToRender.length - 1) {
-      const breakDiv = document.createElement('div');
-      breakDiv.className = 'label-page-break';
-      mount.appendChild(breakDiv);
+
+    if (isErr) issues.push({ title: data.xProd||'(sem nome)', errs });
+    if (rows>0 && (i+1)%perPage===0 && i<arr.length-1){
+      const br = document.createElement('div');
+      br.className = 'label-page-break';
+      mount.appendChild(br);
     }
   }
-  
-  $('#countLabels').textContent = `${labelsToRender.length} de ${state.labels.length} etiquetas`;
-  const issuesEl = $('#issues'); 
-  issuesEl.innerHTML='';
-  
-  if (issues.length === 0) {
-    const li = document.createElement('li');
-    li.textContent = 'Sem erros';
-    li.className = 'no-issues';
-    issuesEl.appendChild(li);
+
+  $('#countLabels').textContent = `${arr.length} de ${state.labels.length} etiquetas`;
+  const ul = $('#issues'); ul.innerHTML = '';
+  if (!issues.length){
+    const li = document.createElement('li'); li.textContent='Sem erros'; li.className='no-issues'; ul.appendChild(li);
   } else {
-    for (const it of issues) {
-      const li = document.createElement('li'); 
-      li.textContent = `${it.title} — ${it.errs.join('; ')}`; 
-      issuesEl.appendChild(li);
-    }
+    issues.forEach(it=>{
+      const li = document.createElement('li');
+      li.textContent = `${it.title} — ${it.errs.join('; ')}`;
+      ul.appendChild(li);
+    });
   }
-  
-  const erroPanel = $('#erroPanel');
-  if (issues.length === 0) {
-    erroPanel.classList.add('bg-green-50', 'border-green-200');
-    erroPanel.classList.remove('bg-yellow-50', 'border-yellow-200');
+  const ep = $('#erroPanel');
+  if (!issues.length){
+    ep.classList.add('bg-green-50','border-green-200');
+    ep.classList.remove('bg-yellow-50','border-yellow-200');
   } else {
-    erroPanel.classList.add('bg-yellow-50', 'border-yellow-200');
-    erroPanel.classList.remove('bg-green-50', 'border-green-200');
+    ep.classList.add('bg-yellow-50','border-yellow-200');
+    ep.classList.remove('bg-green-50','border-green-200');
   }
 }
 
-function renderPrintPreview() {
-  const previewMount = $('#previewLabels');
-  previewMount.innerHTML = '';
-  
-  const labelsContainer = $('#labels');
-  const children = labelsContainer.children;
-  
+function renderPrintPreview(){
+  const pm = $('#previewLabels'); pm.innerHTML = '';
+  const src = $('#labels').children;
   const { wCm, hCm } = getLabelSizeCm(state.cfg);
-  const widthVal = cmToCss(wCm);
-  const heightVal = cmToCss(hCm);
-  
-  previewMount.style.setProperty('--label-width', widthVal);
-  previewMount.style.setProperty('--label-height', heightVal);
-  previewMount.style.setProperty('--cols', state.cfg.colsPerPage);
-  previewMount.style.setProperty('--rows', state.cfg.rowsPerPage);
-  previewMount.style.setProperty('--gap', '0.35cm');
-  previewMount.style.display = 'grid';
-  previewMount.style.gridTemplateColumns = `repeat(${state.cfg.colsPerPage}, ${widthVal})`;
-  previewMount.style.gap = '0.35cm';
-  previewMount.style.justifyContent = 'center';
-  previewMount.style.width = '100%';
-  previewMount.style.margin = '0 auto';
-  
-  const previewContent = $('#printPreviewContent');
-  if (state.cfg.printErrors && state.cfg.maskPrintErrors) {
-    previewContent.classList.add('mask-print-errors');
-  } else {
-    previewContent.classList.remove('mask-print-errors');
-  }
-  
-  for (let i = 0; i < children.length; i++) {
-    const clone = children[i].cloneNode(true);
-    previewMount.appendChild(clone);
-  }
-  
+  const W = cmToCss(wCm), H = cmToCss(hCm);
+  pm.style.setProperty('--label-width', W);
+  pm.style.setProperty('--label-height', H);
+  pm.style.setProperty('--cols', state.cfg.colsPerPage);
+  pm.style.setProperty('--rows', state.cfg.rowsPerPage);
+  pm.style.setProperty('--gap','0.35cm');
+  pm.style.display='grid';
+  pm.style.gridTemplateColumns = `repeat(${state.cfg.colsPerPage}, ${W})`;
+  pm.style.gap='0.35cm';
+  pm.style.justifyContent='center';
+  pm.style.width='100%'; pm.style.margin='0 auto';
+
+  const pc = $('#printPreviewContent');
+  pc.classList.toggle('mask-print-errors', state.cfg.printErrors && state.cfg.maskPrintErrors);
+
+  for (let i=0;i<src.length;i++) pm.appendChild(src[i].cloneNode(true));
   $('#printPreviewModal').style.display = 'block';
 }
 
-async function readFilesAsText(files) {
-  const arr = Array.from(files);
-  return Promise.all(arr.map(file=>new Promise((resolve,reject)=>{
-    const fr = new FileReader(); fr.onload = ()=> resolve({name:file.name,text:String(fr.result||'')}); fr.onerror = ()=> reject(fr.error); fr.readAsText(file);
+async function readFilesAsText(files){
+  return Promise.all(Array.from(files).map(f=>new Promise((res,rej)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> res({ name:f.name, text:String(fr.result||'') });
+    fr.onerror = ()=> rej(fr.error);
+    fr.readAsText(f);
   })));
 }
 
-async function handleFiles(files) {
-  if (!files || files.length===0) return;
+async function handleFiles(files){
+  if (!files || !files.length) return;
   $('#file-name').textContent = `${files.length} arquivo(s) pronto(s) para processar`;
   try {
     const texts = await readFilesAsText(files);
-    const all = [];
-    const datesSet = new Set();
-    
-    for (const {name,text} of texts) {
+    const all = [], dates = new Set();
+    for (const { name, text: t } of texts){
       try {
-        if (!text || !text.trim().startsWith('<?xml') && !text.trim().startsWith('<nfe')) {
-          throw new Error('Arquivo não é um XML válido');
-        }
-        
-        const doc = parseXml(text);
+        if (!t || (!t.trim().startsWith('<?xml') && !t.trim().startsWith('<nfe'))) throw new Error('XML inválido');
+        const doc = parseXml(t);
         const data = extractFromDoc(doc);
-        
-        if (data.dataEmissao) {
-          datesSet.add(data.dataEmissao);
+        if (data.dataEmissao) dates.add(data.dataEmissao);
+        for (const item of data.items){
+          all.push(...expandByFracionamento({...item, dataEmissao:data.dataEmissao, horaEmissao:data.horaEmissao}));
         }
-        
-        console.log(`Arquivo "${name}" — emitCnpj detectado:`, data.emitCnpj || '(nenhum)');
-        for (const item of data.items) {
-          const expandedItems = expandByFracionamento({...item, dataEmissao: data.dataEmissao, horaEmissao: data.horaEmissao});
-          all.push(...expandedItems);
-        }
-      } catch (e) {
-        all.push({ 
-          xProd: `(Erro no arquivo ${name})`, 
-          qComStr:'-', 
-          uCom:'-', 
-          vUnCom:'-', 
-          cEAN:'', 
-          cProd:'', 
-          emit:'', 
-          emitCnpj:'', 
-          dest:'', 
-          nNF:'', 
-          dataEmissao: '',
-          horaEmissao: '',
-          _fatalError: String(e.message||e)
+      } catch(e){
+        all.push({
+          xProd:`(Erro no arquivo ${name})`, qComStr:'-', uCom:'-', vUnCom:'-',
+          cEAN:'', cProd:'', emit:'', emitCnpj:'', dest:'', nNF:'',
+          dataEmissao:'', horaEmissao:'', _fatalError:String(e.message||e)
         });
       }
     }
-    
-    state.availableDates = Array.from(datesSet).sort();
+    state.availableDates = Array.from(dates).sort();
     state.labels = all;
-    
-    updateDateFilters();
-    render();
-  } catch (e) {
-    console.error(e); 
-    alert('Falha ao ler arquivos.');
-  }
+    updateDateFilters(); render();
+  } catch(e){ console.error(e); alert('Falha ao ler arquivos.'); }
 }
 
-function handlePrint() {
-  document.body.classList.remove('print-errors', 'mask-print-errors');
+function handlePrint(){
+  document.body.classList.remove('print-errors','mask-print-errors');
   if (state.cfg.printErrors) document.body.classList.add('print-errors');
   if (state.cfg.printErrors && state.cfg.maskPrintErrors) document.body.classList.add('mask-print-errors');
   window.print();
 }
 
-function handleLogoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  if (!file.type.match('image.*')) {
-    alert('Por favor, selecione um arquivo de imagem.');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64 = e.target.result;
-    $('#cfgLogo').value = base64;
-    $('#logoPreview').src = base64;
+function handleLogoUpload(ev){
+  const f = ev.target.files[0]; if (!f) return;
+  if (!f.type.match('image.*')){ alert('Selecione uma imagem.'); return; }
+  const fr = new FileReader();
+  fr.onload = (e)=>{
+    const b64 = e.target.result;
+    $('#cfgLogo').value = b64;
+    $('#logoPreview').src = b64;
     $('#logoPreview').style.display = 'block';
     updateLogoButtonState(true);
   };
-  reader.readAsDataURL(file);
+  fr.readAsDataURL(f);
 }
-
-function updateLogoButtonState(hasImage) {
-  const uploadButton = $('#logoUploadButton');
-  if (hasImage) {
-    uploadButton.textContent = 'Remover';
-    uploadButton.classList.remove('bg-slate-100', 'hover:bg-slate-200');
-    uploadButton.classList.add('btn-remove');
-    uploadButton.setAttribute('data-state', 'remove');
+function updateLogoButtonState(has){
+  const b = $('#logoUploadButton');
+  if (has){
+    b.textContent = 'Remover';
+    b.classList.remove('bg-slate-100','hover:bg-slate-200');
+    b.classList.add('btn-remove');
+    b.setAttribute('data-state','remove');
   } else {
-    uploadButton.textContent = 'Upload';
-    uploadButton.classList.remove('btn-remove');
-    uploadButton.classList.add('bg-slate-100', 'hover:bg-slate-200');
-    uploadButton.setAttribute('data-state', 'upload');
+    b.textContent = 'Upload';
+    b.classList.remove('btn-remove');
+    b.classList.add('bg-slate-100','hover:bg-slate-200');
+    b.setAttribute('data-state','upload');
   }
 }
-
-function removeLogo() {
-  $('#cfgLogo').value = '';
-  $('#logoPreview').style.display = 'none';
-  $('#logoPreview').src = '';
+function removeLogo(){
+  $('#cfgLogo').value='';
+  $('#logoPreview').style.display='none';
+  $('#logoPreview').src='';
   updateLogoButtonState(false);
 }
-
-function createTermHighlightRow(term = '', color = '#ff0000') {
-  const row = document.createElement('div');
-  row.className = 'term-highlight-row';
-  const termInput = document.createElement('input');
-  termInput.type = 'text';
-  termInput.placeholder = 'Termo';
-  termInput.value = term;
-  termInput.className = 'term-input';
-  const colorInput = document.createElement('input');
-  colorInput.type = 'color';
-  colorInput.value = color;
-  colorInput.className = 'color-input';
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.innerHTML = '&times;';
-  removeBtn.className = 'btn-remove-term';
-  removeBtn.title = 'Remover';
-  removeBtn.addEventListener('click', () => row.remove());
-  row.appendChild(termInput);
-  row.appendChild(colorInput);
-  row.appendChild(removeBtn);
-  return row;
+function createTermHighlightRow(term='', color='#ff0000'){
+  const row = document.createElement('div'); row.className='term-highlight-row';
+  const ti = document.createElement('input'); ti.type='text'; ti.placeholder='Termo'; ti.value=term; ti.className='term-input';
+  const ci = document.createElement('input'); ci.type='color'; ci.value=color; ci.className='color-input';
+  const rb = document.createElement('button'); rb.type='button'; rb.innerHTML='&times;'; rb.className='btn-remove-term'; rb.title='Remover';
+  rb.addEventListener('click', ()=> row.remove());
+  row.append(ti,ci,rb); return row;
 }
-
-function populateTermHighlights() {
-  const container = $('#termHighlightContainer');
-  container.innerHTML = '';
-  if (state.cfg.termHighlights && state.cfg.termHighlights.length > 0) {
-    state.cfg.termHighlights.forEach(h => {
-      container.appendChild(createTermHighlightRow(h.term, h.color));
-    });
-  } else {
-    container.appendChild(createTermHighlightRow());
-  }
+function populateTermHighlights(){
+  const c = $('#termHighlightContainer'); c.innerHTML = '';
+  if (state.cfg.termHighlights && state.cfg.termHighlights.length>0)
+    state.cfg.termHighlights.forEach(h=> c.appendChild(createTermHighlightRow(h.term, h.color)));
+  else c.appendChild(createTermHighlightRow());
 }
-
-function collectTermHighlights() {
-  const container = $('#termHighlightContainer');
-  const rows = container.querySelectorAll('.term-highlight-row');
-  const highlights = [];
-  rows.forEach(row => {
-    const termInput = row.querySelector('.term-input');
-    const colorInput = row.querySelector('.color-input');
-    const term = termInput ? termInput.value.trim() : '';
-    const color = colorInput ? colorInput.value : '#000000';
-    if (term) {
-      highlights.push({ term, color });
-    }
+function collectTermHighlights(){
+  const rows = $('#termHighlightContainer').querySelectorAll('.term-highlight-row');
+  const out = [];
+  rows.forEach(r=>{
+    const t = r.querySelector('.term-input')?.value.trim()||'';
+    const c = r.querySelector('.color-input')?.value||'#000000';
+    if (t) out.push({ term:t, color:c });
   });
-  return highlights;
+  return out;
 }
 
-// ==================== OFFLINE & BACKUP ====================
-const DB_NAME = 'EtiquetadoraOfflineDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'handles';
+/* ==================== OFFLINE & BACKUP ==================== */
+const DB_NAME='EtiquetadoraOfflineDB', DB_VERSION=1, STORE_NAME='handles';
 let db = null;
-
-function openIndexedDB() {
-  return new Promise((resolve, reject) => {
-    if (db) return resolve(db);
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      db = request.result;
-      resolve(db);
-    };
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
+function openIndexedDB(){
+  return new Promise((res,rej)=>{
+    if (db) return res(db);
+    const r = indexedDB.open(DB_NAME, DB_VERSION);
+    r.onerror = ()=> rej(r.error);
+    r.onsuccess = ()=>{ db = r.result; res(db); };
+    r.onupgradeneeded = (e)=>{
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE_NAME)) d.createObjectStore(STORE_NAME);
     };
   });
 }
-
-async function saveFolderHandle(handle) {
+async function saveFolderHandle(h){
   const idb = await openIndexedDB();
-  const tx = idb.transaction(STORE_NAME, 'readwrite');
-  const store = tx.objectStore(STORE_NAME);
-  store.put(handle, 'offlineFolder');
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
+  const tx = idb.transaction(STORE_NAME,'readwrite');
+  tx.objectStore(STORE_NAME).put(h, 'offlineFolder');
+  return new Promise((res,rej)=>{ tx.oncomplete=res; tx.onerror=()=>rej(tx.error); });
 }
-
-async function getFolderHandle() {
+async function getFolderHandle(){
   const idb = await openIndexedDB();
-  const tx = idb.transaction(STORE_NAME, 'readonly');
-  const store = tx.objectStore(STORE_NAME);
-  const request = store.get('offlineFolder');
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+  const tx = idb.transaction(STORE_NAME,'readonly');
+  const r = tx.objectStore(STORE_NAME).get('offlineFolder');
+  return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
 }
-
-async function saveFileToFolder(folderHandle, relativePath, content, isBinary = false) {
-  if (!isBinary && typeof content !== 'string') {
-    console.warn('saveFileToFolder: conteúdo não é string, convertendo', content);
-    content = String(content);
-  }
-  const pathParts = relativePath.split('/');
-  const fileName = pathParts.pop();
-  let currentHandle = folderHandle;
-  for (const part of pathParts) {
-    if (part) {
-      currentHandle = await currentHandle.getDirectoryHandle(part, { create: true });
-    }
-  }
-  const fileHandle = await currentHandle.getFileHandle(fileName, { create: true });
-  const writable = await fileHandle.createWritable();
+async function saveFileToFolder(folder, path, content, isBin=false){
+  if (!isBin && typeof content !== 'string') content = String(content);
+  const parts = path.split('/'); const name = parts.pop();
+  let cur = folder;
+  for (const p of parts) if (p) cur = await cur.getDirectoryHandle(p, { create:true });
+  const fh = await cur.getFileHandle(name, { create:true });
+  const w = await fh.createWritable();
+  try { await w.write(content); } finally { await w.close(); }
+}
+async function getAllResourcePaths(){
+  const base = ['index.html','manifest.json','sw.js'];
+  let icons = [];
   try {
-    if (isBinary && content instanceof Blob) {
-      await writable.write(content);
-    } else {
-      await writable.write(content);
-    }
-  } finally {
-    await writable.close();
-  }
+    const res = await fetch('/Gerador-de-etiqueta-pwa/manifest.json');
+    const m = await res.json();
+    if (m.icons) icons.push(...m.icons.map(i=>i.src));
+    if (m.screenshots) icons.push(...m.screenshots.map(s=>s.src));
+  } catch(e){}
+  const all = [...new Set([...base, ...icons])];
+  return all.map(p=>p.replace(/^\//,'')).filter(Boolean);
 }
-
-async function getAllResourcePaths() {
-  const baseFiles = ['index.html', 'manifest.json', 'sw.js'];
-  let iconPaths = [];
-  try {
-    const manifestRes = await fetch('/Gerador-de-etiqueta-pwa/manifest.json');
-    const manifest = await manifestRes.json();
-    if (manifest.icons) iconPaths.push(...manifest.icons.map(icon => icon.src));
-    if (manifest.screenshots) iconPaths.push(...manifest.screenshots.map(s => s.src));
-  } catch(e) { console.warn('Erro ao ler manifesto:', e); }
-  const all = [...new Set([...baseFiles, ...iconPaths])];
-  return all.map(p => p.replace(/^\//, '')).filter(p => p.length > 0);
-}
-
-async function fetchTailwindCss() {
+async function fetchTailwindCss(){
   const urls = [
     'https://cdn.tailwindcss.com',
     'https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css',
     'https://unpkg.com/tailwindcss@^1/dist/tailwind.min.css'
   ];
-  for (const url of urls) {
+  for (const u of urls){
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const text = await res.text();
-        if (text && text.length > 100) {
-          console.log(`Tailwind baixado com sucesso de: ${url}`);
-          return text;
-        }
-      }
-    } catch (e) {
-      console.warn(`Falha ao baixar de ${url}:`, e.message);
-    }
+      const c = new AbortController(); const t = setTimeout(()=>c.abort(), 8000);
+      const r = await fetch(u, { signal:c.signal }); clearTimeout(t);
+      if (r.ok){ const txt = await r.text(); if (txt && txt.length>100) return txt; }
+    } catch(e){}
   }
-  console.warn('Usando fallback CSS interno para Tailwind');
-  return `/* Fallback CSS para estilos essenciais */
-.container { width: 100%; }
-.flex { display: flex; }
-.grid { display: grid; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.ml-auto { margin-left: auto; }
-.p-4 { padding: 1rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.text-sm { font-size: 0.875rem; }
-.text-lg { font-size: 1.125rem; }
-.font-semibold { font-weight: 600; }
-.rounded-xl { border-radius: 0.75rem; }
-.border { border-width: 1px; }
-.bg-white { background-color: #fff; }
-.bg-slate-50 { background-color: #f8fafc; }
-.text-slate-800 { color: #1e293b; }
-`;
+  return `/* Fallback */ .flex{display:flex}.grid{display:grid}.p-4{padding:1rem}`;
 }
-
-async function copyAppToLocalFolder(folderHandle, statusCallback) {
-  statusCallback('⏳ Buscando lista de arquivos...');
-  const resourcePaths = await getAllResourcePaths();
-  const total = resourcePaths.length;
-  let current = 0;
-  
-  statusCallback('⏳ Baixando Tailwind CSS (tentando múltiplas fontes)...');
-  const tailwindCss = await fetchTailwindCss();
-  await saveFileToFolder(folderHandle, 'tailwind.css', tailwindCss);
-  
-  for (const relPath of resourcePaths) {
-    current++;
-    statusCallback(`⏳ Copiando ${relPath} (${current}/${total})...`);
-    let fullUrl = `/Gerador-de-etiqueta-pwa/${relPath}`;
+async function copyAppToLocalFolder(folder, cb){
+  cb('⏳ Buscando lista...');
+  const paths = await getAllResourcePaths();
+  let i = 0;
+  cb('⏳ Baixando Tailwind...');
+  const css = await fetchTailwindCss();
+  await saveFileToFolder(folder, 'tailwind.css', css);
+  for (const p of paths){
+    i++;
+    cb(`⏳ Copiando ${p} (${i}/${paths.length})...`);
+    let url = `/Gerador-de-etiqueta-pwa/${p}`;
     try {
-      let response = await fetch(fullUrl);
-      if (!response.ok) {
-        fullUrl = `/${relPath}`;
-        response = await fetch(fullUrl);
-      }
-      if (!response.ok) {
-        console.warn(`Recurso não encontrado: ${fullUrl}`);
-        continue;
-      }
-      const contentType = response.headers.get('content-type') || '';
-      const isBinary = contentType.startsWith('image/') || contentType.startsWith('application/octet-stream');
-      let content;
-      if (isBinary) {
-        content = await response.blob();
-        await saveFileToFolder(folderHandle, relPath, content, true);
-      } else {
-        content = await response.text();
-        await saveFileToFolder(folderHandle, relPath, content);
-      }
-    } catch(err) {
-      console.error(`Erro ao copiar ${relPath}:`, err);
-    }
+      let r = await fetch(url);
+      if (!r.ok){ url = `/${p}`; r = await fetch(url); }
+      if (!r.ok) continue;
+      const ct = r.headers.get('content-type')||'';
+      const isBin = ct.startsWith('image/') || ct.startsWith('application/octet-stream');
+      if (isBin) await saveFileToFolder(folder, p, await r.blob(), true);
+      else await saveFileToFolder(folder, p, await r.text());
+    } catch(e){ console.error(e); }
   }
-  
-  statusCallback('⏳ Adaptando index.html para usar CSS local...');
-  const indexResponse = await fetch('/Gerador-de-etiqueta-pwa/index.html');
-  let indexHtml = await indexResponse.text();
-  indexHtml = indexHtml.replace(
-    /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/,
-    '<link rel="stylesheet" href="tailwind.css">'
-  );
-  await saveFileToFolder(folderHandle, 'index.html', indexHtml);
-  statusCallback('✅ Cópia offline concluída! Abra o index.html da pasta selecionada.');
+  cb('⏳ Adaptando index.html...');
+  const res = await fetch('/Gerador-de-etiqueta-pwa/index.html');
+  let html = await res.text();
+  html = html.replace(/<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/, '<link rel="stylesheet" href="tailwind.css">');
+  await saveFileToFolder(folder, 'index.html', html);
+  cb('✅ Cópia offline concluída!');
 }
-
-async function requestOfflineFolder() {
-  if (!window.showDirectoryPicker) {
-    alert('Seu navegador não suporta a API File System Access. Use Chrome, Edge ou Opera recentes.');
+async function requestOfflineFolder(){
+  if (!window.showDirectoryPicker){ alert('Use Chrome/Edge/Opera.'); return null; }
+  try {
+    const h = await window.showDirectoryPicker();
+    const p = await h.requestPermission({ mode:'readwrite' });
+    if (p === 'granted'){ await saveFolderHandle(h); return h; }
     return null;
-  }
-  try {
-    const folderHandle = await window.showDirectoryPicker();
-    const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-    if (permission === 'granted') {
-      await saveFolderHandle(folderHandle);
-      return folderHandle;
-    } else {
-      alert('Permissão negada.');
-      return null;
-    }
-  } catch (err) {
-    console.error('Erro ao selecionar pasta:', err);
-    alert('Falha ao selecionar a pasta.');
-    return null;
-  }
+  } catch(e){ return null; }
 }
-
-async function createOfflineCopy() {
-  let folderHandle = await getFolderHandle();
-  if (!folderHandle) {
-    folderHandle = await requestOfflineFolder();
-    if (!folderHandle) return;
-  } else {
-    try {
-      const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-      if (permission !== 'granted') {
-        folderHandle = await requestOfflineFolder();
-        if (!folderHandle) return;
-      }
-    } catch(e) {
-      folderHandle = await requestOfflineFolder();
-      if (!folderHandle) return;
-    }
+async function createOfflineCopy(){
+  let h = await getFolderHandle();
+  if (!h) h = await requestOfflineFolder();
+  else {
+    try { if ((await h.requestPermission({ mode:'readwrite' })) !== 'granted') h = await requestOfflineFolder(); }
+    catch(e){ h = await requestOfflineFolder(); }
   }
-  const statusDiv = $('#offlineStatus');
-  await copyAppToLocalFolder(folderHandle, (msg) => { statusDiv.innerHTML = msg; });
+  if (!h) return;
+  await copyAppToLocalFolder(h, msg => { $('#offlineStatus').innerHTML = msg; });
 }
-
-async function saveBackupToFolder() {
-  const folderHandle = await getFolderHandle();
-  if (!folderHandle) {
-    alert('Nenhuma pasta offline configurada. Clique em "Criar versão offline" primeiro.');
-    return;
-  }
-  const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-  if (permission !== 'granted') {
-    alert('Permissão negada. Reconfigure a pasta offline clicando em "Criar versão offline".');
-    await saveFolderHandle(null);
-    return;
-  }
+async function saveBackupToFolder(){
+  const h = await getFolderHandle();
+  if (!h){ alert('Configure uma pasta offline primeiro.'); return; }
+  if ((await h.requestPermission({ mode:'readwrite' })) !== 'granted'){ alert('Permissão negada.'); return; }
   try {
-    const backupDir = await folderHandle.getDirectoryHandle('backup', { create: true });
-    const localStorageData = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      const value = localStorage.getItem(key);
-      localStorageData[key] = value;
+    const bdir = await h.getDirectoryHandle('backup', { create:true });
+    const data = {};
+    for (let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i); data[k] = localStorage.getItem(k);
     }
-    if (Object.keys(localStorageData).length === 0) {
-      alert('Não há dados no localStorage para fazer backup.');
-      return;
-    }
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
-    const fileName = `backup_${timestamp}.json`;
-    const content = JSON.stringify(localStorageData, null, 2);
-    await saveFileToFolder(backupDir, fileName, content);
-    $('#offlineStatus').innerHTML = `✅ Backup salvo em: backup/${fileName} (${content.length} bytes)`;
-    alert(`Backup salvo com sucesso!\nTamanho: ${content.length} bytes`);
-  } catch (err) {
-    console.error('Erro ao salvar backup:', err);
-    $('#offlineStatus').innerHTML = '❌ Erro ao salvar backup. Veja o console.';
-    alert('Falha ao salvar backup: ' + err.message);
-  }
+    if (!Object.keys(data).length){ alert('Sem dados.'); return; }
+    const n = new Date();
+    const ts = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}-${String(n.getMinutes()).padStart(2,'0')}-${String(n.getSeconds()).padStart(2,'0')}`;
+    const fn = `backup_${ts}.json`;
+    const content = JSON.stringify(data, null, 2);
+    await saveFileToFolder(bdir, fn, content);
+    $('#offlineStatus').innerHTML = `✅ Backup: backup/${fn} (${content.length} bytes)`;
+    alert('Backup salvo!');
+  } catch(e){ alert('Falha: '+e.message); }
 }
-
-async function restoreBackupFromFolder() {
-  const folderHandle = await getFolderHandle();
-  if (!folderHandle) {
-    alert('Nenhuma pasta offline configurada. Clique em "Criar versão offline" primeiro.');
-    return;
-  }
-  const permission = await folderHandle.requestPermission({ mode: 'readwrite' });
-  if (permission !== 'granted') {
-    alert('Permissão negada. Reconfigure a pasta offline.');
-    await saveFolderHandle(null);
-    return;
-  }
+async function restoreBackupFromFolder(){
+  const h = await getFolderHandle();
+  if (!h){ alert('Configure pasta offline primeiro.'); return; }
+  if ((await h.requestPermission({ mode:'readwrite' })) !== 'granted'){ alert('Permissão negada.'); return; }
   try {
-    const backupDir = await folderHandle.getDirectoryHandle('backup', { create: false });
+    const bdir = await h.getDirectoryHandle('backup', { create:false });
     const files = [];
-    for await (const entry of backupDir.values()) {
-      if (entry.kind === 'file' && entry.name.endsWith('.json')) files.push(entry);
-    }
-    if (files.length === 0) {
-      alert('Nenhum arquivo de backup encontrado na pasta backup.');
-      return;
-    }
-    files.sort((a,b) => b.name.localeCompare(a.name));
-    const fileNames = files.map(f => f.name);
-    const selectedName = prompt(`Escolha um backup para restaurar:\n${fileNames.map((n,i)=>`${i+1} - ${n}`).join('\n')}`, '1');
-    if (!selectedName) return;
-    const idx = parseInt(selectedName) - 1;
-    if (isNaN(idx) || idx < 0 || idx >= files.length) {
-      alert('Seleção inválida.');
-      return;
-    }
-    const fileHandle = await backupDir.getFileHandle(files[idx].name);
-    const blob = await fileHandle.getFile();
-    const text = await blob.text();
-    const backupData = JSON.parse(text);
-    for (const [key, value] of Object.entries(backupData)) {
-      localStorage.setItem(key, value);
-    }
+    for await (const e of bdir.values()) if (e.kind==='file' && e.name.endsWith('.json')) files.push(e);
+    if (!files.length){ alert('Sem backups.'); return; }
+    files.sort((a,b)=>b.name.localeCompare(a.name));
+    const sel = prompt(`Escolha um backup:\n${files.map((f,i)=>`${i+1} - ${f.name}`).join('\n')}`, '1');
+    if (!sel) return;
+    const idx = parseInt(sel)-1;
+    if (isNaN(idx) || idx<0 || idx>=files.length){ alert('Inválido.'); return; }
+    const fh = await bdir.getFileHandle(files[idx].name);
+    const txt = await (await fh.getFile()).text();
+    const data = JSON.parse(txt);
+    for (const [k,v] of Object.entries(data)) localStorage.setItem(k, v);
     const saved = localStorage.getItem('mag_labels_cfg');
     if (saved) Object.assign(state.cfg, JSON.parse(saved));
     render();
-    $('#offlineStatus').innerHTML = `✅ Backup restaurado de: ${files[idx].name}`;
-    alert(`Backup restaurado com sucesso!\nAs configurações foram recarregadas.`);
+    alert('Backup restaurado!');
     $('#cfgModal').classList.remove('active');
-  } catch (err) {
-    console.error('Erro ao restaurar backup:', err);
-    $('#offlineStatus').innerHTML = '❌ Erro ao restaurar backup. Veja o console.';
-    alert('Falha ao restaurar backup.');
-  }
+  } catch(e){ alert('Falha: '+e.message); }
 }
 
-// ---------- INICIALIZAÇÃO E EVENTOS ----------
+/* ==================== INIT PRINCIPAL ==================== */
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Carregar configurações
-  const saved = localStorage.getItem('mag_labels_cfg'); 
-  if (saved) {
-    const savedCfg = JSON.parse(saved);
-    Object.assign(state.cfg, savedCfg);
-    if (typeof savedCfg.labelWidth === 'undefined') state.cfg.labelWidth = 6;
-    if (typeof savedCfg.labelHeight === 'undefined') state.cfg.labelHeight = 4;
-    if (typeof savedCfg.colsPerPage === 'undefined') state.cfg.colsPerPage = 3;
-    if (typeof savedCfg.rowsPerPage === 'undefined') state.cfg.rowsPerPage = 0;
-    if (typeof savedCfg.unit === 'undefined') state.cfg.unit = 'cm';
-    if (typeof savedCfg.orientation === 'undefined') state.cfg.orientation = 'portrait';
-    if (typeof savedCfg.printErrors === 'undefined') state.cfg.printErrors = false;
-    if (typeof savedCfg.showErrors === 'undefined') state.cfg.showErrors = true;
-    if (typeof savedCfg.sortOrder === 'undefined') state.cfg.sortOrder = 'nNF-asc';
-    if (typeof savedCfg.highlightField === 'undefined') state.cfg.highlightField = 'nNF';
-    if (typeof savedCfg.highlightFieldRule === 'undefined') state.cfg.highlightFieldRule = 'qCom';
-    if (typeof savedCfg.ruleCondition === 'undefined') state.cfg.ruleCondition = 'qtyGreaterThan1';
-    if (typeof savedCfg.customRule === 'undefined') state.cfg.customRule = '';
-    if (typeof savedCfg.termHighlights === 'undefined') state.cfg.termHighlights = [];
-    if (typeof savedCfg.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
+  const saved = localStorage.getItem('mag_labels_cfg');
+  if (saved){
+    const s = JSON.parse(saved);
+    Object.assign(state.cfg, s);
+    if (typeof s.labelWidth === 'undefined') state.cfg.labelWidth = 6;
+    if (typeof s.labelHeight === 'undefined') state.cfg.labelHeight = 4;
+    if (typeof s.colsPerPage === 'undefined') state.cfg.colsPerPage = 3;
+    if (typeof s.rowsPerPage === 'undefined') state.cfg.rowsPerPage = 0;
+    if (typeof s.unit === 'undefined') state.cfg.unit = 'cm';
+    if (typeof s.orientation === 'undefined') state.cfg.orientation = 'portrait';
+    if (typeof s.printErrors === 'undefined') state.cfg.printErrors = false;
+    if (typeof s.showErrors === 'undefined') state.cfg.showErrors = true;
+    if (typeof s.sortOrder === 'undefined') state.cfg.sortOrder = 'nNF-asc';
+    if (typeof s.highlightField === 'undefined') state.cfg.highlightField = 'nNF';
+    if (typeof s.highlightFieldRule === 'undefined') state.cfg.highlightFieldRule = 'qCom';
+    if (typeof s.ruleCondition === 'undefined') state.cfg.ruleCondition = 'qtyGreaterThan1';
+    if (typeof s.customRule === 'undefined') state.cfg.customRule = '';
+    if (typeof s.termHighlights === 'undefined') state.cfg.termHighlights = [];
+    if (typeof s.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
     applyOrientation();
   }
 
-  // Botões principais
-  $('#btnSelect').addEventListener('click', ()=>$('#xmlInput').click());
-  $('#xmlInput').addEventListener('change',(e)=>{ const files = e.target.files; if (files && files.length) handleFiles(files); });
+  $('#btnSelect').addEventListener('click', ()=> $('#xmlInput').click());
+  $('#xmlInput').addEventListener('change', e=>{
+    const f = e.target.files; if (f && f.length) handleFiles(f);
+  });
 
   const drop = document.getElementById('drop');
-  ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300'); }));
-  ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300'); }));
-  drop.addEventListener('drop', e=>{ e.preventDefault(); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) handleFiles(dt.files); });
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e=>{
+    e.preventDefault(); drop.classList.add('ring','ring-2','ring-slate-300');
+  }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e=>{
+    e.preventDefault(); drop.classList.remove('ring','ring-2','ring-slate-300');
+  }));
+  drop.addEventListener('drop', e=>{
+    e.preventDefault();
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files.length) handleFiles(dt.files);
+  });
 
-  $('#btnClear').addEventListener('click', ()=>{ state.labels=[]; state.availableDates=[]; render(); $('#file-name').textContent='Nenhum arquivo selecionado'; updateDateFilters(); });
+  $('#btnClear').addEventListener('click', ()=>{
+    state.labels=[]; state.availableDates=[];
+    render(); $('#file-name').textContent='Nenhum arquivo selecionado';
+    updateDateFilters();
+  });
   $('#btnPrint').addEventListener('click', handlePrint);
-  $('#btnDownloadPdf').addEventListener('click', async () => {
-    const btn = $('#btnDownloadPdf');
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Gerando PDF...';
-    try {
-      await generateLabelsPDF();
-    } catch (err) {
-      console.error('Erro ao gerar PDF:', err);
-      alert('Ocorreu um erro ao gerar o PDF. Veja o console para detalhes.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = originalText;
-    }
+  $('#btnDownloadPdf').addEventListener('click', async ()=>{
+    const b = $('#btnDownloadPdf'); const t = b.textContent;
+    b.disabled = true; b.textContent = 'Gerando PDF...';
+    try { await generateLabelsPDF(); }
+    catch(e){ console.error(e); alert('Erro ao gerar PDF.'); }
+    finally { b.disabled = false; b.textContent = t; }
   });
   $('#btnPreview').addEventListener('click', renderPrintPreview);
-  $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display = 'none'; });
+  $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display='none'; });
   $('#printFromPreview').addEventListener('click', handlePrint);
   $('#applyDateFilter').addEventListener('click', applyDateFilter);
   $('#clearDateFilter').addEventListener('click', clearDateFilter);
 
-  $('#cfgRuleCondition').addEventListener('change', function() {
+  $('#cfgRuleCondition').addEventListener('change', function(){
     $('#customRuleConfig').classList.toggle('hidden', this.value !== 'custom');
   });
-
-  $('#cfgOrientation').addEventListener('change', function() {
-    const orient = this.value;
-    let w = parseFloat($('#cfgLabelWidth').value) || 6;
-    let h = parseFloat($('#cfgLabelHeight').value) || 4;
-    if (orient === 'portrait' && w > h) {
-      $('#cfgLabelWidth').value = h;
-      $('#cfgLabelHeight').value = w;
-    } else if (orient === 'landscape' && h > w) {
-      $('#cfgLabelWidth').value = h;
-      $('#cfgLabelHeight').value = w;
-    }
+  $('#cfgOrientation').addEventListener('change', function(){
+    const o = this.value;
+    let w = parseFloat($('#cfgLabelWidth').value)||6;
+    let h = parseFloat($('#cfgLabelHeight').value)||4;
+    if (o==='portrait' && w>h){ $('#cfgLabelWidth').value=h; $('#cfgLabelHeight').value=w; }
+    else if (o==='landscape' && h>w){ $('#cfgLabelWidth').value=h; $('#cfgLabelHeight').value=w; }
     updateColsRowsFitHint();
   });
-
-  $('#cfgUnit').addEventListener('change', function() {
-    const newUnit = this.value;
-    const oldUnit = this.dataset.prevUnit || 'cm';
-    const wInput = $('#cfgLabelWidth');
-    const hInput = $('#cfgLabelHeight');
-    const w = parseFloat(wInput.value) || 0;
-    const h = parseFloat(hInput.value) || 0;
-
-    if (oldUnit !== '%' && newUnit !== '%') {
-      const newW = convertPhysicalUnit(w, oldUnit, newUnit);
-      const newH = convertPhysicalUnit(h, oldUnit, newUnit);
-      if (newW !== null) wInput.value = roundTo(newW, 3);
-      if (newH !== null) hInput.value = roundTo(newH, 3);
+  $('#cfgUnit').addEventListener('change', function(){
+    const n = this.value, o = this.dataset.prevUnit||'cm';
+    const wi = $('#cfgLabelWidth'), hi = $('#cfgLabelHeight');
+    const w = parseFloat(wi.value)||0, h = parseFloat(hi.value)||0;
+    if (o!=='%' && n!=='%'){
+      const nw = convertPhysicalUnit(w, o, n), nh = convertPhysicalUnit(h, o, n);
+      if (nw!==null) wi.value = roundTo(nw,3);
+      if (nh!==null) hi.value = roundTo(nh,3);
     }
-    this.dataset.prevUnit = newUnit;
+    this.dataset.prevUnit = n;
     updateColsRowsFitHint();
   });
-
-  ['#cfgLabelWidth', '#cfgLabelHeight', '#cfgColsPerPage', '#cfgRowsPerPage'].forEach(sel => {
-    $(sel).addEventListener('input', updateColsRowsFitHint);
+  ['#cfgLabelWidth','#cfgLabelHeight','#cfgColsPerPage','#cfgRowsPerPage'].forEach(s=>{
+    $(s).addEventListener('input', updateColsRowsFitHint);
   });
 
-  function updateColsRowsFitHint() {
-    const hintEl = $('#colsRowsFitHint');
-    if (!hintEl) return;
-    const unit = $('#cfgUnit').value;
-    const w = parseFloat($('#cfgLabelWidth').value) || 0;
-    const h = parseFloat($('#cfgLabelHeight').value) || 0;
-    const cols = parseInt($('#cfgColsPerPage').value) || 1;
-    const rows = parseInt($('#cfgRowsPerPage').value) || 0;
+  function updateColsRowsFitHint(){
+    const el = $('#colsRowsFitHint'); if (!el) return;
+    const u = $('#cfgUnit').value;
+    const w = parseFloat($('#cfgLabelWidth').value)||0;
+    const h = parseFloat($('#cfgLabelHeight').value)||0;
+    const c = parseInt($('#cfgColsPerPage').value)||1;
+    const r = parseInt($('#cfgRowsPerPage').value)||0;
     const gap = 0.35;
-
-    const { wCm, hCm } = getLabelSizeCm({ labelWidth: w, labelHeight: h, unit });
-    if (wCm <= 0 || hCm <= 0) { hintEl.textContent = ''; return; }
-
-    const maxCols = Math.max(1, Math.floor((PRINT_AREA_CM.width + gap) / (wCm + gap)));
-    const maxRows = Math.max(1, Math.floor((PRINT_AREA_CM.height + gap) / (hCm + gap)));
-    const totalW = cols * wCm + (cols - 1) * gap;
-    const totalH = rows > 0 ? rows * hCm + (rows - 1) * gap : 0;
-
-    let msg = `Tamanho real: ${roundTo(wCm, 2)}×${roundTo(hCm, 2)} cm — cabem até ${maxCols} coluna(s) e ${maxRows} linha(s) por folha A4.`;
-    let overflow = false;
-
-    if (totalW > PRINT_AREA_CM.width + 0.05) {
-      msg = `⚠️ ${cols} coluna(s) de ${roundTo(wCm, 2)}cm não cabem na largura útil (${PRINT_AREA_CM.width}cm). Máximo: ${maxCols}.`;
-      overflow = true;
-    }
-    if (rows > 0 && totalH > PRINT_AREA_CM.height + 0.05) {
-      msg += ` ⚠️ ${rows} linha(s) de ${roundTo(hCm, 2)}cm não cabem na altura útil (${PRINT_AREA_CM.height}cm). Máximo: ${maxRows}.`;
-      overflow = true;
-    }
-
-    hintEl.textContent = msg;
-    hintEl.classList.toggle('text-red-600', overflow);
-    hintEl.classList.toggle('text-slate-500', !overflow);
+    const { wCm, hCm } = getLabelSizeCm({ labelWidth:w, labelHeight:h, unit:u });
+    if (wCm<=0 || hCm<=0){ el.textContent=''; return; }
+    const mc = Math.max(1, Math.floor((PRINT_AREA_CM.width+gap)/(wCm+gap)));
+    const mr = Math.max(1, Math.floor((PRINT_AREA_CM.height+gap)/(hCm+gap)));
+    const tw = c*wCm + (c-1)*gap;
+    const th = r>0 ? r*hCm + (r-1)*gap : 0;
+    let msg = `Tamanho real: ${roundTo(wCm,2)}×${roundTo(hCm,2)} cm — cabem até ${mc} coluna(s) e ${mr} linha(s) por folha A4.`;
+    let ov = false;
+    if (tw > PRINT_AREA_CM.width+0.05){ msg = `⚠️ ${c} coluna(s) não cabem. Máx: ${mc}.`; ov = true; }
+    if (r>0 && th > PRINT_AREA_CM.height+0.05){ msg += ` ⚠️ ${r} linha(s) não cabem. Máx: ${mr}.`; ov = true; }
+    el.textContent = msg;
+    el.classList.toggle('text-red-600', ov);
+    el.classList.toggle('text-slate-500', !ov);
   }
 
   function openCfg(){
-    $('#cfgLogo').value = state.cfg.logo || '';
-    $('#cfgFracRule').value = state.cfg.fracRule || 'none';
-    $('#cfgFracN').value = state.cfg.fracN || 1;
-    $('#cfgLabelWidth').value = state.cfg.labelWidth || 6;
-    $('#cfgLabelHeight').value = state.cfg.labelHeight || 4;
-    $('#cfgColsPerPage').value = state.cfg.colsPerPage || 3;
-    $('#cfgRowsPerPage').value = state.cfg.rowsPerPage || 0;
-    $('#cfgUnit').value = state.cfg.unit || 'cm';
-    $('#cfgUnit').dataset.prevUnit = state.cfg.unit || 'cm';
-    $('#cfgOrientation').value = state.cfg.orientation || 'portrait';
-    
-    $$('.cfgField').forEach(el=> el.checked = state.cfg.fields.includes(el.value));
+    $('#cfgLogo').value = state.cfg.logo||'';
+    $('#cfgFracRule').value = state.cfg.fracRule||'none';
+    $('#cfgFracN').value = state.cfg.fracN||1;
+    $('#cfgLabelWidth').value = state.cfg.labelWidth||6;
+    $('#cfgLabelHeight').value = state.cfg.labelHeight||4;
+    $('#cfgColsPerPage').value = state.cfg.colsPerPage||3;
+    $('#cfgRowsPerPage').value = state.cfg.rowsPerPage||0;
+    $('#cfgUnit').value = state.cfg.unit||'cm';
+    $('#cfgUnit').dataset.prevUnit = state.cfg.unit||'cm';
+    $('#cfgOrientation').value = state.cfg.orientation||'portrait';
+    $$('.cfgField').forEach(el => el.checked = state.cfg.fields.includes(el.value));
     $('#cfgShowErrors').checked = state.cfg.showErrors;
     $('#cfgPrintErrors').checked = state.cfg.printErrors;
     $('#cfgMaskPrintErrors').checked = state.cfg.maskPrintErrors;
-    $('#cfgSortOrder').value = state.cfg.sortOrder || 'nNF-asc';
-    $('#cfgHighlightField').value = state.cfg.highlightField || 'nNF';
-    $('#cfgHighlightFieldRule').value = state.cfg.highlightFieldRule || 'qCom';
-    $('#cfgRuleCondition').value = state.cfg.ruleCondition || 'qtyGreaterThan1';
-    $('#cfgCustomRule').value = state.cfg.customRule || '';
+    $('#cfgSortOrder').value = state.cfg.sortOrder||'nNF-asc';
+    $('#cfgHighlightField').value = state.cfg.highlightField||'nNF';
+    $('#cfgHighlightFieldRule').value = state.cfg.highlightFieldRule||'qCom';
+    $('#cfgRuleCondition').value = state.cfg.ruleCondition||'qtyGreaterThan1';
+    $('#cfgCustomRule').value = state.cfg.customRule||'';
     $('#customRuleConfig').classList.toggle('hidden', state.cfg.ruleCondition !== 'custom');
-    if (state.cfg.logo && state.cfg.logo.startsWith('data:image')) {
-      $('#logoPreview').src = state.cfg.logo;
-      $('#logoPreview').style.display = 'block';
+    if (state.cfg.logo && state.cfg.logo.startsWith('data:image')){
+      $('#logoPreview').src = state.cfg.logo; $('#logoPreview').style.display='block';
       updateLogoButtonState(true);
     } else {
-      $('#logoPreview').style.display = 'none';
-      updateLogoButtonState(false);
+      $('#logoPreview').style.display='none'; updateLogoButtonState(false);
     }
     populateTermHighlights();
     updateColsRowsFitHint();
@@ -2509,278 +1808,218 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.ruleCondition = $('#cfgRuleCondition').value;
     state.cfg.customRule = $('#cfgCustomRule').value;
     state.cfg.termHighlights = collectTermHighlights();
-    state.cfg.labelWidth = parseFloat($('#cfgLabelWidth').value) || 6;
-    state.cfg.labelHeight = parseFloat($('#cfgLabelHeight').value) || 4;
-    state.cfg.colsPerPage = parseInt($('#cfgColsPerPage').value) || 3;
-    state.cfg.rowsPerPage = parseInt($('#cfgRowsPerPage').value) || 0;
+    state.cfg.labelWidth = parseFloat($('#cfgLabelWidth').value)||6;
+    state.cfg.labelHeight = parseFloat($('#cfgLabelHeight').value)||4;
+    state.cfg.colsPerPage = parseInt($('#cfgColsPerPage').value)||3;
+    state.cfg.rowsPerPage = parseInt($('#cfgRowsPerPage').value)||0;
     state.cfg.unit = $('#cfgUnit').value;
     state.cfg.orientation = $('#cfgOrientation').value;
     applyOrientation();
-    
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
-    closeCfg(); 
-    render();
+    closeCfg(); render();
   });
 
-  $('#addTermHighlight').addEventListener('click', () => {
+  $('#addTermHighlight').addEventListener('click', ()=>{
     $('#termHighlightContainer').appendChild(createTermHighlightRow());
   });
-
-  $('#logoUploadButton').addEventListener('click', function() {
+  $('#logoUploadButton').addEventListener('click', function(){
     if (this.getAttribute('data-state') === 'upload') $('#logoUpload').click();
     else removeLogo();
   });
   $('#logoUpload').addEventListener('change', handleLogoUpload);
 
-  $('#showXmlExample').addEventListener('click', (e) => { e.preventDefault(); $('#xmlExampleModal').style.display = 'block'; });
-  $('#closeXmlExample').addEventListener('click', () => { $('#xmlExampleModal').style.display = 'none'; });
-  window.addEventListener('click', (e) => {
-    if (e.target === $('#xmlExampleModal')) $('#xmlExampleModal').style.display = 'none';
+  $('#showXmlExample').addEventListener('click', e=>{ e.preventDefault(); $('#xmlExampleModal').style.display='block'; });
+  $('#closeXmlExample').addEventListener('click', ()=>{ $('#xmlExampleModal').style.display='none'; });
+  window.addEventListener('click', e=>{
+    if (e.target === $('#xmlExampleModal')) $('#xmlExampleModal').style.display='none';
     if (e.target === $('#cfgModal') || e.target.classList.contains('modal-backdrop')) closeCfg();
   });
-  $('#cfgModal').addEventListener('click', (e) => {
-    if (e.target === this || e.target.classList.contains('modal-backdrop')) closeCfg();
+  $('#cfgModal').addEventListener('click', e=>{
+    if (e.target.classList.contains('modal-backdrop')) closeCfg();
   });
 
   $('#createOfflineCopy').addEventListener('click', createOfflineCopy);
   $('#backupSettings').addEventListener('click', saveBackupToFolder);
-  $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
+  $('#restoreBackup').addEventListener('click', restoreFromFolderBridge);
 
   render();
 });
 
-// Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { scope: '/Gerador-de-etiqueta-pwa/' })
-      .then(reg => console.log('ServiceWorker registrado:', reg.scope))
-      .catch(err => console.log('Falha no ServiceWorker:', err));
+/* Alias porque restoreBackupFromFolder foi declarada antes */
+function restoreFromFolderBridge(){ restoreBackupFromFolder(); }
+
+/* Service Worker */
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { scope:'/Gerador-de-etiqueta-pwa/' })
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(e => console.log('SW falhou:', e));
   });
 }
 
 /* ============================================================
-   ABAS — alterna entre "Notas Fiscais (XML)" e "Shopee (PDF)"
+   PARTE 2 — ABAS (3 abas agora)
    ============================================================ */
-(function initTabs() {
+(function initTabs(){
   const tabs = document.querySelectorAll('.tab-btn');
   const panels = document.querySelectorAll('.tab-panel');
   const nfeActions = document.getElementById('nfeActions');
   const sizeBadge = document.getElementById('sizeBadge');
+  let unificadorInited = false;
 
-  function switchTab(name) {
+  function switchTab(name){
     tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     panels.forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + name));
     if (nfeActions) nfeActions.style.display = (name === 'nfe') ? '' : 'none';
     if (sizeBadge) sizeBadge.style.display = (name === 'nfe') ? '' : 'none';
+
+    if (name === 'unificador' && !unificadorInited){
+      unificadorInited = true;
+      if (typeof window.ensureUnificadorLibs === 'function') window.ensureUnificadorLibs();
+    }
   }
 
-  tabs.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+  tabs.forEach(b => b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
   switchTab('nfe');
 })();
 
-
 /* ============================================================
-   PREPARADOR DE ETIQUETAS SHOPEE
-   - Lê PDF A4 da Shopee
-   - Detecta grid de etiquetas (2x2, 1x2, etc.)
-   - Recorta, faz trim de margem branca
-   - Imprime ou gera PDF 10x15 (usa jsPDF LOCAL já carregado)
+   PARTE 3 — SHOPEE (inalterado)
    ============================================================ */
-const shopeeState = {
-  selected: null,
-  pages: [],
-  pdfjsModule: null
-};
+const shopeeState = { selected:null, pages:[], pdfjsModule:null };
+const $shopee = id => document.getElementById(id);
 
-const $shopee = (id) => document.getElementById(id);
-
-async function loadPdfJsModule() {
+async function loadPdfJsModule(){
   if (shopeeState.pdfjsModule) return shopeeState.pdfjsModule;
   const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs");
-  pdfjs.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+  pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
   shopeeState.pdfjsModule = pdfjs;
   return pdfjs;
 }
-
-function shopeeSelectFile(f) {
-  if (!f || f.type !== 'application/pdf') {
-    $shopee('shopeeStatus').textContent = 'Selecione um arquivo PDF.';
-    return;
-  }
-  shopeeState.selected = f;
-  shopeeState.pages = [];
+function shopeeSelectFile(f){
+  if (!f || f.type !== 'application/pdf'){ $shopee('shopeeStatus').textContent = 'Selecione um PDF.'; return; }
+  shopeeState.selected = f; shopeeState.pages = [];
   $shopee('shopeePrepare').disabled = false;
   $shopee('shopeePrint').disabled = true;
   $shopee('shopeeDownload').disabled = true;
   $shopee('shopeePreviews').innerHTML = '';
   $shopee('shopeeStatus').textContent = `PDF selecionado: ${f.name}`;
 }
-
-function shopeeCropBox(c, x, y, cols, rows) {
+function shopeeCropBox(c,x,y,cols,rows){
   return {
-    x: Math.floor(c.width * x / cols),
-    y: Math.floor(c.height * y / rows),
-    w: Math.floor(c.width * (x + 1) / cols) - Math.floor(c.width * x / cols),
-    h: Math.floor(c.height * (y + 1) / rows) - Math.floor(c.height * y / rows)
+    x: Math.floor(c.width*x/cols), y: Math.floor(c.height*y/rows),
+    w: Math.floor(c.width*(x+1)/cols) - Math.floor(c.width*x/cols),
+    h: Math.floor(c.height*(y+1)/rows) - Math.floor(c.height*y/rows)
   };
 }
-
-function shopeeTrimWhite(src, b, make = true) {
+function shopeeTrimWhite(src, b, make=true){
   const ctx = src.getContext('2d');
-  const d = ctx.getImageData(b.x, b.y, b.w, b.h).data;
-  let minX = b.w, minY = b.h, maxX = -1, maxY = -1, ink = 0;
-  for (let y = 0; y < b.h; y++) {
-    for (let x = 0; x < b.w; x++) {
-      const k = (y * b.w + x) * 4;
-      const v = (d[k] + d[k + 1] + d[k + 2]) / 3;
-      if (v < 245) {
-        ink++;
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-    }
+  const d = ctx.getImageData(b.x,b.y,b.w,b.h).data;
+  let minX=b.w,minY=b.h,maxX=-1,maxY=-1,ink=0;
+  for (let y=0;y<b.h;y++) for (let x=0;x<b.w;x++){
+    const k=(y*b.w+x)*4, v=(d[k]+d[k+1]+d[k+2])/3;
+    if (v<245){ ink++; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
   }
-  const ratio = ink / (b.w * b.h);
-  if (maxX < 0) return null;
-  const pad = Math.max(4, Math.round(Math.min(b.w, b.h) * 0.012));
-  minX = Math.max(0, minX - pad);
-  minY = Math.max(0, minY - pad);
-  maxX = Math.min(b.w - 1, maxX + pad);
-  maxY = Math.min(b.h - 1, maxY + pad);
+  const ratio = ink/(b.w*b.h);
+  if (maxX<0) return null;
+  const pad = Math.max(4, Math.round(Math.min(b.w,b.h)*0.012));
+  minX = Math.max(0, minX-pad); minY = Math.max(0, minY-pad);
+  maxX = Math.min(b.w-1, maxX+pad); maxY = Math.min(b.h-1, maxY+pad);
   const out = document.createElement('canvas');
-  out.width = maxX - minX + 1;
-  out.height = maxY - minY + 1;
-  out.getContext('2d').drawImage(
-    src, b.x + minX, b.y + minY, out.width, out.height, 0, 0, out.width, out.height
-  );
+  out.width = maxX-minX+1; out.height = maxY-minY+1;
+  out.getContext('2d').drawImage(src, b.x+minX, b.y+minY, out.width, out.height, 0, 0, out.width, out.height);
   return { canvas: out, ink: ratio };
 }
-
-function shopeeDetectGrid(canvas) {
-  const tests = [
-    { cols: 2, rows: 2 }, { cols: 1, rows: 2 },
-    { cols: 2, rows: 1 }, { cols: 1, rows: 1 }
-  ];
-  let best = tests[0], score = -1;
-  for (const t of tests) {
-    let s = 0;
-    for (let r = 0; r < t.rows; r++) {
-      for (let c = 0; c < t.cols; c++) {
-        const b = shopeeCropBox(canvas, c, r, t.cols, t.rows);
-        const q = shopeeTrimWhite(canvas, b, false);
-        s += q ? Math.min(q.ink, 0.2) : 0;
-      }
+function shopeeDetectGrid(canvas){
+  const tests = [{cols:2,rows:2},{cols:1,rows:2},{cols:2,rows:1},{cols:1,rows:1}];
+  let best=tests[0], score=-1;
+  for (const t of tests){
+    let s=0;
+    for (let r=0;r<t.rows;r++) for (let c=0;c<t.cols;c++){
+      const b = shopeeCropBox(canvas,c,r,t.cols,t.rows);
+      const q = shopeeTrimWhite(canvas,b,false);
+      s += q ? Math.min(q.ink,0.2) : 0;
     }
-    if (s > score) { score = s; best = t; }
+    if (s>score){ score=s; best=t; }
   }
   return best;
 }
-
-async function shopeePrepare() {
+async function shopeePrepare(){
   if (!shopeeState.selected) return;
   const btn = $shopee('shopeePrepare');
   btn.disabled = true;
   $shopee('shopeeStatus').textContent = 'Lendo o PDF e identificando as etiquetas…';
-
   try {
     const pdfjs = await loadPdfJsModule();
     const data = await shopeeState.selected.arrayBuffer();
     const pdf = await pdfjs.getDocument({ data }).promise;
-
-    const renderedPages = [];
-    for (let i = 1; i <= pdf.numPages; i++) {
+    const rendered = [];
+    for (let i=1;i<=pdf.numPages;i++){
       const p = await pdf.getPage(i);
-      const vp = p.getViewport({ scale: 2.5 });
+      const vp = p.getViewport({ scale:2.5 });
       const c = document.createElement('canvas');
-      c.width = Math.ceil(vp.width);
-      c.height = Math.ceil(vp.height);
-      await p.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-      renderedPages.push(c);
+      c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+      await p.render({ canvasContext:c.getContext('2d'), viewport:vp }).promise;
+      rendered.push(c);
     }
-
     const crops = [];
-    for (const canvas of renderedPages) {
-      const detected = shopeeDetectGrid(canvas);
-      for (let r = 0; r < detected.rows; r++) {
-        for (let c = 0; c < detected.cols; c++) {
-          const box = shopeeCropBox(canvas, c, r, detected.cols, detected.rows);
-          const crop = shopeeTrimWhite(canvas, box);
-          if (crop && crop.ink > 0.012) crops.push(crop.canvas);
-        }
+    for (const canvas of rendered){
+      const d = shopeeDetectGrid(canvas);
+      for (let r=0;r<d.rows;r++) for (let c=0;c<d.cols;c++){
+        const b = shopeeCropBox(canvas,c,r,d.cols,d.rows);
+        const crop = shopeeTrimWhite(canvas,b);
+        if (crop && crop.ink>0.012) crops.push(crop.canvas);
       }
     }
-
-    if (!crops.length) throw new Error('Não encontrei áreas de etiqueta no PDF.');
-
-    const previews = $shopee('shopeePreviews');
-    previews.innerHTML = '';
-    crops.forEach((c, i) => {
+    if (!crops.length) throw new Error('Não encontrei áreas de etiqueta.');
+    const pv = $shopee('shopeePreviews'); pv.innerHTML='';
+    crops.forEach((c,i)=>{
       const div = document.createElement('div');
       div.className = 'shopee-preview';
-      div.innerHTML = `<img src="${c.toDataURL('image/png')}" alt="Etiqueta ${i + 1}">
-                       <div class="cap">Etiqueta ${i + 1}</div>`;
-      previews.appendChild(div);
+      div.innerHTML = `<img src="${c.toDataURL('image/png')}" alt="Etiqueta ${i+1}"><div class="cap">Etiqueta ${i+1}</div>`;
+      pv.appendChild(div);
     });
-
     shopeeState.pages = crops;
-    $shopee('shopeeStatus').textContent = `Pronto: ${crops.length} etiqueta(s) encontrada(s).`;
+    $shopee('shopeeStatus').textContent = `Pronto: ${crops.length} etiqueta(s).`;
     $shopee('shopeePrint').disabled = false;
     $shopee('shopeeDownload').disabled = false;
-  } catch (e) {
+  } catch(e){
     console.error(e);
     $shopee('shopeeStatus').textContent = 'Erro: ' + e.message;
-  } finally {
-    btn.disabled = false;
-  }
+  } finally { btn.disabled = false; }
 }
-
-function shopeePrint() {
+function shopeePrint(){
   const w = Number($shopee('shopeeW').value);
   const h = Number($shopee('shopeeH').value);
   const win = window.open('', '_blank');
-  if (!win) { alert('Permita pop-ups para imprimir.'); return; }
-  win.document.write(
-    `<html><head><title>Etiquetas Shopee</title>
-     <style>
-       @page{size:${w}mm ${h}mm;margin:0}
-       html,body{margin:0;padding:0}
-       img{width:${w}mm;height:${h}mm;display:block;object-fit:fill;page-break-after:always}
-     </style></head><body></body></html>`
-  );
-  shopeeState.pages.forEach(c => {
-    const img = win.document.createElement('img');
-    img.src = c.toDataURL('image/png');
-    win.document.body.appendChild(img);
+  if (!win){ alert('Permita pop-ups.'); return; }
+  win.document.write(`<html><head><title>Etiquetas Shopee</title>
+    <style>@page{size:${w}mm ${h}mm;margin:0}html,body{margin:0;padding:0}
+    img{width:${w}mm;height:${h}mm;display:block;object-fit:fill;page-break-after:always}</style>
+    </head><body></body></html>`);
+  shopeeState.pages.forEach(c=>{
+    const im = win.document.createElement('img');
+    im.src = c.toDataURL('image/png');
+    win.document.body.appendChild(im);
   });
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 500);
+  win.document.close(); win.focus();
+  setTimeout(()=> win.print(), 500);
 }
-
-function shopeeDownload() {
-  if (typeof window.jspdf === 'undefined') {
-    alert('A biblioteca jsPDF ainda está carregando. Aguarde alguns segundos e tente novamente.');
-    return;
-  }
+function shopeeDownload(){
+  if (typeof window.jspdf === 'undefined'){ alert('jsPDF carregando.'); return; }
   const { jsPDF } = window.jspdf;
   const w = Number($shopee('shopeeW').value);
   const h = Number($shopee('shopeeH').value);
-  const orient = h >= w ? 'portrait' : 'landscape';
-
-  const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [w, h], compress: true });
-  shopeeState.pages.forEach((c, i) => {
-    if (i) doc.addPage([w, h], orient);
+  const o = h>=w ? 'portrait' : 'landscape';
+  const doc = new jsPDF({ orientation:o, unit:'mm', format:[w,h], compress:true });
+  shopeeState.pages.forEach((c,i)=>{
+    if (i) doc.addPage([w,h], o);
     doc.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
   });
   doc.save('etiquetas_shopee_10x15.pdf');
 }
-
-function shopeeClear() {
-  shopeeState.selected = null;
-  shopeeState.pages = [];
+function shopeeClear(){
+  shopeeState.selected = null; shopeeState.pages = [];
   $shopee('shopeePreviews').innerHTML = '';
   $shopee('shopeeFile').value = '';
   $shopee('shopeePrepare').disabled = true;
@@ -2788,32 +2027,480 @@ function shopeeClear() {
   $shopee('shopeeDownload').disabled = true;
   $shopee('shopeeStatus').textContent = 'Nenhum PDF selecionado.';
 }
-
-(function initShopee() {
-  const drop = $shopee('shopeeDrop');
-  const file = $shopee('shopeeFile');
+(function initShopee(){
+  const drop = $shopee('shopeeDrop'), file = $shopee('shopeeFile');
   if (!drop || !file) return;
-
-  drop.addEventListener('click', () => file.click());
-  file.addEventListener('change', () => file.files[0] && shopeeSelectFile(file.files[0]));
-
-  ['dragenter', 'dragover'].forEach(evt =>
-    drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.add('bg-slate-200'); })
-  );
-  ['dragleave', 'drop'].forEach(evt =>
-    drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.remove('bg-slate-200'); })
-  );
-  drop.addEventListener('drop', e => {
+  drop.addEventListener('click', ()=> file.click());
+  file.addEventListener('change', ()=> file.files[0] && shopeeSelectFile(file.files[0]));
+  ['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, e=>{
+    e.preventDefault(); drop.classList.add('bg-slate-200');
+  }));
+  ['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, e=>{
+    e.preventDefault(); drop.classList.remove('bg-slate-200');
+  }));
+  drop.addEventListener('drop', e=>{
     e.preventDefault();
-    const f = e.dataTransfer.files[0];
-    if (f) shopeeSelectFile(f);
+    const f = e.dataTransfer.files[0]; if (f) shopeeSelectFile(f);
   });
-
   $shopee('shopeePrepare').addEventListener('click', shopeePrepare);
   $shopee('shopeePrint').addEventListener('click', shopeePrint);
   $shopee('shopeeDownload').addEventListener('click', shopeeDownload);
   $shopee('shopeeClear').addEventListener('click', shopeeClear);
 })();
+
+/* ============================================================
+   PARTE 4 — UNIFICADOR (nova aba)
+   Carrega pdf-lib + jsbarcode + pdfjs-dist@3 sob demanda
+   ============================================================ */
+
+/* ---- 4.1 Lazy-load das 3 bibliotecas ---- */
+const unificadorLibs = { loaded:false, loading:null };
+function loadScriptOnce(url){
+  return new Promise((resolve, reject)=>{
+    const existing = document.querySelector(`script[src="${url}"]`);
+    if (existing){
+      if (existing.dataset.loaded === '1') return resolve();
+      existing.addEventListener('load', ()=> resolve());
+      existing.addEventListener('error', ()=> reject(new Error('Falha: '+url)));
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = ()=>{ s.dataset.loaded = '1'; resolve(); };
+    s.onerror = ()=> reject(new Error('Falha: '+url));
+    document.head.appendChild(s);
+  });
+}
+window.ensureUnificadorLibs = async function(){
+  if (unificadorLibs.loaded) return;
+  if (unificadorLibs.loading) return unificadorLibs.loading;
+  const loader = document.getElementById('uniLoadingLibs');
+  if (loader) loader.style.display = 'flex';
+
+  unificadorLibs.loading = (async ()=>{
+    await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js');
+    await loadScriptOnce('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js');
+    await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    }
+    unificadorLibs.loaded = true;
+  })();
+
+  try { await unificadorLibs.loading; }
+  finally { if (loader) loader.style.display = 'none'; }
+  return unificadorLibs.loading;
+};
+
+/* ---- 4.2 Constantes de layout do Unificador ---- */
+const UNI = {
+  GAP_ABOVE: 14, LINE_GAP: 3, GAP_BARCODE: 6, MIN_BOTTOM: 12,
+  PADDING: 14, INNER_PAD: 7, BORDER_WIDTH: 0.5,
+  SIZE_HEADER: 9, SIZE_NF: 8, SIZE_CHAVE: 5.5
+};
+
+const UNI_RE_NUM_SERIE = /N[uú]mero\s*:?\s*([\d.,]+)\s*\/\s*S[eé]rie\s*:?\s*([A-Za-z0-9-]+)/i;
+const UNI_RE_NUM       = /N[uú]mero\s*:?\s*([\d.,]+)/i;
+const UNI_RE_NF        = /\bNF\s*:?\s*([\d.,]+)/i;
+const UNI_RE_EMISSAO   = /Emiss[aã]o\s*:?\s*(\d{2}\/\d{2}\/\d{4})/i;
+
+function uniOnlyDigits(v){ const d = String(v).replace(/\D/g,''); return d || null; }
+
+function uniFindChave(text){
+  let m = text.match(/(?<!\d)\d{44}(?!\d)/);
+  if (m) return m[0];
+  const joined = text.replace(/(?<=\d)[\s.\-]+(?=\d)/g, '');
+  m = joined.match(/(?<!\d)\d{44}(?!\d)/);
+  return m ? m[0] : null;
+}
+function uniExtractInvoiceData(raw){
+  const t = String(raw||'').replace(/\s+/g,' ').trim();
+  let numero=null, serie=null;
+  let m = t.match(UNI_RE_NUM_SERIE);
+  if (m){ numero = uniOnlyDigits(m[1]); serie = m[2].trim(); }
+  else if ((m = t.match(UNI_RE_NUM))) numero = uniOnlyDigits(m[1]);
+  else if ((m = t.match(UNI_RE_NF)))  numero = uniOnlyDigits(m[1]);
+  const me = t.match(UNI_RE_EMISSAO);
+  return { numero, serie, chave: uniFindChave(t), emissao: me ? me[1] : null };
+}
+function uniFormatChave(c){ return c ? c.replace(/(\d{4})(?=\d)/g, '$1 ').trim() : ''; }
+
+async function uniGenerateBarcodePNG(chave){
+  if (typeof JsBarcode === 'undefined') return null;
+  if (!chave || chave.length !== 44) return null;
+  try {
+    const canvas = document.createElement('canvas');
+    JsBarcode(canvas, chave, {
+      format:'CODE128C', width:2, height:60,
+      displayValue:false, margin:0,
+      background:'#ffffff', lineColor:'#000000'
+    });
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    if (!blob) return null;
+    return await blob.arrayBuffer();
+  } catch(err){
+    console.warn('Falha barcode:', err);
+    return null;
+  }
+}
+
+async function uniReadPageLayout(doc, pageNumber){
+  const page = await doc.getPage(pageNumber);
+  const vp = page.getViewport({ scale:1 });
+  const content = await page.getTextContent();
+  const items = [];
+  for (const item of content.items){
+    if (typeof item.str !== 'string' || !item.str.trim()) continue;
+    const t = window.pdfjsLib.Util.transform(vp.transform, item.transform);
+    items.push({
+      text: item.str,
+      x: t[4],
+      y: vp.height - t[5],
+      height: item.height || 0
+    });
+  }
+  return {
+    items, text: items.map(i=>i.text).join(' '),
+    width: vp.width, height: vp.height,
+    rotation: page.rotate || 0, view: page.view
+  };
+}
+
+function uniDrawInfoBlock(page, data, layoutA, fontRegular, fontBold, barcodeImage){
+  const { PDFLib } = { PDFLib: window.PDFLib };
+  const { rgb } = PDFLib;
+  const U = UNI;
+
+  let box = page.getMediaBox();
+  const centerX = box.x + box.width/2;
+  const innerContentW = box.width - U.PADDING*2 - U.INNER_PAD*2;
+
+  const sections = [];
+  sections.push({ type:'text', text:'DANFE SIMPLIFICADA - ETIQUETA', size:U.SIZE_HEADER, font:fontBold });
+
+  const parts = [];
+  if (data.numero)  parts.push('NF nº ' + data.numero);
+  if (data.serie)   parts.push('Série ' + data.serie);
+  if (data.emissao) parts.push('Emissão: ' + data.emissao);
+  if (parts.length){
+    sections.push({ type:'text', text:parts.join('   ·   '), size:U.SIZE_NF, font:fontBold });
+  }
+
+  if (barcodeImage){
+    const barW = innerContentW;
+    const barH = (barcodeImage.height/barcodeImage.width) * barW;
+    sections.push({ type:'barcode', img:barcodeImage, width:barW, height:barH });
+  }
+
+  if (data.chave){
+    sections.push({ type:'text', text:data.chave, size:U.SIZE_CHAVE, font:fontRegular });
+  } else if (!barcodeImage){
+    sections.push({ type:'text', text:'Chave de acesso não localizada', size:U.SIZE_CHAVE, font:fontRegular });
+  }
+
+  for (const s of sections){
+    if (s.type !== 'text') continue;
+    const w = s.font.widthOfTextAtSize(s.text, s.size);
+    if (w > innerContentW) s.size *= (innerContentW / w);
+  }
+
+  let contentH = 0;
+  for (let i=0;i<sections.length;i++){
+    const s = sections[i];
+    contentH += (s.type==='barcode') ? s.height : s.size * 1.25;
+    if (i < sections.length-1) contentH += U.LINE_GAP;
+  }
+  contentH += U.GAP_BARCODE;
+
+  const rectH = contentH + U.INNER_PAD*2;
+
+  const yOffset = Array.isArray(layoutA.view) ? layoutA.view[1] : 0;
+  let lowest = Infinity;
+  for (const item of layoutA.items){
+    const y = item.y + yOffset;
+    if (y < lowest) lowest = y;
+  }
+  if (!isFinite(lowest)) lowest = box.y + box.height*0.35;
+  lowest -= 2;
+
+  const rectTop    = lowest - U.GAP_ABOVE;
+  const rectBottom = rectTop - rectH;
+
+  const minY = box.y + U.MIN_BOTTOM;
+  if (rectBottom < minY){
+    const extra = minY - rectBottom;
+    const newY = box.y - extra;
+    const newH = box.height + extra;
+    page.setMediaBox(box.x, newY, box.width, newH);
+    page.setCropBox (box.x, newY, box.width, newH);
+    box = page.getMediaBox();
+  }
+
+  page.drawRectangle({
+    x: box.x + U.PADDING,
+    y: rectBottom,
+    width: box.width - U.PADDING*2,
+    height: rectH,
+    borderColor: rgb(0,0,0),
+    borderWidth: U.BORDER_WIDTH,
+    color: undefined
+  });
+
+  let cursor = rectTop - U.INNER_PAD;
+  for (let i=0;i<sections.length;i++){
+    const s = sections[i];
+    if (s.type === 'text'){
+      const w = s.font.widthOfTextAtSize(s.text, s.size);
+      const x = centerX - w/2;
+      page.drawText(s.text, {
+        x, y: cursor - s.size, size: s.size, font: s.font, color: rgb(0,0,0)
+      });
+      cursor -= s.size*1.25 + U.LINE_GAP;
+    } else {
+      page.drawImage(s.img, {
+        x: centerX - s.width/2, y: cursor - s.height,
+        width: s.width, height: s.height
+      });
+      cursor -= s.height + U.LINE_GAP;
+    }
+  }
+}
+
+async function uniBuildUnifiedPdf(file, options){
+  const { PDFDocument, StandardFonts } = window.PDFLib;
+  const keepSecond = !!(options && options.keepSecondPage);
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  const srcDoc = await PDFDocument.load(bytes, { ignoreEncryption:true });
+  const jsDoc  = await window.pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+
+  const totalPages = srcDoc.getPageCount();
+  const outDoc = await PDFDocument.create();
+  const fR = await outDoc.embedFont(StandardFonts.Helvetica);
+  const fB = await outDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const summary = { totalPages, sales:0, withKey:0, withoutKey:0, items:[] };
+
+  for (let i=0;i<totalPages;i+=2){
+    const firstIdx = i, secondIdx = i+1;
+    const layoutA = await uniReadPageLayout(jsDoc, firstIdx+1);
+    const data = uniExtractInvoiceData(layoutA.text);
+    let originPage = firstIdx+1;
+
+    if ((!data.chave || !data.numero || !data.emissao) && secondIdx < totalPages){
+      const layoutB = await uniReadPageLayout(jsDoc, secondIdx+1);
+      const dataB = uniExtractInvoiceData(layoutB.text);
+      if (dataB.chave || dataB.numero || dataB.emissao){
+        if (!data.numero  && dataB.numero)  data.numero  = dataB.numero;
+        if (!data.serie   && dataB.serie)   data.serie   = dataB.serie;
+        if (!data.chave   && dataB.chave)   data.chave   = dataB.chave;
+        if (!data.emissao && dataB.emissao) data.emissao = dataB.emissao;
+        originPage = secondIdx+1;
+      }
+    }
+
+    let barcodeImage = null;
+    if (data.chave){
+      const pngBytes = await uniGenerateBarcodePNG(data.chave);
+      if (pngBytes){
+        try { barcodeImage = await outDoc.embedPng(pngBytes); }
+        catch(err){ console.warn('embedPng falhou:', err); }
+      }
+    }
+
+    const [copied] = await outDoc.copyPages(srcDoc, [firstIdx]);
+    outDoc.addPage(copied);
+
+    try { uniDrawInfoBlock(copied, data, layoutA, fR, fB, barcodeImage); }
+    catch(err){ console.error('Falha bloco pág ' + (firstIdx+1), err); }
+
+    summary.sales++;
+    if (data.chave) summary.withKey++; else summary.withoutKey++;
+    summary.items.push({
+      numero:data.numero, serie:data.serie,
+      chave:data.chave, emissao:data.emissao, originPage
+    });
+
+    if (keepSecond && secondIdx < totalPages){
+      const [cB] = await outDoc.copyPages(srcDoc, [secondIdx]);
+      outDoc.addPage(cB);
+    }
+  }
+
+  const outBytes = await outDoc.save();
+  return { blob: new Blob([outBytes], { type:'application/pdf' }), summary };
+}
+
+/* ---- 4.3 UI do Unificador ---- */
+const uniEls = {
+  input:      document.getElementById('uniFileInput'),
+  dropzone:   document.getElementById('uniDropzone'),
+  results:    document.getElementById('uniResults'),
+  keepSecond: document.getElementById('uniKeepSecond')
+};
+const uniOutputs = [];
+
+if (uniEls.input && uniEls.dropzone){
+  uniEls.input.addEventListener('change', e=>{
+    uniHandleFiles(e.target.files); uniEls.input.value = '';
+  });
+  ['dragenter','dragover'].forEach(ev=> uniEls.dropzone.addEventListener(ev, e=>{
+    e.preventDefault(); uniEls.dropzone.classList.add('is-over');
+  }));
+  ['dragleave','drop'].forEach(ev=> uniEls.dropzone.addEventListener(ev, e=>{
+    e.preventDefault(); uniEls.dropzone.classList.remove('is-over');
+  }));
+  uniEls.dropzone.addEventListener('drop', e=>{
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length)
+      uniHandleFiles(e.dataTransfer.files);
+  });
+}
+
+async function uniHandleFiles(fileList){
+  const files = Array.from(fileList).filter(f =>
+    f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+  if (!files.length){ alert('Nenhum PDF válido.'); return; }
+
+  try {
+    await window.ensureUnificadorLibs();
+  } catch(e){
+    alert('Falha ao carregar bibliotecas do Unificador. Verifique sua conexão (necessário apenas na 1ª vez).\n\n' + e.message);
+    return;
+  }
+
+  uniEls.results.innerHTML = '';
+  uniOutputs.length = 0;
+
+  for (const file of files){
+    const card = uniCreateCard(file.name);
+    uniEls.results.appendChild(card.el);
+    card.setBusy();
+    try {
+      const { blob, summary } = await uniBuildUnifiedPdf(file, {
+        keepSecondPage: uniEls.keepSecond.checked
+      });
+      const outName = file.name.replace(/\.pdf$/i, '') + '_unificado.pdf';
+      const url = URL.createObjectURL(blob);
+      uniOutputs.push({ name: outName, url, blob });
+      card.setDone(outName, url, summary);
+    } catch(err){
+      console.error(err);
+      card.setError(err);
+    }
+  }
+  uniRenderDownloadAll();
+}
+
+function uniCreateCard(fileName){
+  const el = document.createElement('article'); el.className = 'uni-result-card';
+  const head = document.createElement('div'); head.className = 'uni-result-head';
+  const name = document.createElement('div'); name.className = 'uni-result-name'; name.textContent = fileName;
+  const badge = document.createElement('span'); badge.className = 'uni-badge busy'; badge.textContent = 'Processando';
+  const spinner = document.createElement('span'); spinner.className = 'uni-spinner';
+  head.append(name, badge, spinner);
+  const meta = document.createElement('div'); meta.className = 'uni-result-meta';
+  const actions = document.createElement('div'); actions.className = 'uni-actions';
+  el.append(head, meta, actions);
+
+  return {
+    el,
+    setBusy(){ badge.className='uni-badge busy'; badge.textContent='Processando'; spinner.style.display=''; },
+    setDone(outName, url, summary){
+      spinner.style.display = 'none';
+      badge.className = 'uni-badge ok'; badge.textContent = 'Pronto';
+      meta.replaceChildren();
+      const found = summary.items.filter(i=>i.chave).length;
+      const missing = summary.items.length - found;
+      meta.append(
+        uniRow('Vendas detectadas', String(summary.sales)),
+        uniRow('Páginas de entrada', String(summary.totalPages)),
+        uniRow('Chaves localizadas', found + ' de ' + summary.items.length)
+      );
+      if (missing > 0){
+        const w = document.createElement('div'); w.className='uni-row';
+        w.innerHTML = '<span class="uni-k"></span><span class="uni-v" style="color:var(--uni-err)">'
+                    + missing + ' venda(s) sem chave legível</span>';
+        meta.append(w);
+      }
+      summary.items.forEach((item, idx)=>{
+        const parts = [];
+        parts.push(item.numero ? ('NF ' + item.numero + (item.serie ? '/'+item.serie : '')) : 'NF não encontrada');
+        parts.push(item.emissao ? ('Emissão ' + item.emissao) : 'sem data');
+        parts.push(item.chave || 'chave não encontrada');
+        meta.append(uniRow('Venda ' + (idx+1), parts.join('  ·  ')));
+      });
+      const link = document.createElement('a');
+      link.className = 'uni-btn primary';
+      link.href = url; link.download = outName;
+      link.textContent = 'Baixar PDF unificado';
+      actions.replaceChildren(link);
+    },
+    setError(err){
+      spinner.style.display = 'none';
+      badge.className = 'uni-badge err'; badge.textContent = 'Erro';
+      meta.replaceChildren();
+      const m = document.createElement('div'); m.className='uni-row';
+      m.innerHTML = '<span class="uni-k"></span><span class="uni-v" style="color:var(--uni-err)"></span>';
+      m.querySelector('.uni-v').textContent = (err && err.message) || String(err);
+      meta.append(m);
+      actions.replaceChildren();
+    }
+  };
+}
+
+function uniRow(k, v){
+  const d = document.createElement('div'); d.className = 'uni-row';
+  const ks = document.createElement('span'); ks.className = 'uni-k'; ks.textContent = k;
+  const vs = document.createElement('span'); vs.className = 'uni-v'; vs.textContent = v;
+  d.append(ks, vs); return d;
+}
+
+function uniRenderDownloadAll(){
+  document.querySelectorAll('.uni-download-all').forEach(n => n.remove());
+  if (uniOutputs.length < 2) return;
+  const bar = document.createElement('div');
+  bar.className = 'uni-result-card uni-download-all';
+  const head = document.createElement('div'); head.className = 'uni-result-head';
+  const name = document.createElement('div'); name.className = 'uni-result-name';
+  name.textContent = uniOutputs.length + ' arquivos processados';
+  const actions = document.createElement('div'); actions.className = 'uni-actions';
+  const btn = document.createElement('button');
+  btn.className = 'uni-btn ghost';
+  btn.textContent = 'Baixar todos em um único PDF';
+  btn.addEventListener('click', async ()=>{
+    btn.disabled = true; btn.textContent = 'Montando…';
+    try {
+      const merged = await uniMergeBlobs(uniOutputs.map(o => o.blob));
+      const url = URL.createObjectURL(merged);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'notas_unificadas.pdf'; a.click();
+      setTimeout(()=> URL.revokeObjectURL(url), 60000);
+    } catch(err){
+      alert('Falha ao juntar: ' + err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Baixar todos em um único PDF';
+    }
+  });
+  actions.append(btn);
+  head.append(name, actions);
+  bar.append(head);
+  uniEls.results.prepend(bar);
+}
+
+async function uniMergeBlobs(blobs){
+  const { PDFDocument } = window.PDFLib;
+  const out = await PDFDocument.create();
+  for (const blob of blobs){
+    const b = new Uint8Array(await blob.arrayBuffer());
+    const d = await PDFDocument.load(b, { ignoreEncryption:true });
+    const pages = await out.copyPages(d, d.getPageIndices());
+    pages.forEach(p => out.addPage(p));
+  }
+  const bytes = await out.save();
+  return new Blob([bytes], { type:'application/pdf' });
+}
   </script>
 </body>
 </html>
