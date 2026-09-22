@@ -26,9 +26,6 @@
   <script src="lib/jspdf.umd.min.js"></script>
 
   <style>
-    /* ============================================================
-       ESTILOS ORIGINAIS (NF-e + Shopee)
-       ============================================================ */
     :root {
       --label-width: 6cm;
       --label-height: 4cm;
@@ -242,7 +239,7 @@
         display: flex; justify-content: center; align-items: center;
       }
       main > *:not(#tab-nfe) { display: none !important; }
-      #tab-shopee, #tab-unificador { display: none !important; }
+      #tab-shopee, #tab-unificador, #tab-volumes { display: none !important; }
       .tab-btn { display: none !important; }
       nav[role="tablist"] { display: none !important; }
 
@@ -425,6 +422,14 @@
       font-size: 0.75rem; background: #e2e8f0; padding: 0.15rem 0.6rem;
       border-radius: 9999px; font-weight: 500; color: #1e293b;
     }
+
+    /* Card de preview Volumes */
+    .vol-item {
+      border: 1px solid #e2e8f0; border-radius: 10px; padding: 6px;
+      background: #fafafa; text-align: center;
+    }
+    .vol-item img { width: 100%; aspect-ratio: 2/3; object-fit: contain; background: #fff; border-radius: 6px; }
+    .vol-item label { display: block; font-size: 12px; margin-top: 6px; color: #475569; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -444,7 +449,8 @@
       <nav class="flex gap-1 mt-3 -mb-px overflow-x-auto" role="tablist">
         <button class="tab-btn active" data-tab="nfe" role="tab">📄 Notas Fiscais (XML)</button>
         <button class="tab-btn" data-tab="shopee" role="tab">🛍️ Etiquetas Shopee (PDF)</button>
-        <button class="tab-btn" data-tab="unificador" role="tab">🔗 Unificador de Etiquetas</button>
+        <button class="tab-btn" data-tab="volumes" role="tab">📦 Volumes Full (PDF)</button>
+        <button class="tab-btn" data-tab="unificador" role="tab">🔗 Unificador de Etiquetas (PDF)</button>
       </nav>
     </div>
   </header>
@@ -579,6 +585,83 @@
           <b>Configuração da Tomate:</b> ao imprimir o PDF gerado, selecione papel/etiqueta personalizado de
           <b>100 × 150 mm</b>, escala <b>100%</b> (ou "tamanho real") e <b>desative "Ajustar à página"</b>.
           Se o driver oferecer "largura da mídia", use 100 mm.
+        </div>
+      </section>
+    </div>
+
+    <!-- ==================== ABA VOLUMES FULL ==================== -->
+    <div id="tab-volumes" class="tab-panel hidden space-y-6">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <h2 class="text-lg font-semibold">Etiquetas de Volume (Full)</h2>
+        <p class="text-sm text-slate-600 mt-1">
+          Converte o PDF de <b>"Etiquetas dos volumes"</b> do Full (padrão: 3 etiquetas por página A4 paisagem, em fileira única)
+          em etiquetas térmicas individuais prontas para a <b>Tomate MDK-2074A</b>.
+        </p>
+
+        <div id="volDrop"
+             class="mt-4 flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors text-center">
+          <strong class="text-sm text-slate-700">Arraste aqui o PDF de etiquetas de volume</strong>
+          <span class="text-xs text-slate-500 mt-1">ou clique para selecionar o arquivo</span>
+          <input id="volFile" type="file" accept=".pdf,application/pdf" hidden>
+        </div>
+
+        <div class="flex gap-3 flex-wrap items-end mt-4">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-slate-600">Largura (mm)</span>
+            <input id="volW" type="number" value="100"
+                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-slate-600">Altura (mm)</span>
+            <input id="volH" type="number" value="150"
+                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-slate-600">Layout PDF</span>
+            <select id="volLayout" class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+              <option value="3x1" selected>3 × 1 (fileira única — padrão Volumes Full)</option>
+              <option value="auto">Automático</option>
+              <option value="2x2">2 × 2</option>
+              <option value="1x2">1 × 2</option>
+              <option value="2x1">2 × 1</option>
+              <option value="1x1">1 × 1</option>
+            </select>
+          </label>
+          <button id="volPrepare" disabled
+                  class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Preparar
+          </button>
+          <button id="volPrint" disabled
+                  class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Imprimir selecionadas
+          </button>
+          <button id="volAll" disabled
+                  class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Selecionar todas
+          </button>
+          <button id="volDownload" disabled
+                  class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Baixar PDF 10×15
+          </button>
+          <button id="volClear"
+                  class="px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 text-sm">
+            Limpar
+          </button>
+        </div>
+
+        <div id="volStatus"
+             class="mt-4 p-3 rounded-lg bg-slate-100 text-sm text-slate-600">
+          Nenhum arquivo selecionado.
+        </div>
+
+        <div id="volPreviews"
+             class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"></div>
+
+        <div class="mt-4 p-3 rounded-lg bg-amber-50 text-amber-900 text-xs leading-relaxed">
+          <b>Tomate MDK-2074A:</b> use mídia <b>100 × 150 mm</b>. Na janela de impressão, deixe escala em <b>100%</b> / tamanho real,
+          desative <b>"Ajustar à página"</b> e margens. Cada página do PDF de origem traz 3 etiquetas lado a lado no topo
+          (com bastante espaço em branco abaixo); a última página pode conter menos de 3. O app recorta automaticamente
+          cada etiqueta pelo conteúdo real (ignorando o espaço em branco) e descarta posições vazias.
         </div>
       </section>
     </div>
@@ -1877,14 +1960,14 @@ if ('serviceWorker' in navigator){
 }
 
 /* ============================================================
-   PARTE 2 — ABAS (3 abas)
+   PARTE 2 — ABAS (4 abas)
    ============================================================ */
 (function initTabs(){
   const tabs = document.querySelectorAll('.tab-btn');
   const panels = document.querySelectorAll('.tab-panel');
   const nfeActions = document.getElementById('nfeActions');
   const sizeBadge = document.getElementById('sizeBadge');
-  let unificadorInited = false;
+  const inited = { unificador:false, volumes:false };
 
   function switchTab(name){
     tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
@@ -1892,9 +1975,13 @@ if ('serviceWorker' in navigator){
     if (nfeActions) nfeActions.style.display = (name === 'nfe') ? '' : 'none';
     if (sizeBadge) sizeBadge.style.display = (name === 'nfe') ? '' : 'none';
 
-    if (name === 'unificador' && !unificadorInited){
-      unificadorInited = true;
+    if (name === 'unificador' && !inited.unificador){
+      inited.unificador = true;
       if (typeof window.ensureUnificadorLibs === 'function') window.ensureUnificadorLibs();
+    }
+    if (name === 'volumes' && !inited.volumes){
+      inited.volumes = true;
+      if (typeof window.ensureVolumesLibs === 'function') window.ensureVolumesLibs();
     }
   }
 
@@ -2068,10 +2155,210 @@ function shopeeClear(){
 })();
 
 /* ============================================================
+   PARTE 3.5 — VOLUMES SHOPEE FULL
+   Reaproveita o mesmo loader de pdf.js da aba Shopee
+   ============================================================ */
+const volState = { selected:null, labels:[], pdfjsModule:null };
+
+async function loadVolPdfJsModule(){
+  if (volState.pdfjsModule) return volState.pdfjsModule;
+  const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+  volState.pdfjsModule = pdfjs;
+  return pdfjs;
+}
+window.ensureVolumesLibs = async function(){
+  try { await loadVolPdfJsModule(); } catch(e){ console.warn('Volumes: pdf.js falhou', e); }
+};
+
+const $vol = id => document.getElementById(id);
+
+function volBox(c,x,y,cols,rows){
+  return {
+    x: Math.floor(c.width*x/cols),
+    y: Math.floor(c.height*y/rows),
+    w: Math.floor(c.width*(x+1)/cols) - Math.floor(c.width*x/cols),
+    h: Math.floor(c.height*(y+1)/rows) - Math.floor(c.height*y/rows)
+  };
+}
+function volCrop(src, b, trim=true){
+  const s = src.getContext('2d');
+  const d = s.getImageData(b.x,b.y,b.w,b.h).data;
+  let minX=b.w,minY=b.h,maxX=-1,maxY=-1,ink=0;
+  for (let y=0;y<b.h;y++) for (let x=0;x<b.w;x++){
+    const k=(y*b.w+x)*4, v=(d[k]+d[k+1]+d[k+2])/3;
+    if (v<245){ ink++; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+  }
+  if (maxX<0) return null;
+  const ratio = ink/(b.w*b.h);
+  if (!trim) return { canvas: src, ink: ratio };
+  const p = Math.max(4, Math.round(Math.min(b.w,b.h)*0.012));
+  minX = Math.max(0, minX-p); minY = Math.max(0, minY-p);
+  maxX = Math.min(b.w-1, maxX+p); maxY = Math.min(b.h-1, maxY+p);
+  const o = document.createElement('canvas');
+  o.width = maxX-minX+1; o.height = maxY-minY+1;
+  o.getContext('2d').drawImage(src, b.x+minX, b.y+minY, o.width, o.height, 0, 0, o.width, o.height);
+  return { canvas: o, ink: ratio };
+}
+function volGridFor(c){
+  const val = $vol('volLayout').value;
+  if (val !== 'auto'){
+    const [a,b] = val.split('x').map(Number);
+    return { cols:a, rows:b };
+  }
+  const tests = [{cols:3,rows:1},{cols:2,rows:2},{cols:1,rows:2},{cols:2,rows:1},{cols:1,rows:1}];
+  let best = tests[0], score = -1;
+  for (const t of tests){
+    let sc = 0;
+    for (let r=0;r<t.rows;r++) for (let x=0;x<t.cols;x++){
+      const q = volCrop(c, volBox(c,x,r,t.cols,t.rows), false);
+      sc += q ? Math.min(q.ink, 0.2) : 0;
+    }
+    if (sc > score){ score = sc; best = t; }
+  }
+  return best;
+}
+async function volPreparePdf(){
+  const p = await loadVolPdfJsModule();
+  const data = await volState.selected.arrayBuffer();
+  const doc = await p.getDocument({ data }).promise;
+  volState.labels = [];
+  for (let i=1;i<=doc.numPages;i++){
+    const page = await doc.getPage(i);
+    const v = page.getViewport({ scale:2.5 });
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(v.width); c.height = Math.ceil(v.height);
+    await page.render({ canvasContext:c.getContext('2d'), viewport:v }).promise;
+    const g = volGridFor(c);
+    for (let r=0;r<g.rows;r++) for (let x=0;x<g.cols;x++){
+      const q = volCrop(c, volBox(c,x,r,g.cols,g.rows));
+      if (q && q.ink > 0.012) volState.labels.push(q.canvas);
+    }
+  }
+}
+function volRenderLabels(){
+  const pv = $vol('volPreviews');
+  pv.innerHTML = '';
+  volState.labels.forEach((c,i)=>{
+    const d = document.createElement('div');
+    d.className = 'vol-item';
+    d.innerHTML = `<img src="${c.toDataURL('image/png')}" alt="Etiqueta ${i+1}">
+      <label><input type="checkbox" class="vol-sel" data-i="${i}" checked> Etiqueta ${i+1}</label>`;
+    pv.appendChild(d);
+  });
+  $vol('volStatus').textContent = `${volState.labels.length} etiqueta(s) preparada(s).`;
+  $vol('volPrint').disabled = !volState.labels.length;
+  $vol('volDownload').disabled = !volState.labels.length;
+  $vol('volAll').disabled = !volState.labels.length;
+}
+function volSelectedLabels(){
+  return [...document.querySelectorAll('.vol-sel:checked')].map(x => volState.labels[+x.dataset.i]);
+}
+
+(function initVolumes(){
+  const drop = $vol('volDrop'), file = $vol('volFile');
+  if (!drop || !file) return;
+
+  function choose(f){
+    if (!f){ return; }
+    if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)){
+      $vol('volStatus').textContent = 'Selecione um PDF.';
+      return;
+    }
+    volState.selected = f;
+    volState.labels = [];
+    $vol('volPreviews').innerHTML = '';
+    $vol('volPrepare').disabled = false;
+    $vol('volPrint').disabled = true;
+    $vol('volDownload').disabled = true;
+    $vol('volAll').disabled = true;
+    $vol('volStatus').textContent = `Arquivo: ${f.name}`;
+  }
+
+  drop.addEventListener('click', ()=> file.click());
+  file.addEventListener('change', ()=> file.files[0] && choose(file.files[0]));
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e=>{
+    e.preventDefault(); drop.classList.add('bg-slate-200');
+  }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e=>{
+    e.preventDefault(); drop.classList.remove('bg-slate-200');
+  }));
+  drop.addEventListener('drop', e=>{
+    e.preventDefault();
+    const f = e.dataTransfer.files[0]; if (f) choose(f);
+  });
+
+  $vol('volPrepare').addEventListener('click', async ()=>{
+    if (!volState.selected) return;
+    $vol('volPrepare').disabled = true;
+    $vol('volStatus').textContent = 'Processando…';
+    try {
+      await volPreparePdf();
+      volRenderLabels();
+    } catch(e){
+      console.error(e);
+      $vol('volStatus').textContent = 'Erro: ' + e.message;
+    } finally {
+      $vol('volPrepare').disabled = false;
+    }
+  });
+
+  $vol('volAll').addEventListener('click', ()=>{
+    document.querySelectorAll('.vol-sel').forEach(x => x.checked = true);
+  });
+
+  $vol('volPrint').addEventListener('click', ()=>{
+    const ls = volSelectedLabels();
+    const w = +$vol('volW').value, h = +$vol('volH').value;
+    if (!ls.length) return;
+    const win = window.open('', '_blank');
+    if (!win){ alert('Permita pop-ups para imprimir.'); return; }
+    win.document.write(`<html><head><title>Etiquetas de Volume</title>
+      <style>@page{size:${w}mm ${h}mm;margin:0}html,body{margin:0;padding:0}
+      img{width:${w}mm;height:${h}mm;display:block;page-break-after:always}</style>
+      </head><body></body></html>`);
+    ls.forEach(c=>{
+      const im = win.document.createElement('img');
+      im.src = c.toDataURL('image/png');
+      win.document.body.appendChild(im);
+    });
+    win.document.close();
+    setTimeout(()=>{ win.focus(); win.print(); }, 500);
+  });
+
+  $vol('volDownload').addEventListener('click', ()=>{
+    const ls = volSelectedLabels();
+    if (!ls.length) return;
+    if (typeof window.jspdf === 'undefined'){
+      alert('jsPDF ainda carregando. Tente novamente em alguns segundos.');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const w = +$vol('volW').value, h = +$vol('volH').value;
+    const o = h >= w ? 'portrait' : 'landscape';
+    const doc = new jsPDF({ orientation:o, unit:'mm', format:[w,h], compress:true });
+    ls.forEach((c,i)=>{
+      if (i) doc.addPage([w,h], o);
+      doc.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
+    });
+    doc.save('etiquetas_volumes_10x15.pdf');
+  });
+
+  $vol('volClear').addEventListener('click', ()=>{
+    volState.selected = null;
+    volState.labels = [];
+    file.value = '';
+    $vol('volPreviews').innerHTML = '';
+    $vol('volPrepare').disabled = true;
+    $vol('volPrint').disabled = true;
+    $vol('volDownload').disabled = true;
+    $vol('volAll').disabled = true;
+    $vol('volStatus').textContent = 'Nenhum arquivo selecionado.';
+  });
+})();
+
+/* ============================================================
    PARTE 4 — UNIFICADOR (com tamanho configurável)
-   - Etiqueta de envio: largura total, aspect ratio natural
-   - Bloco DANFE: mesma largura da etiqueta, altura = restante
-   - Conteúdo do DANFE escala para caber no espaço disponível
    ============================================================ */
 
 /* ---- 4.1 Lazy-load das bibliotecas ---- */
@@ -2118,10 +2405,10 @@ window.ensureUnificadorLibs = async function(){
 const UNI = {
   LINE_GAP: 3,
   BORDER_WIDTH: 0.5,
-  PAD_MM: 1.5,           // margem externa da etiqueta
-  GAP_MM: 1.5,           // espaço entre etiqueta de envio e bloco DANFE
-  MIN_DANFE_MM: 16,      // altura mínima reservada ao bloco DANFE
-  MAX_DANFE_RATIO: 0.42  // DANFE nunca ocupa mais que 42% da altura
+  PAD_MM: 1.5,
+  GAP_MM: 1.5,
+  MIN_DANFE_MM: 16,
+  MAX_DANFE_RATIO: 0.42
 };
 
 const UNI_RE_NUM_SERIE = /N[uú]mero\s*:?\s*([\d.,]+)\s*\/\s*S[eé]rie\s*:?\s*([A-Za-z0-9-]+)/i;
@@ -2206,7 +2493,7 @@ async function uniReadPageLayout(doc, pageNumber){
   };
 }
 
-/* ---- 4.5 Bloco DANFE adaptativo (escala tudo para caber no rect) ---- */
+/* ---- 4.5 Bloco DANFE adaptativo ---- */
 function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
                                 rectX, rectY, rectW, rectH){
   const rgb = window.PDFLib.rgb;
