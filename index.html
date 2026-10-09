@@ -2401,13 +2401,21 @@ window.ensureUnificadorLibs = async function(){
   return unificadorLibs.loading;
 };
 
-/* ---- 4.2 Constantes de layout ---- */
+/* ---- 4.2 Constantes de layout ----
+   AJUSTES:
+   - PAD_MM reduzido de 1.5 → 0.4  (margens mínimas nas bordas)
+   - GAP_MM reduzido de 1.5 → 0.6  (pouco espaço entre etiqueta e DANFE)
+   - MIN_DANFE_MM aumentado de 16 → 28 (piso do bloco DANFE)
+   OBS: o valor efetivo de MIN_DANFE_MM é recalculado dinamicamente
+   em uniBuildUnifiedPdf com base na largura da etiqueta para garantir
+   que o CODE128/44 caiba em altura natural (~9.7mm).
+*/
 const UNI = {
   LINE_GAP: 3,
   BORDER_WIDTH: 0.5,
-  PAD_MM: 1.5,
-  GAP_MM: 1.5,
-  MIN_DANFE_MM: 16,
+  PAD_MM: 0.4,
+  GAP_MM: 0.6,
+  MIN_DANFE_MM: 28,
   MAX_DANFE_RATIO: 0.42
 };
 
@@ -2493,14 +2501,19 @@ async function uniReadPageLayout(doc, pageNumber){
   };
 }
 
-/* ---- 4.5 Bloco DANFE adaptativo ---- */
+/* ---- 4.5 Bloco DANFE adaptativo ----
+   AJUSTES:
+   - innerPadY reduzido: antes até 4mm, agora até 2mm (mais espaço útil)
+   - Quando o barcode precisa encolher, agora preserva o aspect ratio
+     (largura e altura encolhem juntas, em vez de achatar).
+*/
 function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
                                 rectX, rectY, rectW, rectH){
   const rgb = window.PDFLib.rgb;
   const U = UNI;
 
   const innerPadX = Math.min(rectW * 0.045, rectH * 0.30);
-  const innerPadY = Math.min(rectH * 0.12, 4);
+  const innerPadY = Math.min(rectH * 0.12, 2);   // <- era 4
   const innerW = rectW - innerPadX * 2;
   const innerH = rectH - innerPadY * 2;
 
@@ -2557,7 +2570,12 @@ function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
   if (contentH > innerH && barcodeSlot){
     const nonBarcode = contentH - barcodeSlot.height;
     const allowed = innerH - nonBarcode;
-    barcodeSlot.height = Math.max(innerH * 0.10, allowed);
+    const newH = Math.max(innerH * 0.18, allowed);
+    // Preserva proporção do barcode (largura/altura).
+    // Antes: só a altura era reduzida → barcode achatado.
+    const ratio = barcodeImage.width / barcodeImage.height;
+    barcodeSlot.height = newH;
+    barcodeSlot.width  = newH * ratio;
     contentH = measure();
   }
 
@@ -2627,8 +2645,15 @@ async function uniBuildUnifiedPdf(file, options){
 
   const pad       = uniMmToPt(UNI.PAD_MM);
   const gap       = uniMmToPt(UNI.GAP_MM);
-  const minDanfeH = uniMmToPt(UNI.MIN_DANFE_MM);
-  const maxDanfeH = targetH * UNI.MAX_DANFE_RATIO;
+
+  /* Piso DINÂMICO do DANFE: garante que o CODE128/44 caiba em altura
+     natural. Aspecto típico CODE128-C com 44 dígitos ≈ 9.23:1
+     (largura/altura). Somamos ~14mm de header+NF+chave+gaps. */
+  const estDanfeW   = targetW - pad * 2;
+  const naturalBarH = estDanfeW / 9.23;
+  const minDanfeHmm = (naturalBarH * 25.4 / 72) + 14;
+  const minDanfeH   = uniMmToPt(Math.max(UNI.MIN_DANFE_MM, minDanfeHmm));
+  const maxDanfeH   = targetH * UNI.MAX_DANFE_RATIO;
 
   for (let i = 0; i < totalPages; i += 2){
     const firstIdx = i, secondIdx = i+1;
