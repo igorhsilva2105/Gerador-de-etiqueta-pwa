@@ -361,38 +361,39 @@
     .rule-config { background-color: #f8fafc; border-radius: 0.375rem; padding: 0.75rem; margin-top: 0.5rem; }
     .rule-config.hidden { display: none; }
 
-    #cfgModal {
+    /* =============== MODAIS DE CONFIGURAÇÃO (genéricos) =============== */
+    .config-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       z-index: 50; align-items: center; justify-content: center;
     }
-    #cfgModal.active { display: flex; }
-    #cfgModal .modal-backdrop {
+    .config-modal.active { display: flex; }
+    .config-modal .modal-backdrop {
       background: rgba(0, 0, 0, 0.25); position: fixed; top: 0; left: 0;
       width: 100%; height: 100%; z-index: 51;
     }
-    #cfgModal .config-container {
+    .config-modal .config-container {
       width: 420px; max-width: 85vw; max-height: 75vh;
       display: flex; flex-direction: column; background: white;
       border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
       overflow: hidden; z-index: 60; position: relative;
     }
-    #cfgModal .config-header {
+    .config-modal .config-header {
       padding: 1rem 1.25rem 0.5rem; border-bottom: 1px solid #e2e8f0;
       background: white; flex-shrink: 0;
     }
-    #cfgModal .config-content {
+    .config-modal .config-content {
       flex: 1; overflow-y: auto; padding: 0.75rem 1.25rem;
       max-height: calc(75vh - 120px);
     }
-    #cfgModal .config-footer {
+    .config-modal .config-footer {
       padding: 0.75rem 1.25rem; border-top: 1px solid #e2e8f0;
       background: #f8fafc; flex-shrink: 0; display: flex;
       justify-content: flex-end; gap: 0.75rem;
     }
-    #cfgModal .config-content::-webkit-scrollbar { width: 6px; }
-    #cfgModal .config-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
-    #cfgModal .config-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    #cfgModal .config-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .config-modal .config-content::-webkit-scrollbar { width: 6px; }
+    .config-modal .config-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+    .config-modal .config-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .config-modal .config-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
     .compact-field { margin-bottom: 0.75rem; }
     .compact-field legend { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
@@ -418,7 +419,7 @@
       padding: 0.25rem; background: #f1f5f9; border-radius: 0.25rem;
     }
 
-    #sizeBadge {
+    .size-badge {
       font-size: 0.75rem; background: #e2e8f0; padding: 0.15rem 0.6rem;
       border-radius: 9999px; font-weight: 500; color: #1e293b;
     }
@@ -437,12 +438,36 @@
     <div class="max-w-6xl mx-auto p-4">
       <div class="flex items-center gap-3">
         <div class="text-xl font-bold">🖨 Automatizador de Etiquetas</div>
-        <span id="sizeBadge" class="badge">6×4 cm</span>
-        <div class="ml-auto flex items-center gap-2" id="nfeActions">
-          <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
-          <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
-          <button id="btnDownloadPdf" class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50" title="Gera um PDF com o tamanho físico exato configurado (recomendado)">Baixar PDF (medida exata)</button>
-          <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
+        <span id="sizeBadge" class="size-badge">6×4 cm</span>
+        <span id="shopeeSizeBadge" class="size-badge" style="display:none">100×150 mm</span>
+        <span id="volSizeBadge" class="size-badge" style="display:none">100×150 mm</span>
+        <span id="uniSizeBadge" class="size-badge" style="display:none">100×150 mm</span>
+        <div class="ml-auto flex items-center gap-2">
+          <div id="nfeActions" class="flex items-center gap-2">
+            <button id="cnfPrint" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Configurações</button>
+            <button id="btnPreview" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100">Visualizar Impressão</button>
+            <button id="btnDownloadPdf" class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50" title="Gera um PDF com o tamanho físico exato configurado (recomendado)">Baixar PDF (medida exata)</button>
+            <button id="btnPrint" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black">Imprimir</button>
+          </div>
+
+          <div id="shopeeActions" class="flex items-center gap-2" style="display:none">
+            <button id="shopeeCfg" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm">Configurações</button>
+            <button id="shopeePrint" disabled class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Imprimir</button>
+            <button id="shopeeDownload" disabled class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Baixar PDF 10×15</button>
+            <button id="shopeeClear" class="px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 text-sm">Limpar</button>
+          </div>
+
+          <div id="volActions" class="flex items-center gap-2" style="display:none">
+            <button id="volCfg" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm">Configurações</button>
+            <button id="volPrint" disabled class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Imprimir selecionadas</button>
+            <button id="volAll" disabled class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Selecionar todas</button>
+            <button id="volDownload" disabled class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Baixar PDF 10×15</button>
+            <button id="volClear" class="px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 text-sm">Limpar</button>
+          </div>
+
+          <div id="uniActions" class="flex items-center gap-2" style="display:none">
+            <button id="uniCfg" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm">Configurações</button>
+          </div>
         </div>
       </div>
 
@@ -536,41 +561,13 @@
           Converta o PDF de etiquetas Shopee (A4, várias etiquetas por página) em etiquetas <b>10 × 15 cm</b>
           prontas para impressão na <b>Tomate MDK-2074A</b>. Funciona 100% no navegador — o PDF não sai do seu computador.
         </p>
+        <p class="text-xs text-slate-500 mt-1">Ao subir o PDF, as etiquetas são preparadas automaticamente.</p>
 
         <div id="shopeeDrop"
              class="mt-4 flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors text-center">
           <strong class="text-sm text-slate-700">Arraste aqui o PDF da Shopee</strong>
           <span class="text-xs text-slate-500 mt-1">ou clique para selecionar o arquivo</span>
           <input id="shopeeFile" type="file" accept="application/pdf" hidden>
-        </div>
-
-        <div class="flex gap-3 flex-wrap items-end mt-4">
-          <label class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-slate-600">Largura (mm)</span>
-            <input id="shopeeW" type="number" value="100"
-                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-slate-600">Altura (mm)</span>
-            <input id="shopeeH" type="number" value="150"
-                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
-          </label>
-          <button id="shopeePrepare" disabled
-                  class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Preparar etiquetas
-          </button>
-          <button id="shopeePrint" disabled
-                  class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Imprimir
-          </button>
-          <button id="shopeeDownload" disabled
-                  class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Baixar PDF 10×15
-          </button>
-          <button id="shopeeClear"
-                  class="px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 text-sm">
-            Limpar
-          </button>
         </div>
 
         <div id="shopeeStatus"
@@ -597,56 +594,13 @@
           Converte o PDF de <b>"Etiquetas dos volumes"</b> do Full (padrão: 3 etiquetas por página A4 paisagem, em fileira única)
           em etiquetas térmicas individuais prontas para a <b>Tomate MDK-2074A</b>.
         </p>
+        <p class="text-xs text-slate-500 mt-1">Ao subir o PDF, as etiquetas são preparadas automaticamente.</p>
 
         <div id="volDrop"
              class="mt-4 flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors text-center">
           <strong class="text-sm text-slate-700">Arraste aqui o PDF de etiquetas de volume</strong>
           <span class="text-xs text-slate-500 mt-1">ou clique para selecionar o arquivo</span>
           <input id="volFile" type="file" accept=".pdf,application/pdf" hidden>
-        </div>
-
-        <div class="flex gap-3 flex-wrap items-end mt-4">
-          <label class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-slate-600">Largura (mm)</span>
-            <input id="volW" type="number" value="100"
-                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-slate-600">Altura (mm)</span>
-            <input id="volH" type="number" value="150"
-                   class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm">
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-slate-600">Layout PDF</span>
-            <select id="volLayout" class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-              <option value="3x1" selected>3 × 1 (fileira única — padrão Volumes Full)</option>
-              <option value="auto">Automático</option>
-              <option value="2x2">2 × 2</option>
-              <option value="1x2">1 × 2</option>
-              <option value="2x1">2 × 1</option>
-              <option value="1x1">1 × 1</option>
-            </select>
-          </label>
-          <button id="volPrepare" disabled
-                  class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Preparar
-          </button>
-          <button id="volPrint" disabled
-                  class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Imprimir selecionadas
-          </button>
-          <button id="volAll" disabled
-                  class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Selecionar todas
-          </button>
-          <button id="volDownload" disabled
-                  class="px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Baixar PDF 10×15
-          </button>
-          <button id="volClear"
-                  class="px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 text-sm">
-            Limpar
-          </button>
         </div>
 
         <div id="volStatus"
@@ -691,22 +645,6 @@
           <strong>Arraste os PDFs aqui</strong>
           <span>ou clique para selecionar — pode enviar vários arquivos de uma vez</span>
         </label>
-
-        <div class="uni-options">
-          <label class="uni-field">
-            <span>Largura (mm)</span>
-            <input id="uniW" type="number" value="100" min="20" max="300" step="1">
-          </label>
-          <label class="uni-field">
-            <span>Altura (mm)</span>
-            <input id="uniH" type="number" value="150" min="20" max="400" step="1">
-          </label>
-          <label class="uni-switch">
-            <input type="checkbox" id="uniKeepSecond" />
-            <span class="uni-track"><span class="uni-thumb"></span></span>
-            <span>Manter a 2ª página (DANFE) no PDF final</span>
-          </label>
-        </div>
 
         <div id="uniLoadingLibs" style="display:none;margin-top:12px;font-size:13px;color:var(--uni-muted);display:flex;align-items:center;gap:8px">
           <span class="uni-spinner"></span>
@@ -759,8 +697,8 @@
     </div>
   </div>
 
-  <!-- Config modal -->
-  <div id="cfgModal">
+  <!-- Config modal (NF-e) -->
+  <div id="cfgModal" class="config-modal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
       <div class="config-header">
@@ -965,6 +903,132 @@
       <div class="config-footer">
         <button id="cfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
         <button id="cfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config modal (Shopee) -->
+  <div id="shopeeCfgModal" class="config-modal">
+    <div class="modal-backdrop"></div>
+    <div class="config-container">
+      <div class="config-header">
+        <h3 class="text-lg font-semibold">Configurações — Etiquetas Shopee</h3>
+      </div>
+      <div class="config-content">
+        <div class="space-y-3">
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
+              <div class="flex gap-2">
+                <label class="flex-1">
+                  <span class="text-sm text-slate-600">Largura (mm)</span>
+                  <input type="number" id="shopeeW" value="100" min="20" max="500"
+                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                </label>
+                <label class="flex-1">
+                  <span class="text-sm text-slate-600">Altura (mm)</span>
+                  <input type="number" id="shopeeH" value="150" min="20" max="500"
+                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                </label>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">Tamanho final do PDF gerado, em milímetros.</p>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+      <div class="config-footer">
+        <button id="shopeeCfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
+        <button id="shopeeCfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config modal (Volumes) -->
+  <div id="volCfgModal" class="config-modal">
+    <div class="modal-backdrop"></div>
+    <div class="config-container">
+      <div class="config-header">
+        <h3 class="text-lg font-semibold">Configurações — Volumes Full</h3>
+      </div>
+      <div class="config-content">
+        <div class="space-y-3">
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
+              <div class="flex gap-2">
+                <label class="flex-1">
+                  <span class="text-sm text-slate-600">Largura (mm)</span>
+                  <input type="number" id="volW" value="100" min="20" max="500"
+                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                </label>
+                <label class="flex-1">
+                  <span class="text-sm text-slate-600">Altura (mm)</span>
+                  <input type="number" id="volH" value="150" min="20" max="500"
+                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                </label>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">Tamanho final do PDF gerado, em milímetros.</p>
+            </fieldset>
+          </div>
+          <div class="compact-field">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Layout PDF</label>
+            <select id="volLayout" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+              <option value="3x1" selected>3 × 1 (fileira única — padrão Volumes Full)</option>
+              <option value="auto">Automático</option>
+              <option value="2x2">2 × 2</option>
+              <option value="1x2">1 × 2</option>
+              <option value="2x1">2 × 1</option>
+              <option value="1x1">1 × 1</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-1">Como as etiquetas estão distribuídas em cada página do PDF de origem.</p>
+          </div>
+        </div>
+      </div>
+      <div class="config-footer">
+        <button id="volCfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
+        <button id="volCfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config modal (Unificador) -->
+  <div id="uniCfgModal" class="config-modal">
+    <div class="modal-backdrop"></div>
+    <div class="config-container">
+      <div class="config-header">
+        <h3 class="text-lg font-semibold">Configurações — Unificador</h3>
+      </div>
+      <div class="config-content">
+        <div class="space-y-3">
+          <div class="compact-field">
+            <fieldset>
+              <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
+              <div class="flex gap-2">
+                <label class="flex-1">
+                  <span class="text-sm text-slate-600">Largura (mm)</span>
+                  <input type="number" id="uniW" value="100" min="20" max="300" step="1"
+                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                </label>
+                <label class="flex-1">
+                  <span class="text-sm text-slate-600">Altura (mm)</span>
+                  <input type="number" id="uniH" value="150" min="20" max="400" step="1"
+                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                </label>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">Tamanho final do PDF unificado, em milímetros.</p>
+            </fieldset>
+          </div>
+          <div class="compact-field">
+            <label class="text-sm flex items-center gap-2">
+              <input type="checkbox" id="uniKeepSecond">
+              <span>Manter a 2ª página (DANFE) no PDF final</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="config-footer">
+        <button id="uniCfgCancel" class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 text-sm">Cancelar</button>
+        <button id="uniCfgSave" class="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900 text-sm">Salvar</button>
       </div>
     </div>
   </div>
@@ -1754,6 +1818,64 @@ async function restoreBackupFromFolder(){
   } catch(e){ alert('Falha: '+e.message); }
 }
 
+/* ==================== HELPERS DE BADGE (Shopee / Volumes / Unificador) ==================== */
+function updateShopeeBadge(){
+  const badge = document.getElementById('shopeeSizeBadge');
+  if (!badge) return;
+  const w = document.getElementById('shopeeW')?.value || 100;
+  const h = document.getElementById('shopeeH')?.value || 150;
+  badge.textContent = `${w}×${h} mm`;
+}
+function updateVolBadge(){
+  const badge = document.getElementById('volSizeBadge');
+  if (!badge) return;
+  const w = document.getElementById('volW')?.value || 100;
+  const h = document.getElementById('volH')?.value || 150;
+  badge.textContent = `${w}×${h} mm`;
+}
+function updateUniBadge(){
+  const badge = document.getElementById('uniSizeBadge');
+  if (!badge) return;
+  const w = document.getElementById('uniW')?.value || 100;
+  const h = document.getElementById('uniH')?.value || 150;
+  badge.textContent = `${w}×${h} mm`;
+}
+
+/* ==================== MODAIS SIMPLES DE CONFIGURAÇÃO ==================== */
+function setupSimpleCfgModal({ modalId, openBtnId, cancelBtnId, saveBtnId, readFn, applyFn, onSave }){
+  const modal = document.getElementById(modalId);
+  const openBtn = document.getElementById(openBtnId);
+  const cancelBtn = document.getElementById(cancelBtnId);
+  const saveBtn = document.getElementById(saveBtnId);
+  if (!modal || !openBtn || !cancelBtn || !saveBtn) return;
+
+  let snap = null;
+
+  openBtn.addEventListener('click', () => {
+    snap = readFn();
+    modal.classList.add('active');
+  });
+
+  saveBtn.addEventListener('click', () => {
+    modal.classList.remove('active');
+    if (onSave) onSave();
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    if (snap) applyFn(snap);
+    modal.classList.remove('active');
+    if (onSave) onSave();
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-backdrop') && e.target.closest('.config-modal') === modal){
+      if (snap) applyFn(snap);
+      modal.classList.remove('active');
+      if (onSave) onSave();
+    }
+  });
+}
+
 /* ==================== INIT PRINCIPAL ==================== */
 document.addEventListener('DOMContentLoaded', ()=>{
   const saved = localStorage.getItem('mag_labels_cfg');
@@ -1947,6 +2069,64 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#backupSettings').addEventListener('click', saveBackupToFolder);
   $('#restoreBackup').addEventListener('click', restoreBackupFromFolder);
 
+  /* ===== Config modais Shopee / Volumes / Unificador ===== */
+  setupSimpleCfgModal({
+    modalId:'shopeeCfgModal',
+    openBtnId:'shopeeCfg',
+    cancelBtnId:'shopeeCfgCancel',
+    saveBtnId:'shopeeCfgSave',
+    readFn: () => ({
+      w: document.getElementById('shopeeW').value,
+      h: document.getElementById('shopeeH').value
+    }),
+    applyFn: (v) => {
+      document.getElementById('shopeeW').value = v.w;
+      document.getElementById('shopeeH').value = v.h;
+    },
+    onSave: updateShopeeBadge
+  });
+
+  setupSimpleCfgModal({
+    modalId:'volCfgModal',
+    openBtnId:'volCfg',
+    cancelBtnId:'volCfgCancel',
+    saveBtnId:'volCfgSave',
+    readFn: () => ({
+      w: document.getElementById('volW').value,
+      h: document.getElementById('volH').value,
+      layout: document.getElementById('volLayout').value
+    }),
+    applyFn: (v) => {
+      document.getElementById('volW').value = v.w;
+      document.getElementById('volH').value = v.h;
+      document.getElementById('volLayout').value = v.layout;
+    },
+    onSave: updateVolBadge
+  });
+
+  setupSimpleCfgModal({
+    modalId:'uniCfgModal',
+    openBtnId:'uniCfg',
+    cancelBtnId:'uniCfgCancel',
+    saveBtnId:'uniCfgSave',
+    readFn: () => ({
+      w: document.getElementById('uniW').value,
+      h: document.getElementById('uniH').value,
+      keepSecond: document.getElementById('uniKeepSecond').checked
+    }),
+    applyFn: (v) => {
+      document.getElementById('uniW').value = v.w;
+      document.getElementById('uniH').value = v.h;
+      document.getElementById('uniKeepSecond').checked = v.keepSecond;
+    },
+    onSave: () => { updateUniBadge(); saveUniCfg(); }
+  });
+
+  /* Sincroniza badges com os valores iniciais */
+  updateShopeeBadge();
+  updateVolBadge();
+  updateUniBadge();
+
   render();
 });
 
@@ -1965,15 +2145,32 @@ if ('serviceWorker' in navigator){
 (function initTabs(){
   const tabs = document.querySelectorAll('.tab-btn');
   const panels = document.querySelectorAll('.tab-panel');
-  const nfeActions = document.getElementById('nfeActions');
-  const sizeBadge = document.getElementById('sizeBadge');
+  const nfeActions    = document.getElementById('nfeActions');
+  const shopeeActions = document.getElementById('shopeeActions');
+  const volActions    = document.getElementById('volActions');
+  const uniActions    = document.getElementById('uniActions');
+  const nfeBadge      = document.getElementById('sizeBadge');
+  const shopeeBadge   = document.getElementById('shopeeSizeBadge');
+  const volBadge      = document.getElementById('volSizeBadge');
+  const uniBadge      = document.getElementById('uniSizeBadge');
   const inited = { unificador:false, volumes:false };
 
   function switchTab(name){
+    /* fecha qualquer modal de configuração aberto */
+    document.querySelectorAll('.config-modal.active').forEach(m => m.classList.remove('active'));
+
     tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     panels.forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + name));
-    if (nfeActions) nfeActions.style.display = (name === 'nfe') ? '' : 'none';
-    if (sizeBadge) sizeBadge.style.display = (name === 'nfe') ? '' : 'none';
+
+    if (nfeActions)    nfeActions.style.display    = (name === 'nfe')        ? '' : 'none';
+    if (shopeeActions) shopeeActions.style.display = (name === 'shopee')     ? '' : 'none';
+    if (volActions)    volActions.style.display    = (name === 'volumes')    ? '' : 'none';
+    if (uniActions)    uniActions.style.display    = (name === 'unificador') ? '' : 'none';
+
+    if (nfeBadge)    nfeBadge.style.display    = (name === 'nfe')        ? '' : 'none';
+    if (shopeeBadge) shopeeBadge.style.display = (name === 'shopee')     ? '' : 'none';
+    if (volBadge)    volBadge.style.display    = (name === 'volumes')    ? '' : 'none';
+    if (uniBadge)    uniBadge.style.display    = (name === 'unificador') ? '' : 'none';
 
     if (name === 'unificador' && !inited.unificador){
       inited.unificador = true;
@@ -1990,7 +2187,7 @@ if ('serviceWorker' in navigator){
 })();
 
 /* ============================================================
-   PARTE 3 — SHOPEE
+   PARTE 3 — SHOPEE (preparação automática)
    ============================================================ */
 const shopeeState = { selected:null, pages:[], pdfjsModule:null };
 const $shopee = id => document.getElementById(id);
@@ -2005,11 +2202,11 @@ async function loadPdfJsModule(){
 function shopeeSelectFile(f){
   if (!f || f.type !== 'application/pdf'){ $shopee('shopeeStatus').textContent = 'Selecione um PDF.'; return; }
   shopeeState.selected = f; shopeeState.pages = [];
-  $shopee('shopeePrepare').disabled = false;
   $shopee('shopeePrint').disabled = true;
   $shopee('shopeeDownload').disabled = true;
   $shopee('shopeePreviews').innerHTML = '';
-  $shopee('shopeeStatus').textContent = `PDF selecionado: ${f.name}`;
+  $shopee('shopeeStatus').textContent = `PDF selecionado: ${f.name} — preparando etiquetas…`;
+  shopeePrepare();
 }
 function shopeeCropBox(c,x,y,cols,rows){
   return {
@@ -2052,8 +2249,6 @@ function shopeeDetectGrid(canvas){
 }
 async function shopeePrepare(){
   if (!shopeeState.selected) return;
-  const btn = $shopee('shopeePrepare');
-  btn.disabled = true;
   $shopee('shopeeStatus').textContent = 'Lendo o PDF e identificando as etiquetas…';
   try {
     const pdfjs = await loadPdfJsModule();
@@ -2092,7 +2287,7 @@ async function shopeePrepare(){
   } catch(e){
     console.error(e);
     $shopee('shopeeStatus').textContent = 'Erro: ' + e.message;
-  } finally { btn.disabled = false; }
+  }
 }
 function shopeePrint(){
   const w = Number($shopee('shopeeW').value);
@@ -2128,7 +2323,6 @@ function shopeeClear(){
   shopeeState.selected = null; shopeeState.pages = [];
   $shopee('shopeePreviews').innerHTML = '';
   $shopee('shopeeFile').value = '';
-  $shopee('shopeePrepare').disabled = true;
   $shopee('shopeePrint').disabled = true;
   $shopee('shopeeDownload').disabled = true;
   $shopee('shopeeStatus').textContent = 'Nenhum PDF selecionado.';
@@ -2148,15 +2342,14 @@ function shopeeClear(){
     e.preventDefault();
     const f = e.dataTransfer.files[0]; if (f) shopeeSelectFile(f);
   });
-  $shopee('shopeePrepare').addEventListener('click', shopeePrepare);
+  /* O botão "Preparar" foi removido — a preparação é automática em shopeeSelectFile */
   $shopee('shopeePrint').addEventListener('click', shopeePrint);
   $shopee('shopeeDownload').addEventListener('click', shopeeDownload);
   $shopee('shopeeClear').addEventListener('click', shopeeClear);
 })();
 
 /* ============================================================
-   PARTE 3.5 — VOLUMES SHOPEE FULL
-   Reaproveita o mesmo loader de pdf.js da aba Shopee
+   PARTE 3.5 — VOLUMES SHOPEE FULL (preparação automática)
    ============================================================ */
 const volState = { selected:null, labels:[], pdfjsModule:null };
 
@@ -2251,6 +2444,19 @@ function volRenderLabels(){
   $vol('volDownload').disabled = !volState.labels.length;
   $vol('volAll').disabled = !volState.labels.length;
 }
+
+async function volAutoPrepare(){
+  if (!volState.selected) return;
+  $vol('volStatus').textContent = 'Processando…';
+  try {
+    await volPreparePdf();
+    volRenderLabels();
+  } catch(e){
+    console.error(e);
+    $vol('volStatus').textContent = 'Erro: ' + e.message;
+  }
+}
+
 function volSelectedLabels(){
   return [...document.querySelectorAll('.vol-sel:checked')].map(x => volState.labels[+x.dataset.i]);
 }
@@ -2268,11 +2474,11 @@ function volSelectedLabels(){
     volState.selected = f;
     volState.labels = [];
     $vol('volPreviews').innerHTML = '';
-    $vol('volPrepare').disabled = false;
     $vol('volPrint').disabled = true;
     $vol('volDownload').disabled = true;
     $vol('volAll').disabled = true;
-    $vol('volStatus').textContent = `Arquivo: ${f.name}`;
+    $vol('volStatus').textContent = `Arquivo: ${f.name} — preparando etiquetas…`;
+    volAutoPrepare();
   }
 
   drop.addEventListener('click', ()=> file.click());
@@ -2288,20 +2494,7 @@ function volSelectedLabels(){
     const f = e.dataTransfer.files[0]; if (f) choose(f);
   });
 
-  $vol('volPrepare').addEventListener('click', async ()=>{
-    if (!volState.selected) return;
-    $vol('volPrepare').disabled = true;
-    $vol('volStatus').textContent = 'Processando…';
-    try {
-      await volPreparePdf();
-      volRenderLabels();
-    } catch(e){
-      console.error(e);
-      $vol('volStatus').textContent = 'Erro: ' + e.message;
-    } finally {
-      $vol('volPrepare').disabled = false;
-    }
-  });
+  /* O botão "Preparar" foi removido — a preparação é automática em choose() */
 
   $vol('volAll').addEventListener('click', ()=>{
     document.querySelectorAll('.vol-sel').forEach(x => x.checked = true);
@@ -2349,7 +2542,6 @@ function volSelectedLabels(){
     volState.labels = [];
     file.value = '';
     $vol('volPreviews').innerHTML = '';
-    $vol('volPrepare').disabled = true;
     $vol('volPrint').disabled = true;
     $vol('volDownload').disabled = true;
     $vol('volAll').disabled = true;
@@ -2358,7 +2550,7 @@ function volSelectedLabels(){
 })();
 
 /* ============================================================
-   PARTE 4 — UNIFICADOR (com tamanho configurável)
+   PARTE 4 — UNIFICADOR
    ============================================================ */
 
 /* ---- 4.1 Lazy-load das bibliotecas ---- */
@@ -2401,15 +2593,7 @@ window.ensureUnificadorLibs = async function(){
   return unificadorLibs.loading;
 };
 
-/* ---- 4.2 Constantes de layout ----
-   AJUSTES:
-   - PAD_MM reduzido de 1.5 → 0.4  (margens mínimas nas bordas)
-   - GAP_MM reduzido de 1.5 → 0.6  (pouco espaço entre etiqueta e DANFE)
-   - MIN_DANFE_MM aumentado de 16 → 28 (piso do bloco DANFE)
-   OBS: o valor efetivo de MIN_DANFE_MM é recalculado dinamicamente
-   em uniBuildUnifiedPdf com base na largura da etiqueta para garantir
-   que o CODE128/44 caiba em altura natural (~9.7mm).
-*/
+/* ---- 4.2 Constantes de layout ---- */
 const UNI = {
   LINE_GAP: 3,
   BORDER_WIDTH: 0.5,
@@ -2501,19 +2685,14 @@ async function uniReadPageLayout(doc, pageNumber){
   };
 }
 
-/* ---- 4.5 Bloco DANFE adaptativo ----
-   AJUSTES:
-   - innerPadY reduzido: antes até 4mm, agora até 2mm (mais espaço útil)
-   - Quando o barcode precisa encolher, agora preserva o aspect ratio
-     (largura e altura encolhem juntas, em vez de achatar).
-*/
+/* ---- 4.5 Bloco DANFE adaptativo ---- */
 function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
                                 rectX, rectY, rectW, rectH){
   const rgb = window.PDFLib.rgb;
   const U = UNI;
 
   const innerPadX = Math.min(rectW * 0.045, rectH * 0.30);
-  const innerPadY = Math.min(rectH * 0.12, 2);   // <- era 4
+  const innerPadY = Math.min(rectH * 0.12, 2);
   const innerW = rectW - innerPadX * 2;
   const innerH = rectH - innerPadY * 2;
 
@@ -2571,8 +2750,6 @@ function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
     const nonBarcode = contentH - barcodeSlot.height;
     const allowed = innerH - nonBarcode;
     const newH = Math.max(innerH * 0.18, allowed);
-    // Preserva proporção do barcode (largura/altura).
-    // Antes: só a altura era reduzida → barcode achatado.
     const ratio = barcodeImage.width / barcodeImage.height;
     barcodeSlot.height = newH;
     barcodeSlot.width  = newH * ratio;
@@ -2646,9 +2823,6 @@ async function uniBuildUnifiedPdf(file, options){
   const pad       = uniMmToPt(UNI.PAD_MM);
   const gap       = uniMmToPt(UNI.GAP_MM);
 
-  /* Piso DINÂMICO do DANFE: garante que o CODE128/44 caiba em altura
-     natural. Aspecto típico CODE128-C com 44 dígitos ≈ 9.23:1
-     (largura/altura). Somamos ~14mm de header+NF+chave+gaps. */
   const estDanfeW   = targetW - pad * 2;
   const naturalBarH = estDanfeW / 9.23;
   const minDanfeHmm = (naturalBarH * 25.4 / 72) + 14;
