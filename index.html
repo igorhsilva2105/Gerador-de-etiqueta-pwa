@@ -85,7 +85,6 @@
       font-size: 20px;
     }
 
-    /* ===== Abas ===== */
     .tab-btn {
       padding: 0.5rem 1rem;
       font-size: 0.875rem;
@@ -119,9 +118,6 @@
     }
     .shopee-preview .cap { font-size: 11px; color: #64748b; margin-top: 4px; }
 
-    /* ============================================================
-       ESTILOS DO UNIFICADOR
-       ============================================================ */
     #tab-unificador {
       --uni-bg:#f4f6fb; --uni-surface:#fff; --uni-border:#e2e6ef;
       --uni-text:#1a2233; --uni-muted:#6b7688;
@@ -146,39 +142,6 @@
     #tab-unificador .uni-dz-icon{ width:34px; height:34px; color:var(--uni-accent); margin-bottom:4px; }
     #tab-unificador .uni-dropzone strong{ font-size:15.5px; font-weight:620; }
     #tab-unificador .uni-dropzone span{ color:var(--uni-muted); font-size:13px; }
-
-    #tab-unificador .uni-options{
-      margin-top:16px; padding-top:14px; border-top:1px solid var(--uni-border);
-      display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end;
-    }
-    #tab-unificador .uni-field{
-      display:flex; flex-direction:column; gap:4px; font-size:13px;
-    }
-    #tab-unificador .uni-field span{ font-weight:600; color:var(--uni-muted); }
-    #tab-unificador .uni-field input{
-      width:90px; padding:8px 10px; border:1px solid var(--uni-border);
-      border-radius:8px; font-size:13.5px; font-family:inherit;
-      color:var(--uni-text); background:#fff;
-    }
-    #tab-unificador .uni-field input:focus{
-      outline:none; border-color:var(--uni-accent);
-      box-shadow:0 0 0 3px var(--uni-accent-soft);
-    }
-
-    #tab-unificador .uni-switch{
-      display:inline-flex; align-items:center; gap:10px; cursor:pointer; font-size:13.5px; user-select:none;
-    }
-    #tab-unificador .uni-switch input{ position:absolute; opacity:0; pointer-events:none; }
-    #tab-unificador .uni-switch .uni-track{
-      position:relative; width:38px; height:22px; border-radius:999px; background:#cfd7e6;
-      transition:background .18s; flex:0 0 auto;
-    }
-    #tab-unificador .uni-switch .uni-thumb{
-      position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%;
-      background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .18s;
-    }
-    #tab-unificador .uni-switch input:checked + .uni-track{ background:var(--uni-accent); }
-    #tab-unificador .uni-switch input:checked + .uni-track .uni-thumb{ transform:translateX(16px); }
 
     #tab-unificador .uni-results{ display:grid; gap:14px; }
     #tab-unificador .uni-result-card{
@@ -223,7 +186,6 @@
     }
     @keyframes uni-spin{ to{ transform:rotate(360deg); } }
 
-    /* ===== Impressão ===== */
     @media print {
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
@@ -300,7 +262,6 @@
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
 
-      /* Contêiner de impressão in-page (Shopee/Volumes modo "app") */
       body > #appPrintContainer { display: block !important; }
       body > *:not(#appPrintContainer) { display: none !important; }
       #appPrintContainer img {
@@ -312,7 +273,6 @@
       }
     }
 
-    /* Modais / preview / XML */
     #printPreviewModal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.8); z-index: 100; overflow: auto;
@@ -372,7 +332,6 @@
     .rule-config { background-color: #f8fafc; border-radius: 0.375rem; padding: 0.75rem; margin-top: 0.5rem; }
     .rule-config.hidden { display: none; }
 
-    /* =============== MODAIS DE CONFIGURAÇÃO =============== */
     .config-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       z-index: 50; align-items: center; justify-content: center;
@@ -404,13 +363,11 @@
     .config-modal .config-content::-webkit-scrollbar { width: 6px; }
     .config-modal .config-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
     .config-modal .config-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    .config-modal .config-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
     .compact-field { margin-bottom: 0.75rem; }
     .compact-field legend { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
     .compact-checkbox-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
     .compact-checkbox-group label { font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem; }
-    .compact-checkbox-group input[type="checkbox"] { width: 1rem; height: 1rem; }
 
     .term-highlight-row { display: flex; gap: 0.25rem; align-items: center; margin-bottom: 0.25rem; }
     .term-highlight-row input {
@@ -491,7 +448,6 @@
 
   <main class="max-w-6xl mx-auto p-4 space-y-6">
 
-    <!-- ==================== ABA NF-e ==================== -->
     <div id="tab-nfe" class="tab-panel space-y-6">
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
@@ -562,13 +518,12 @@
       </section>
     </div>
 
-    <!-- ==================== ABA SHOPEE ==================== -->
     <div id="tab-shopee" class="tab-panel hidden space-y-6">
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
         <h2 class="text-lg font-semibold">Preparador de Etiquetas Shopee</h2>
         <p class="text-sm text-slate-600 mt-1">
           Converta o PDF de etiquetas Shopee (A4, várias etiquetas por página) em etiquetas <b>10 × 15 cm</b>
-          prontas para impressão na <b>Tomate MDK-2074A</b>. Funciona 100% no navegador — o PDF não sai do seu computador.
+          prontas para impressão na <b>Tomate MDK-2074A</b>.
         </p>
         <p class="text-xs text-slate-500 mt-1">Ao subir o PDF, as etiquetas são preparadas automaticamente.</p>
 
@@ -579,30 +534,19 @@
           <input id="shopeeFile" type="file" accept="application/pdf" hidden>
         </div>
 
-        <div id="shopeeStatus"
-             class="mt-4 p-3 rounded-lg bg-slate-100 text-sm text-slate-600">
-          Nenhum PDF selecionado.
-        </div>
-
-        <div id="shopeePreviews"
-             class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"></div>
+        <div id="shopeeStatus" class="mt-4 p-3 rounded-lg bg-slate-100 text-sm text-slate-600">Nenhum PDF selecionado.</div>
+        <div id="shopeePreviews" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"></div>
 
         <div class="mt-4 p-3 rounded-lg bg-amber-50 text-amber-900 text-xs leading-relaxed">
-          <b>Configuração da Tomate:</b> ao imprimir o PDF gerado, selecione papel/etiqueta personalizado de
-          <b>100 × 150 mm</b>, escala <b>100%</b> (ou "tamanho real") e <b>desative "Ajustar à página"</b>.
-          Se o driver oferecer "largura da mídia", use 100 mm.
+          <b>Configuração da Tomate:</b> ao imprimir, use papel <b>100 × 150 mm</b>, escala <b>100%</b> e desative "Ajustar à página".
         </div>
       </section>
     </div>
 
-    <!-- ==================== ABA VOLUMES FULL ==================== -->
     <div id="tab-volumes" class="tab-panel hidden space-y-6">
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
         <h2 class="text-lg font-semibold">Etiquetas de Volume (Full)</h2>
-        <p class="text-sm text-slate-600 mt-1">
-          Converte o PDF de <b>"Etiquetas dos volumes"</b> do Full (padrão: 3 etiquetas por página A4 paisagem, em fileira única)
-          em etiquetas térmicas individuais prontas para a <b>Tomate MDK-2074A</b>.
-        </p>
+        <p class="text-sm text-slate-600 mt-1">Converte o PDF de etiquetas dos volumes do Full em etiquetas térmicas individuais.</p>
         <p class="text-xs text-slate-500 mt-1">Ao subir o PDF, as etiquetas são preparadas automaticamente.</p>
 
         <div id="volDrop"
@@ -612,24 +556,11 @@
           <input id="volFile" type="file" accept=".pdf,application/pdf" hidden>
         </div>
 
-        <div id="volStatus"
-             class="mt-4 p-3 rounded-lg bg-slate-100 text-sm text-slate-600">
-          Nenhum arquivo selecionado.
-        </div>
-
-        <div id="volPreviews"
-             class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"></div>
-
-        <div class="mt-4 p-3 rounded-lg bg-amber-50 text-amber-900 text-xs leading-relaxed">
-          <b>Tomate MDK-2074A:</b> use mídia <b>100 × 150 mm</b>. Na janela de impressão, deixe escala em <b>100%</b> / tamanho real,
-          desative <b>"Ajustar à página"</b> e margens. Cada página do PDF de origem traz 3 etiquetas lado a lado no topo
-          (com bastante espaço em branco abaixo); a última página pode conter menos de 3. O app recorta automaticamente
-          cada etiqueta pelo conteúdo real (ignorando o espaço em branco) e descarta posições vazias.
-        </div>
+        <div id="volStatus" class="mt-4 p-3 rounded-lg bg-slate-100 text-sm text-slate-600">Nenhum arquivo selecionado.</div>
+        <div id="volPreviews" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"></div>
       </section>
     </div>
 
-    <!-- ==================== ABA UNIFICADOR ==================== -->
     <div id="tab-unificador" class="tab-panel hidden">
       <section class="uni-card">
         <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px">
@@ -637,17 +568,14 @@
           <div>
             <h2 style="margin:0;font-size:19px;font-weight:650;color:var(--uni-text)">Unificador de Etiquetas</h2>
             <p style="margin:4px 0 0;color:var(--uni-muted);font-size:13.5px;max-width:720px">
-              Junta etiqueta + DANFE de cada venda em uma única página e imprime
-              <strong>cabeçalho, número da nota, emissão e código de barras</strong> da chave de acesso.
-              O PDF final sai com o <strong>tamanho exato</strong> da sua etiqueta térmica.
+              Junta etiqueta + DANFE de cada venda em uma única página.
             </p>
           </div>
         </div>
 
         <label id="uniDropzone" class="uni-dropzone" for="uniFileInput">
           <input id="uniFileInput" type="file" accept="application/pdf" multiple hidden />
-          <svg class="uni-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="uni-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 16V4m0 0L7 9m5-5 5 5"/>
             <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
           </svg>
@@ -662,15 +590,10 @@
       </section>
 
       <section id="uniResults" class="uni-results" aria-live="polite" style="margin-top:20px"></section>
-
-      <div style="text-align:center;color:var(--uni-muted);font-size:12.5px;padding:0 24px 20px">
-        Todo o processamento acontece no seu navegador. Nenhum arquivo é enviado a servidores.
-      </div>
     </div>
 
   </main>
 
-  <!-- Modal de visualização de impressão -->
   <div id="printPreviewModal">
     <div class="print-preview-header">
       <h2 class="text-xl font-bold">Visualização de Impressão</h2>
@@ -684,7 +607,6 @@
     </div>
   </div>
 
-  <!-- Modal exemplo XML -->
   <div id="xmlExampleModal">
     <div id="xmlExampleContent">
       <div class="xml-example-header">
@@ -696,17 +618,12 @@
 &lt;nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"&gt;
   &lt;NFe&gt;&lt;infNFe Id="NFe35210600000000000125550010000000011234567890"&gt;
     &lt;ide&gt;&lt;nNF&gt;123456&lt;/nNF&gt;&lt;dhEmi&gt;2021-06-01T10:00:00-03:00&lt;/dhEmi&gt;&lt;/ide&gt;
-    &lt;emit&gt;&lt;CNPJ&gt;00000000000100&lt;/CNPJ&gt;&lt;xNome&gt;Empresa Exemplo Ltda&lt;/xNome&gt;&lt;/emit&gt;
-    &lt;dest&gt;&lt;xNome&gt;Cliente Exemplo SA&lt;/xNome&gt;&lt;/dest&gt;
-    &lt;det nItem="1"&gt;&lt;prod&gt;&lt;cProd&gt;PROD001&lt;/cProd&gt;&lt;cEAN&gt;7891234567890&lt;/cEAN&gt;
-      &lt;xProd&gt;Produto Exemplo A&lt;/xProd&gt;&lt;uCom&gt;UN&lt;/uCom&gt;&lt;qCom&gt;10.0000&lt;/qCom&gt;
-      &lt;vUnCom&gt;100.00&lt;/vUnCom&gt;&lt;/prod&gt;&lt;/det&gt;
   &lt;/infNFe&gt;&lt;/NFe&gt;
 &lt;/nfeProc&gt;</pre>
     </div>
   </div>
 
-  <!-- Config modal (NF-e) -->
+  <!-- =================== MODAL NF-e =================== -->
   <div id="cfgModal" class="config-modal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
@@ -730,7 +647,7 @@
           <div class="compact-field">
             <label class="block text-sm font-medium text-slate-700 mb-1">Logo (URL ou data URI)</label>
             <div class="logo-input-container">
-              <input id="cfgLogo" type="text" class="block w-full rounded-md border border-slate-300 p-2 text-sm" placeholder="https://... ou data:image/png;base64,...">
+              <input id="cfgLogo" type="text" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
               <input type="file" id="logoUpload" accept="image/*" class="hidden">
               <button id="logoUploadButton" type="button" class="px-3 py-2 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-sm whitespace-nowrap">Upload</button>
             </div>
@@ -754,8 +671,8 @@
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Orientação da etiqueta</legend>
               <select id="cfgOrientation" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                <option value="portrait">Retrato (altura ≥ largura)</option>
-                <option value="landscape">Paisagem (largura ≥ altura)</option>
+                <option value="portrait">Retrato</option>
+                <option value="landscape">Paisagem</option>
               </select>
             </fieldset>
           </div>
@@ -766,13 +683,11 @@
               <div class="flex gap-2">
                 <label class="flex-1">
                   <span class="text-sm text-slate-600">Largura</span>
-                  <input type="number" id="cfgLabelWidth" value="6" min="0.1" max="999" step="0.5"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                  <input type="number" id="cfgLabelWidth" value="6" min="0.1" max="999" step="0.5" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
                 </label>
                 <label class="flex-1">
                   <span class="text-sm text-slate-600">Altura</span>
-                  <input type="number" id="cfgLabelHeight" value="4" min="0.1" max="999" step="0.5"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                  <input type="number" id="cfgLabelHeight" value="4" min="0.1" max="999" step="0.5" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
                 </label>
               </div>
             </fieldset>
@@ -782,13 +697,11 @@
             <div class="flex gap-2">
               <label class="flex-1">
                 <span class="block text-sm font-medium text-slate-700 mb-1">Colunas por folha</span>
-                <input type="number" id="cfgColsPerPage" value="3" min="1" max="6" step="1"
-                       class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                <input type="number" id="cfgColsPerPage" value="3" min="1" max="6" step="1" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
               </label>
               <label class="flex-1">
                 <span class="block text-sm font-medium text-slate-700 mb-1">Linhas por folha</span>
-                <input type="number" id="cfgRowsPerPage" value="0" min="0" max="20" step="1"
-                       class="block w-full rounded-md border border-slate-300 p-2 text-sm">
+                <input type="number" id="cfgRowsPerPage" value="0" min="0" max="20" step="1" class="block w-full rounded-md border border-slate-300 p-2 text-sm">
                 <p class="text-xs text-slate-500 mt-1">0 = automático</p>
               </label>
             </div>
@@ -893,7 +806,6 @@
             <div id="customRuleConfig" class="mt-2 hidden">
               <label class="block text-sm font-medium text-slate-700 mb-1">Regra personalizada (JavaScript)</label>
               <input type="text" id="cfgCustomRule" class="block w-full rounded-md border border-slate-300 p-2 text-sm" placeholder="Ex: value > 1">
-              <p class="text-xs text-slate-500 mt-1">Use "value" para referenciar o valor do campo</p>
             </div>
           </div>
 
@@ -902,7 +814,6 @@
               <legend class="block text-sm font-medium text-slate-700 mb-1">Destaque por termo</legend>
               <div id="termHighlightContainer" class="space-y-1 mb-2"></div>
               <button id="addTermHighlight" type="button" class="px-3 py-1 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-sm">+ Adicionar termo</button>
-              <p class="text-xs text-slate-500 mt-1">O texto do nome do produto que contiver o termo será exibido na cor escolhida.</p>
             </fieldset>
           </div>
 
@@ -928,13 +839,11 @@
     </div>
   </div>
 
-  <!-- Config modal (Shopee) -->
+  <!-- =================== MODAL SHOPEE =================== -->
   <div id="shopeeCfgModal" class="config-modal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
-      <div class="config-header">
-        <h3 class="text-lg font-semibold">Configurações — Etiquetas Shopee</h3>
-      </div>
+      <div class="config-header"><h3 class="text-lg font-semibold">Configurações — Etiquetas Shopee</h3></div>
       <div class="config-content">
         <div class="space-y-3">
           <div class="compact-field">
@@ -945,26 +854,17 @@
                 <option value="download">Baixar como PDF</option>
                 <option value="blank">Imprimir via nova janela (about:blank)</option>
               </select>
-              <p class="hint-text">Define a ação do botão principal no topo.</p>
             </fieldset>
           </div>
-
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
               <div class="flex gap-2">
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Largura (mm)</span>
-                  <input type="number" id="shopeeW" value="100" min="20" max="500"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Altura (mm)</span>
-                  <input type="number" id="shopeeH" value="150" min="20" max="500"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
+                <label class="flex-1"><span class="text-sm text-slate-600">Largura (mm)</span>
+                  <input type="number" id="shopeeW" value="100" min="20" max="500" class="block w-full rounded-md border border-slate-300 p-2 text-sm"></label>
+                <label class="flex-1"><span class="text-sm text-slate-600">Altura (mm)</span>
+                  <input type="number" id="shopeeH" value="150" min="20" max="500" class="block w-full rounded-md border border-slate-300 p-2 text-sm"></label>
               </div>
-              <p class="text-xs text-slate-500 mt-2">Tamanho final do PDF gerado, em milímetros.</p>
             </fieldset>
           </div>
         </div>
@@ -976,13 +876,11 @@
     </div>
   </div>
 
-  <!-- Config modal (Volumes) -->
+  <!-- =================== MODAL VOLUMES =================== -->
   <div id="volCfgModal" class="config-modal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
-      <div class="config-header">
-        <h3 class="text-lg font-semibold">Configurações — Volumes Full</h3>
-      </div>
+      <div class="config-header"><h3 class="text-lg font-semibold">Configurações — Volumes Full</h3></div>
       <div class="config-content">
         <div class="space-y-3">
           <div class="compact-field">
@@ -993,26 +891,17 @@
                 <option value="download">Baixar como PDF</option>
                 <option value="blank">Imprimir via nova janela (about:blank)</option>
               </select>
-              <p class="hint-text">Define a ação do botão principal no topo.</p>
             </fieldset>
           </div>
-
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
               <div class="flex gap-2">
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Largura (mm)</span>
-                  <input type="number" id="volW" value="100" min="20" max="500"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Altura (mm)</span>
-                  <input type="number" id="volH" value="150" min="20" max="500"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
+                <label class="flex-1"><span class="text-sm text-slate-600">Largura (mm)</span>
+                  <input type="number" id="volW" value="100" min="20" max="500" class="block w-full rounded-md border border-slate-300 p-2 text-sm"></label>
+                <label class="flex-1"><span class="text-sm text-slate-600">Altura (mm)</span>
+                  <input type="number" id="volH" value="150" min="20" max="500" class="block w-full rounded-md border border-slate-300 p-2 text-sm"></label>
               </div>
-              <p class="text-xs text-slate-500 mt-2">Tamanho final do PDF gerado, em milímetros.</p>
             </fieldset>
           </div>
           <div class="compact-field">
@@ -1025,7 +914,6 @@
               <option value="2x1">2 × 1</option>
               <option value="1x1">1 × 1</option>
             </select>
-            <p class="text-xs text-slate-500 mt-1">Como as etiquetas estão distribuídas em cada página do PDF de origem.</p>
           </div>
         </div>
       </div>
@@ -1036,13 +924,11 @@
     </div>
   </div>
 
-  <!-- Config modal (Unificador) -->
+  <!-- =================== MODAL UNIFICADOR =================== -->
   <div id="uniCfgModal" class="config-modal">
     <div class="modal-backdrop"></div>
     <div class="config-container">
-      <div class="config-header">
-        <h3 class="text-lg font-semibold">Configurações — Unificador</h3>
-      </div>
+      <div class="config-header"><h3 class="text-lg font-semibold">Configurações — Unificador</h3></div>
       <div class="config-content">
         <div class="space-y-3">
           <div class="compact-field">
@@ -1052,26 +938,17 @@
                 <option value="download">Baixar como PDF</option>
                 <option value="blank">Abrir em nova aba (para imprimir)</option>
               </select>
-              <p class="hint-text">Controla o comportamento dos links de download nos resultados.</p>
             </fieldset>
           </div>
-
           <div class="compact-field">
             <fieldset>
               <legend class="block text-sm font-medium text-slate-700 mb-1">Dimensões da etiqueta</legend>
               <div class="flex gap-2">
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Largura (mm)</span>
-                  <input type="number" id="uniW" value="100" min="20" max="300" step="1"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
-                <label class="flex-1">
-                  <span class="text-sm text-slate-600">Altura (mm)</span>
-                  <input type="number" id="uniH" value="150" min="20" max="400" step="1"
-                         class="block w-full rounded-md border border-slate-300 p-2 text-sm">
-                </label>
+                <label class="flex-1"><span class="text-sm text-slate-600">Largura (mm)</span>
+                  <input type="number" id="uniW" value="100" min="20" max="300" step="1" class="block w-full rounded-md border border-slate-300 p-2 text-sm"></label>
+                <label class="flex-1"><span class="text-sm text-slate-600">Altura (mm)</span>
+                  <input type="number" id="uniH" value="150" min="20" max="400" step="1" class="block w-full rounded-md border border-slate-300 p-2 text-sm"></label>
               </div>
-              <p class="text-xs text-slate-500 mt-2">Tamanho final do PDF unificado, em milímetros.</p>
             </fieldset>
           </div>
           <div class="compact-field">
@@ -1093,6 +970,12 @@
 /* ============================================================
    PARTE 1 — ESTADO, UTILITÁRIOS E LÓGICA NF-e
    ============================================================ */
+const OUTPUT_LABELS = {
+  app: 'Imprimir',
+  download: 'Baixar PDF',
+  blank: 'Imprimir (nova janela)'
+};
+
 const state = {
   labels: [],
   availableDates: [],
@@ -1107,12 +990,6 @@ const state = {
     unit:"cm", orientation:"portrait",
     outputMode:"app"
   }
-};
-
-const OUTPUT_LABELS = {
-  app: 'Imprimir',
-  download: 'Baixar PDF',
-  blank: 'Imprimir (nova janela)'
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -1165,7 +1042,6 @@ function findTextInsensitive(root, tag){
   return '';
 }
 function text(el){ return el ? (el.textContent||'').trim() : ''; }
-
 function parseXml(xml){
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
   if (doc.getElementsByTagName('parsererror')[0]) throw new Error('XML inválido');
@@ -1357,25 +1233,7 @@ function drawLabelInPdf(doc, x, y, w, h, data, errs, isErr, logoInfo){
   doc.text(doc.splitTextToSize(ft, innerW)[0]||ft, x+w/2, footerY, { align:'center' });
 }
 
-async function generateLabelsPDFBlob(){
-  if (typeof window.jspdf === 'undefined') throw new Error('jsPDF ainda carregando.');
-  const { jsPDF } = window.jspdf;
-  const { wCm, hCm } = getLabelSizeCm(state.cfg);
-  if (!(wCm>0) || !(hCm>0)) throw new Error('Configure dimensões válidas.');
-
-  const m = 1, gap = 0.35;
-  const doc = new jsPDF({ unit:'cm', format:'a4', orientation:'portrait' });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
-  const maxC = Math.max(1, Math.floor((pageW - 2*m + gap)/(wCm + gap)));
-  const maxR = Math.max(1, Math.floor((pageH - 2*m + gap)/(hCm + gap)));
-  const cols = Math.min(state.cfg.colsPerPage||1, maxC);
-  const rows = state.cfg.rowsPerPage>0 ? Math.min(state.cfg.rowsPerPage, maxR) : maxR;
-
-  if ((state.cfg.colsPerPage||1)>maxC || (state.cfg.rowsPerPage>0 && state.cfg.rowsPerPage>maxR)){
-    if (!confirm(`Aviso: cabem até ${maxC} coluna(s) e ${maxR} linha(s) por página A4. Continuar?`)) throw new Error('canceled');
-  }
-
+function buildNfeItems(){
   let arr = sortLabels(state.labels);
   if (state.dateFilter.startDate && state.dateFilter.endDate){
     arr = arr.filter(it=>{
@@ -1392,6 +1250,25 @@ async function generateLabelsPDFBlob(){
     if (isErr && !state.cfg.showErrors) continue;
     items.push({ data, errs, isErr });
   }
+  return items;
+}
+
+async function generateLabelsPDFBlob(){
+  if (typeof window.jspdf === 'undefined') throw new Error('jsPDF ainda carregando.');
+  const { jsPDF } = window.jspdf;
+  const { wCm, hCm } = getLabelSizeCm(state.cfg);
+  if (!(wCm>0) || !(hCm>0)) throw new Error('Configure dimensões válidas.');
+
+  const m = 1, gap = 0.35;
+  const doc = new jsPDF({ unit:'cm', format:'a4', orientation:'portrait' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const maxC = Math.max(1, Math.floor((pageW - 2*m + gap)/(wCm + gap)));
+  const maxR = Math.max(1, Math.floor((pageH - 2*m + gap)/(hCm + gap)));
+  const cols = Math.min(state.cfg.colsPerPage||1, maxC);
+  const rows = state.cfg.rowsPerPage>0 ? Math.min(state.cfg.rowsPerPage, maxR) : maxR;
+
+  const items = buildNfeItems();
   if (!items.length) throw new Error('Nenhuma etiqueta.');
 
   const logoInfo = await loadImageInfo(state.cfg.logo);
@@ -1408,35 +1285,60 @@ async function generateLabelsPDFBlob(){
   return doc.output('blob');
 }
 
-async function generateLabelsPDF(){
+/* ----- NF-e: IMPRIMIR DA PÁGINA (modo "app") ----- */
+function handlePrintNfeFromApp(){
+  document.body.classList.remove('print-errors','mask-print-errors');
+  if (state.cfg.printErrors) document.body.classList.add('print-errors');
+  if (state.cfg.printErrors && state.cfg.maskPrintErrors) document.body.classList.add('mask-print-errors');
+  window.print();
+}
+
+/* ----- NF-e: BAIXAR PDF (modo "download") ----- */
+async function handleDownloadNfePdf(){
   try {
     const blob = await generateLabelsPDFBlob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `etiquetas-${new Date().toISOString().slice(0,10)}.pdf`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   } catch(e){
-    if (e && e.message === 'canceled') return;
     console.error(e);
     alert(e && e.message ? e.message : 'Erro ao gerar PDF.');
   }
 }
 
-async function handleNfePrintViaBlank(){
+/* ----- NF-e: NOVA JANELA (modo "blank") ----- */
+async function handlePrintNfeViaBlank(){
   try {
     const blob = await generateLabelsPDFBlob();
     const url = URL.createObjectURL(blob);
     const win = window.open(url, '_blank');
-    if (!win){ alert('Permita pop-ups.'); return; }
-    setTimeout(() => { try { win.print(); } catch(e){} }, 800);
+    if (!win){ alert('Permita pop-ups para imprimir.'); return; }
+    // Tenta chamar print quando o PDF carregar
+    setTimeout(() => { try { win.print(); } catch(e){} }, 900);
     setTimeout(() => URL.revokeObjectURL(url), 120000);
   } catch(e){
-    if (e && e.message === 'canceled') return;
     console.error(e);
     alert(e && e.message ? e.message : 'Erro ao gerar PDF.');
   }
+}
+
+/* ----- NF-e: roteador do botão principal ----- */
+function getNfeOutputMode(){ return state.cfg.outputMode || 'app'; }
+function updateNfeMainButton(){
+  const btn = document.getElementById('btnMainNfe');
+  if (!btn) return;
+  btn.textContent = OUTPUT_LABELS[getNfeOutputMode()] || 'Imprimir';
+}
+function handleNfeMainClick(){
+  const mode = getNfeOutputMode();
+  if (mode === 'download') return handleDownloadNfePdf();
+  if (mode === 'blank')    return handlePrintNfeViaBlank();
+  return handlePrintNfeFromApp();
 }
 
 function highlightTerms(txt, hs){
@@ -1533,27 +1435,13 @@ function render(){
 
   mount.innerHTML = '';
   const issues = [];
-  let sorted = sortLabels(state.labels);
-  let arr = sorted;
-  if (state.dateFilter.startDate && state.dateFilter.endDate){
-    arr = sorted.filter(it=>{
-      if (!it.dataEmissao) return false;
-      const dt = new Date(it.dataEmissao+'T'+(it.horaEmissao||'00:00:00'));
-      const a = new Date(state.dateFilter.startDate+'T'+state.dateFilter.startTime);
-      const b = new Date(state.dateFilter.endDate+'T'+state.dateFilter.endTime);
-      return dt>=a && dt<=b;
-    });
-  }
+  const items = buildNfeItems();
   const rows = state.cfg.rowsPerPage||0;
   const cols = state.cfg.colsPerPage||3;
   const perPage = rows>0 ? rows*cols : Infinity;
 
-  for (let i=0;i<arr.length;i++){
-    const data = arr[i];
-    const errs = validateLabel(data);
-    const isErr = errs.length>0;
-    if (isErr && !state.cfg.showErrors) continue;
-
+  items.forEach((it, i)=>{
+    const { data, errs, isErr } = it;
     const card = document.createElement('div');
     card.className = 'label'+(isErr?' problem':'');
     card.style.width = W; card.style.height = H;
@@ -1602,14 +1490,14 @@ function render(){
     mount.appendChild(card);
 
     if (isErr) issues.push({ title: data.xProd||'(sem nome)', errs });
-    if (rows>0 && (i+1)%perPage===0 && i<arr.length-1){
+    if (rows>0 && (i+1)%perPage===0 && i<items.length-1){
       const br = document.createElement('div');
       br.className = 'label-page-break';
       mount.appendChild(br);
     }
-  }
+  });
 
-  $('#countLabels').textContent = `${arr.length} de ${state.labels.length} etiquetas`;
+  $('#countLabels').textContent = `${items.length} de ${state.labels.length} etiquetas`;
   const ul = $('#issues'); ul.innerHTML = '';
   if (!issues.length){
     const li = document.createElement('li'); li.textContent='Sem erros'; li.className='no-issues'; ul.appendChild(li);
@@ -1635,11 +1523,6 @@ function renderPrintPreview(){
   const src = $('#labels').children;
   const { wCm, hCm } = getLabelSizeCm(state.cfg);
   const W = cmToCss(wCm), H = cmToCss(hCm);
-  pm.style.setProperty('--label-width', W);
-  pm.style.setProperty('--label-height', H);
-  pm.style.setProperty('--cols', state.cfg.colsPerPage);
-  pm.style.setProperty('--rows', state.cfg.rowsPerPage);
-  pm.style.setProperty('--gap','0.35cm');
   pm.style.display='grid';
   pm.style.gridTemplateColumns = `repeat(${state.cfg.colsPerPage}, ${W})`;
   pm.style.gap='0.35cm';
@@ -1689,27 +1572,6 @@ async function handleFiles(files){
     state.labels = all;
     updateDateFilters(); render();
   } catch(e){ console.error(e); alert('Falha ao ler arquivos.'); }
-}
-
-function handlePrint(){
-  document.body.classList.remove('print-errors','mask-print-errors');
-  if (state.cfg.printErrors) document.body.classList.add('print-errors');
-  if (state.cfg.printErrors && state.cfg.maskPrintErrors) document.body.classList.add('mask-print-errors');
-  window.print();
-}
-
-/* ===== Modo de saída NF-e ===== */
-function getNfeOutputMode(){ return state.cfg.outputMode || 'app'; }
-function updateNfeMainButton(){
-  const btn = document.getElementById('btnMainNfe');
-  if (!btn) return;
-  btn.textContent = OUTPUT_LABELS[getNfeOutputMode()] || 'Imprimir';
-}
-function handleNfeMainClick(){
-  const mode = getNfeOutputMode();
-  if (mode === 'download'){ generateLabelsPDF(); return; }
-  if (mode === 'blank'){ handleNfePrintViaBlank(); return; }
-  handlePrint();
 }
 
 function handleLogoUpload(ev){
@@ -1992,6 +1854,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (saved){
     const s = JSON.parse(saved);
     Object.assign(state.cfg, s);
+    if (typeof s.outputMode === 'undefined') state.cfg.outputMode = 'app';
     if (typeof s.labelWidth === 'undefined') state.cfg.labelWidth = 6;
     if (typeof s.labelHeight === 'undefined') state.cfg.labelHeight = 4;
     if (typeof s.colsPerPage === 'undefined') state.cfg.colsPerPage = 3;
@@ -2007,10 +1870,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof s.customRule === 'undefined') state.cfg.customRule = '';
     if (typeof s.termHighlights === 'undefined') state.cfg.termHighlights = [];
     if (typeof s.maskPrintErrors === 'undefined') state.cfg.maskPrintErrors = false;
-    if (typeof s.outputMode === 'undefined') state.cfg.outputMode = 'app';
     applyOrientation();
   }
 
+  /* NF-e */
   $('#btnSelect').addEventListener('click', ()=> $('#xmlInput').click());
   $('#xmlInput').addEventListener('change', e=>{
     const f = e.target.files; if (f && f.length) handleFiles(f);
@@ -2034,10 +1897,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     render(); $('#file-name').textContent='Nenhum arquivo selecionado';
     updateDateFilters();
   });
+
+  /* Botão principal NF-e (dinâmico) */
   $('#btnMainNfe').addEventListener('click', handleNfeMainClick);
+  updateNfeMainButton();
+
   $('#btnPreview').addEventListener('click', renderPrintPreview);
   $('#closePreview').addEventListener('click', ()=>{ $('#printPreviewModal').style.display='none'; });
-  $('#printFromPreview').addEventListener('click', handlePrint);
+  $('#printFromPreview').addEventListener('click', ()=> handlePrintNfeFromApp());
   $('#applyDateFilter').addEventListener('click', applyDateFilter);
   $('#clearDateFilter').addEventListener('click', clearDateFilter);
 
@@ -2080,15 +1947,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (wCm<=0 || hCm<=0){ el.textContent=''; return; }
     const mc = Math.max(1, Math.floor((PRINT_AREA_CM.width+gap)/(wCm+gap)));
     const mr = Math.max(1, Math.floor((PRINT_AREA_CM.height+gap)/(hCm+gap)));
-    const tw = c*wCm + (c-1)*gap;
-    const th = r>0 ? r*hCm + (r-1)*gap : 0;
     let msg = `Tamanho real: ${roundTo(wCm,2)}×${roundTo(hCm,2)} cm — cabem até ${mc} coluna(s) e ${mr} linha(s) por folha A4.`;
-    let ov = false;
-    if (tw > PRINT_AREA_CM.width+0.05){ msg = `⚠️ ${c} coluna(s) não cabem. Máx: ${mc}.`; ov = true; }
-    if (r>0 && th > PRINT_AREA_CM.height+0.05){ msg += ` ⚠️ ${r} linha(s) não cabem. Máx: ${mr}.`; ov = true; }
     el.textContent = msg;
-    el.classList.toggle('text-red-600', ov);
-    el.classList.toggle('text-slate-500', !ov);
   }
 
   function openCfg(){
@@ -2149,7 +2009,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.cfg.orientation = $('#cfgOrientation').value;
     applyOrientation();
     localStorage.setItem('mag_labels_cfg', JSON.stringify(state.cfg));
-    closeCfg(); render(); updateNfeMainButton();
+    closeCfg();
+    render();
+    updateNfeMainButton();   /* <-- troca o label do botão principal */
   });
 
   $('#addTermHighlight').addEventListener('click', ()=>{
@@ -2243,18 +2105,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     },
     onSave: () => {
       uniOutputMode = document.getElementById('uniOutputMode').value || 'download';
-      try { localStorage.setItem(UNI_CFG_KEY, JSON.stringify({
-        widthMm: Number(document.getElementById('uniW').value) || 100,
-        heightMm: Number(document.getElementById('uniH').value) || 150,
-        keepSecond: document.getElementById('uniKeepSecond').checked,
-        outputMode: uniOutputMode
-      })); } catch(e){}
-      updateUniBadge();
       saveUniCfg();
+      updateUniBadge();
     }
   });
 
-  /* Carrega configs persistidas de Shopee/Volumes */
+  /* Carrega configs persistidas */
   try {
     const s = localStorage.getItem('mag_shopee_cfg');
     if (s) Object.assign(shopeeState.cfg, JSON.parse(s));
@@ -2264,7 +2120,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (s) Object.assign(volState.cfg, JSON.parse(s));
   } catch(e){}
 
-  /* Preenche os selects com os modos persistidos */
+  /* Preenche selects com modos persistidos */
   const shoCfgEl = document.getElementById('shopeeOutputMode');
   if (shoCfgEl) shoCfgEl.value = shopeeState.cfg.outputMode || 'blank';
   const volCfgEl = document.getElementById('volOutputMode');
@@ -2272,7 +2128,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const uniCfgEl = document.getElementById('uniOutputMode');
   if (uniCfgEl) uniCfgEl.value = uniOutputMode || 'download';
 
-  /* Inicializa botões principais */
+  /* Atualiza botões principais (NF-e incluído!) */
   updateNfeMainButton();
   updateShopeeBadge();
   updateVolBadge();
@@ -2283,7 +2139,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   render();
 });
 
-/* Service Worker */
 if ('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('/Gerador-de-etiqueta-pwa/sw.js', { scope:'/Gerador-de-etiqueta-pwa/' })
@@ -2310,7 +2165,6 @@ if ('serviceWorker' in navigator){
 
   function switchTab(name){
     document.querySelectorAll('.config-modal.active').forEach(m => m.classList.remove('active'));
-
     tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     panels.forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + name));
 
@@ -2333,13 +2187,12 @@ if ('serviceWorker' in navigator){
       if (typeof window.ensureVolumesLibs === 'function') window.ensureVolumesLibs();
     }
   }
-
   tabs.forEach(b => b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
   switchTab('nfe');
 })();
 
 /* ============================================================
-   PARTE 3 — SHOPEE (preparação automática)
+   PARTE 3 — SHOPEE
    ============================================================ */
 const shopeeState = { selected:null, pages:[], pdfjsModule:null, cfg: { outputMode:'blank' } };
 const $shopee = id => document.getElementById(id);
@@ -2448,9 +2301,9 @@ function updateShopeeMainButton(){
 }
 function handleShopeeMainClick(){
   const mode = getShopeeOutputMode();
-  if (mode === 'download'){ shopeeDownload(); return; }
-  if (mode === 'app'){ shopeePrintFromApp(); return; }
-  shopeePrint();
+  if (mode === 'download') return shopeeDownload();
+  if (mode === 'app')      return shopeePrintFromApp();
+  return shopeePrint();
 }
 function shopeePrint(){
   const w = Number($shopee('shopeeW').value);
@@ -2486,16 +2339,10 @@ function shopeePrintFromApp(){
     img.src = c.toDataURL('image/png');
     container.appendChild(img);
   });
-
   document.body.appendChild(container);
-
-  const cleanup = () => {
-    const el = document.getElementById('appPrintContainer');
-    if (el) el.remove();
-  };
+  const cleanup = () => { const el = document.getElementById('appPrintContainer'); if (el) el.remove(); };
   window.addEventListener('afterprint', cleanup, { once: true });
   setTimeout(cleanup, 60000);
-
   setTimeout(() => { try { window.print(); } catch(e){ console.error(e); } }, 100);
 }
 function shopeeDownload(){
@@ -2538,7 +2385,7 @@ function shopeeClear(){
 })();
 
 /* ============================================================
-   PARTE 3.5 — VOLUMES (preparação automática)
+   PARTE 3.5 — VOLUMES
    ============================================================ */
 const volState = { selected:null, labels:[], pdfjsModule:null, cfg: { outputMode:'blank' } };
 
@@ -2655,9 +2502,9 @@ function updateVolMainButton(){
 }
 function handleVolMainClick(){
   const mode = getVolOutputMode();
-  if (mode === 'download'){ volDownload(); return; }
-  if (mode === 'app'){ volPrintFromApp(); return; }
-  volPrint();
+  if (mode === 'download') return volDownload();
+  if (mode === 'app')      return volPrintFromApp();
+  return volPrint();
 }
 function volPrint(){
   const ls = volSelectedLabels();
@@ -2694,25 +2541,16 @@ function volPrintFromApp(){
     img.src = c.toDataURL('image/png');
     container.appendChild(img);
   });
-
   document.body.appendChild(container);
-
-  const cleanup = () => {
-    const el = document.getElementById('appPrintContainer');
-    if (el) el.remove();
-  };
+  const cleanup = () => { const el = document.getElementById('appPrintContainer'); if (el) el.remove(); };
   window.addEventListener('afterprint', cleanup, { once: true });
   setTimeout(cleanup, 60000);
-
   setTimeout(() => { try { window.print(); } catch(e){ console.error(e); } }, 100);
 }
 function volDownload(){
   const ls = volSelectedLabels();
   if (!ls.length) return;
-  if (typeof window.jspdf === 'undefined'){
-    alert('jsPDF ainda carregando. Tente novamente em alguns segundos.');
-    return;
-  }
+  if (typeof window.jspdf === 'undefined'){ alert('jsPDF ainda carregando.'); return; }
   const { jsPDF } = window.jspdf;
   const w = +$vol('volW').value, h = +$vol('volH').value;
   const o = h >= w ? 'portrait' : 'landscape';
@@ -2742,7 +2580,6 @@ function volDownload(){
     $vol('volStatus').textContent = `Arquivo: ${f.name} — preparando etiquetas…`;
     volAutoPrepare();
   }
-
   drop.addEventListener('click', ()=> file.click());
   file.addEventListener('change', ()=> file.files[0] && choose(file.files[0]));
   ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e=>{
@@ -2755,12 +2592,10 @@ function volDownload(){
     e.preventDefault();
     const f = e.dataTransfer.files[0]; if (f) choose(f);
   });
-
   $vol('volAll').addEventListener('click', ()=>{
     document.querySelectorAll('.vol-sel').forEach(x => x.checked = true);
   });
   $vol('volMain').addEventListener('click', handleVolMainClick);
-
   $vol('volClear').addEventListener('click', ()=>{
     volState.selected = null;
     volState.labels = [];
@@ -2810,21 +2645,14 @@ window.ensureUnificadorLibs = async function(){
     }
     unificadorLibs.loaded = true;
   })();
-
   try { await unificadorLibs.loading; }
   finally { if (loader) loader.style.display = 'none'; }
   return unificadorLibs.loading;
 };
 
 const UNI = {
-  LINE_GAP: 3,
-  BORDER_WIDTH: 0.5,
-  PAD_MM: 0.4,
-  GAP_MM: 0.6,
-  MIN_DANFE_MM: 28,
-  MAX_DANFE_RATIO: 0.42
+  LINE_GAP: 3, BORDER_WIDTH: 0.5, PAD_MM: 0.4, GAP_MM: 0.6, MIN_DANFE_MM: 28, MAX_DANFE_RATIO: 0.42
 };
-
 const UNI_RE_NUM_SERIE = /N[uú]mero\s*:?\s*([\d.,]+)\s*\/\s*S[eé]rie\s*:?\s*([A-Za-z0-9-]+)/i;
 const UNI_RE_NUM       = /N[uú]mero\s*:?\s*([\d.,]+)/i;
 const UNI_RE_NF        = /\bNF\s*:?\s*([\d.,]+)/i;
@@ -2832,7 +2660,6 @@ const UNI_RE_EMISSAO   = /Emiss[aã]o\s*:?\s*(\d{2}\/\d{2}\/\d{4})/i;
 
 function uniMmToPt(mm){ return Number(mm) * 72 / 25.4; }
 function uniOnlyDigits(v){ const d = String(v).replace(/\D/g,''); return d || null; }
-
 function uniFindChave(text){
   let m = text.match(/(?<!\d)\d{44}(?!\d)/);
   if (m) return m[0];
@@ -2850,7 +2677,6 @@ function uniExtractInvoiceData(raw){
   const me = t.match(UNI_RE_EMISSAO);
   return { numero, serie, chave: uniFindChave(t), emissao: me ? me[1] : null };
 }
-
 async function uniGenerateBarcodePNG(chave){
   if (typeof JsBarcode === 'undefined') return null;
   if (!chave || chave.length !== 44) return null;
@@ -2864,12 +2690,8 @@ async function uniGenerateBarcodePNG(chave){
     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
     if (!blob) return null;
     return await blob.arrayBuffer();
-  } catch(err){
-    console.warn('Falha barcode:', err);
-    return null;
-  }
+  } catch(err){ return null; }
 }
-
 async function uniRenderPageToCanvas(jsDoc, pageNumber, scale){
   const page = await jsDoc.getPage(pageNumber);
   const vp = page.getViewport({ scale: scale || 3 });
@@ -2891,30 +2713,17 @@ async function uniReadPageLayout(doc, pageNumber){
   for (const item of content.items){
     if (typeof item.str !== 'string' || !item.str.trim()) continue;
     const t = window.pdfjsLib.Util.transform(vp.transform, item.transform);
-    items.push({
-      text: item.str,
-      x: t[4],
-      y: vp.height - t[5],
-      height: item.height || 0
-    });
+    items.push({ text: item.str, x: t[4], y: vp.height - t[5], height: item.height || 0 });
   }
-  return {
-    items, text: items.map(i=>i.text).join(' '),
-    width: vp.width, height: vp.height,
-    rotation: page.rotate || 0, view: page.view
-  };
+  return { items, text: items.map(i=>i.text).join(' '), width: vp.width, height: vp.height, rotation: page.rotate || 0, view: page.view };
 }
-
-function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
-                                rectX, rectY, rectW, rectH){
+function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage, rectX, rectY, rectW, rectH){
   const rgb = window.PDFLib.rgb;
   const U = UNI;
-
   const innerPadX = Math.min(rectW * 0.045, rectH * 0.30);
   const innerPadY = Math.min(rectH * 0.12, 2);
   const innerW = rectW - innerPadX * 2;
   const innerH = rectH - innerPadY * 2;
-
   const sizeHeader = Math.max(4.5, Math.min(9,   innerH * 0.22));
   const sizeNF     = Math.max(4,   Math.min(8,   innerH * 0.18));
   const sizeChave  = Math.max(3,   Math.min(5.5, innerH * 0.13));
@@ -2927,32 +2736,21 @@ function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
   if (data.numero)  parts.push('NF nº ' + data.numero);
   if (data.serie)   parts.push('Série ' + data.serie);
   if (data.emissao) parts.push('Emissão: ' + data.emissao);
-  if (parts.length){
-    sections.push({ type:'text', text:parts.join('  ·  '), size:sizeNF, font:fontBold });
-  }
+  if (parts.length) sections.push({ type:'text', text:parts.join('  ·  '), size:sizeNF, font:fontBold });
 
   let barcodeSlot = null;
   if (barcodeImage){
-    barcodeSlot = {
-      type:'barcode', img:barcodeImage,
-      width: innerW,
-      height: innerW * (barcodeImage.height / barcodeImage.width)
-    };
+    barcodeSlot = { type:'barcode', img:barcodeImage, width: innerW, height: innerW * (barcodeImage.height / barcodeImage.width) };
     sections.push(barcodeSlot);
   }
-
-  if (data.chave){
-    sections.push({ type:'text', text:data.chave, size:sizeChave, font:fontRegular });
-  } else if (!barcodeImage){
-    sections.push({ type:'text', text:'Chave de acesso não localizada', size:sizeChave, font:fontRegular });
-  }
+  if (data.chave) sections.push({ type:'text', text:data.chave, size:sizeChave, font:fontRegular });
+  else if (!barcodeImage) sections.push({ type:'text', text:'Chave de acesso não localizada', size:sizeChave, font:fontRegular });
 
   for (const s of sections){
     if (s.type !== 'text') continue;
     const w = s.font.widthOfTextAtSize(s.text, s.size);
     if (w > innerW) s.size *= (innerW / w);
   }
-
   const measure = () => {
     let h = 0;
     for (let i=0;i<sections.length;i++){
@@ -2962,9 +2760,7 @@ function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
     }
     return h;
   };
-
   let contentH = measure();
-
   if (contentH > innerH && barcodeSlot){
     const nonBarcode = contentH - barcodeSlot.height;
     const allowed = innerH - nonBarcode;
@@ -2974,7 +2770,6 @@ function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
     barcodeSlot.width  = newH * ratio;
     contentH = measure();
   }
-
   if (contentH > innerH && contentH > 0){
     const s = innerH / contentH;
     for (const sec of sections){
@@ -2983,44 +2778,24 @@ function uniDrawInfoBlockInRect(page, data, fontRegular, fontBold, barcodeImage,
     }
     contentH = measure();
   }
-
-  page.drawRectangle({
-    x: rectX, y: rectY, width: rectW, height: rectH,
-    borderColor: rgb(0,0,0), borderWidth: U.BORDER_WIDTH,
-    color: undefined
-  });
-
+  page.drawRectangle({ x: rectX, y: rectY, width: rectW, height: rectH, borderColor: rgb(0,0,0), borderWidth: U.BORDER_WIDTH, color: undefined });
   const centerX = rectX + rectW / 2;
   const startY  = rectY + rectH - (rectH - contentH) / 2;
   let cursor = startY;
-
   for (const sec of sections){
     if (sec.type === 'text'){
       const w = sec.font.widthOfTextAtSize(sec.text, sec.size);
-      page.drawText(sec.text, {
-        x: centerX - w / 2,
-        y: cursor - sec.size,
-        size: sec.size,
-        font: sec.font,
-        color: rgb(0, 0, 0)
-      });
+      page.drawText(sec.text, { x: centerX - w / 2, y: cursor - sec.size, size: sec.size, font: sec.font, color: rgb(0, 0, 0) });
       cursor -= sec.size * 1.20 + lineGap;
     } else {
-      page.drawImage(sec.img, {
-        x: centerX - sec.width / 2,
-        y: cursor - sec.height,
-        width: sec.width,
-        height: sec.height
-      });
+      page.drawImage(sec.img, { x: centerX - sec.width / 2, y: cursor - sec.height, width: sec.width, height: sec.height });
       cursor -= sec.height + lineGap;
     }
   }
 }
-
 async function uniBuildUnifiedPdf(file, options){
   const { PDFDocument, StandardFonts } = window.PDFLib;
   const keepSecond = !!(options && options.keepSecondPage);
-
   const targetWmm = Math.max(20, Number(options && options.widthMm)  || 100);
   const targetHmm = Math.max(20, Number(options && options.heightMm) || 150);
   const targetW = uniMmToPt(targetWmm);
@@ -3035,12 +2810,10 @@ async function uniBuildUnifiedPdf(file, options){
   const outDoc = await PDFDocument.create();
   const fR = await outDoc.embedFont(StandardFonts.Helvetica);
   const fB = await outDoc.embedFont(StandardFonts.HelveticaBold);
-
   const summary = { totalPages, sales:0, withKey:0, withoutKey:0, items:[] };
 
   const pad       = uniMmToPt(UNI.PAD_MM);
   const gap       = uniMmToPt(UNI.GAP_MM);
-
   const estDanfeW   = targetW - pad * 2;
   const naturalBarH = estDanfeW / 9.23;
   const minDanfeHmm = (naturalBarH * 25.4 / 72) + 14;
@@ -3049,11 +2822,9 @@ async function uniBuildUnifiedPdf(file, options){
 
   for (let i = 0; i < totalPages; i += 2){
     const firstIdx = i, secondIdx = i+1;
-
     const layoutA = await uniReadPageLayout(jsDoc, firstIdx+1);
     const data = uniExtractInvoiceData(layoutA.text);
     let originPage = firstIdx+1;
-
     if ((!data.chave || !data.numero || !data.emissao) && secondIdx < totalPages){
       const layoutB = await uniReadPageLayout(jsDoc, secondIdx+1);
       const dataB = uniExtractInvoiceData(layoutB.text);
@@ -3065,16 +2836,11 @@ async function uniBuildUnifiedPdf(file, options){
         originPage = secondIdx+1;
       }
     }
-
     let barcodeImage = null;
     if (data.chave){
       const pngBytes = await uniGenerateBarcodePNG(data.chave);
-      if (pngBytes){
-        try { barcodeImage = await outDoc.embedPng(pngBytes); }
-        catch(err){ console.warn('embedPng barcode falhou:', err); }
-      }
+      if (pngBytes){ try { barcodeImage = await outDoc.embedPng(pngBytes); } catch(err){} }
     }
-
     const canvas = await uniRenderPageToCanvas(jsDoc, firstIdx+1, 3);
     const labelPng = await uniCanvasToPngBytes(canvas);
     const labelImg = await outDoc.embedPng(labelPng);
@@ -3082,13 +2848,10 @@ async function uniBuildUnifiedPdf(file, options){
     const availW = targetW - pad * 2;
     const availH = targetH - pad * 2;
     const aspect = canvas.width / canvas.height;
-
     let shipW = availW;
     let shipH = shipW / aspect;
-
     let danfeH = availH - shipH - gap;
     if (danfeH > maxDanfeH) danfeH = maxDanfeH;
-
     if (danfeH < minDanfeH){
       danfeH = minDanfeH;
       shipH = availH - danfeH - gap;
@@ -3100,52 +2863,31 @@ async function uniBuildUnifiedPdf(file, options){
         danfeH = Math.min(maxDanfeH, availH - shipH - gap);
       }
     }
-
     const newPage = outDoc.addPage([targetW, targetH]);
-
     const shipX = (targetW - shipW) / 2;
     const shipY = targetH - pad - shipH;
     newPage.drawImage(labelImg, { x: shipX, y: shipY, width: shipW, height: shipH });
-
     const danfeW = shipW;
     const danfeX = (targetW - danfeW) / 2;
     const danfeY = pad;
-
-    try {
-      uniDrawInfoBlockInRect(newPage, data, fR, fB, barcodeImage,
-                             danfeX, danfeY, danfeW, danfeH);
-    } catch(err){
-      console.error('Falha ao desenhar o bloco na pág ' + (firstIdx+1), err);
-    }
+    try { uniDrawInfoBlockInRect(newPage, data, fR, fB, barcodeImage, danfeX, danfeY, danfeW, danfeH); } catch(err){}
 
     summary.sales++;
     if (data.chave) summary.withKey++; else summary.withoutKey++;
-    summary.items.push({
-      numero:data.numero, serie:data.serie,
-      chave:data.chave, emissao:data.emissao, originPage
-    });
+    summary.items.push({ numero:data.numero, serie:data.serie, chave:data.chave, emissao:data.emissao, originPage });
 
     if (keepSecond && secondIdx < totalPages){
       const canvas2 = await uniRenderPageToCanvas(jsDoc, secondIdx+1, 3);
       const png2 = await uniCanvasToPngBytes(canvas2);
       const img2 = await outDoc.embedPng(png2);
       const p2 = outDoc.addPage([targetW, targetH]);
-
       const r2 = canvas2.width / canvas2.height;
       let dW2 = availW;
       let dH2 = dW2 / r2;
-      if (dH2 > availH){
-        dH2 = availH;
-        dW2 = dH2 * r2;
-      }
-      p2.drawImage(img2, {
-        x: (targetW - dW2) / 2,
-        y: (targetH - dH2) / 2,
-        width: dW2, height: dH2
-      });
+      if (dH2 > availH){ dH2 = availH; dW2 = dH2 * r2; }
+      p2.drawImage(img2, { x: (targetW - dW2) / 2, y: (targetH - dH2) / 2, width: dW2, height: dH2 });
     }
   }
-
   const outBytes = await outDoc.save();
   return { blob: new Blob([outBytes], { type:'application/pdf' }), summary };
 }
@@ -3167,8 +2909,7 @@ const UNI_CFG_KEY = 'mag_uni_cfg';
     const cfg = JSON.parse(raw);
     if (uniEls.width  && cfg.widthMm)  uniEls.width.value  = cfg.widthMm;
     if (uniEls.height && cfg.heightMm) uniEls.height.value = cfg.heightMm;
-    if (uniEls.keepSecond && typeof cfg.keepSecond === 'boolean')
-      uniEls.keepSecond.checked = cfg.keepSecond;
+    if (uniEls.keepSecond && typeof cfg.keepSecond === 'boolean') uniEls.keepSecond.checked = cfg.keepSecond;
     if (cfg.outputMode) uniOutputMode = cfg.outputMode;
   } catch(e){}
 })();
@@ -3205,16 +2946,11 @@ if (uniEls.input && uniEls.dropzone){
 }
 
 async function uniHandleFiles(fileList){
-  const files = Array.from(fileList).filter(f =>
-    f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+  const files = Array.from(fileList).filter(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
   if (!files.length){ alert('Nenhum PDF válido.'); return; }
 
-  try {
-    await window.ensureUnificadorLibs();
-  } catch(e){
-    alert('Falha ao carregar bibliotecas do Unificador. Verifique sua conexão (necessário apenas na 1ª vez).\n\n' + e.message);
-    return;
-  }
+  try { await window.ensureUnificadorLibs(); }
+  catch(e){ alert('Falha ao carregar bibliotecas do Unificador.\n\n' + e.message); return; }
 
   const widthMm    = Number(uniEls.width && uniEls.width.value)  || 100;
   const heightMm   = Number(uniEls.height && uniEls.height.value) || 150;
@@ -3228,11 +2964,7 @@ async function uniHandleFiles(fileList){
     uniEls.results.appendChild(card.el);
     card.setBusy();
     try {
-      const { blob, summary } = await uniBuildUnifiedPdf(file, {
-        keepSecondPage: keepSecond,
-        widthMm,
-        heightMm
-      });
+      const { blob, summary } = await uniBuildUnifiedPdf(file, { keepSecondPage: keepSecond, widthMm, heightMm });
       const outName = file.name.replace(/\.pdf$/i, '') + '_unificado.pdf';
       const url = URL.createObjectURL(blob);
       uniOutputs.push({ name: outName, url, blob });
@@ -3290,8 +3022,7 @@ function uniCreateCard(fileName){
         link.download = outName;
         link.textContent = 'Baixar PDF unificado';
       } else {
-        link.target = '_blank';
-        link.rel = 'noopener';
+        link.target = '_blank'; link.rel = 'noopener';
         link.textContent = 'Abrir PDF unificado';
       }
       actions.replaceChildren(link);
@@ -3327,9 +3058,7 @@ function uniRenderDownloadAll(){
   const actions = document.createElement('div'); actions.className = 'uni-actions';
   const btn = document.createElement('button');
   btn.className = 'uni-btn ghost';
-  btn.textContent = uniOutputMode === 'download'
-    ? 'Baixar todos em um único PDF'
-    : 'Abrir todos em um único PDF';
+  btn.textContent = uniOutputMode === 'download' ? 'Baixar todos em um único PDF' : 'Abrir todos em um único PDF';
   btn.addEventListener('click', async ()=>{
     btn.disabled = true; btn.textContent = 'Montando…';
     try {
@@ -3346,9 +3075,7 @@ function uniRenderDownloadAll(){
       alert('Falha ao juntar: ' + err.message);
     } finally {
       btn.disabled = false;
-      btn.textContent = uniOutputMode === 'download'
-        ? 'Baixar todos em um único PDF'
-        : 'Abrir todos em um único PDF';
+      btn.textContent = uniOutputMode === 'download' ? 'Baixar todos em um único PDF' : 'Abrir todos em um único PDF';
     }
   });
   actions.append(btn);
